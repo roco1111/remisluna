@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginLeft="@dimen/activity_horizontal_margin"
+    android:layout_marginRight="@dimen/activity_horizontal_margin"
+    android:layout_marginTop="8dp"
+    android:background="@color/colorPrimary"
+    android:minHeight="?attr/listPreferredItemHeight"
+    app:cardUseCompatPadding="true"
+    app:contentPaddingBottom="8dp"
+    app:contentPaddingLeft="@dimen/activity_horizontal_margin"
+    app:contentPaddingRight="@dimen/activity_horizontal_margin"
+    app:contentPaddingTop="8dp">
+
+    <RelativeLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
+        <TextView
+            android:id="@+id/fecha"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentLeft="true"
+            android:textStyle="bold"
+            android:textSize="@dimen/tamanio_texto"
+            android:text="TextView" />
+
+        <TextView
+            android:id="@+id/hora"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/fecha"
+            android:textSize="@dimen/tamanio_texto"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentLeft="true"
+            android:text="TextView" />
+
+        <TextView
+            android:id="@+id/importe"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/hora"
+            android:textSize="@dimen/tamanio_texto"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentLeft="true"
+            android:text="TextView" />
+    </RelativeLayout>
+</androidx.cardview.widget.CardView>

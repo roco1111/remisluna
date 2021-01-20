@@ -1,0 +1,55 @@
+<resources>
+    <string name="app_name">remisluna</string>
+    <string name="empresa">Remisluna</string>
+    <string name="telefono">341375869</string>
+    <string name="recibo">Ticket para el Pasajero</string>
+    <string name="ticket_turno">Totales Turno</string>
+    <string name="title_activity_notifications">Notificaciones</string>
+    <string name="menu_registro">Registro Usuario</string>
+    <string name="menu_ingresar">Ingreso Usuario</string>
+    <string name="sign_out">Sign Out</string>
+    <string name="revocar">Revocar</string>
+    <string name="viaje_asignado">Viaje Asignado</string>
+    <string name="nuevo_turno">Nuevo Turno</string>
+    <string name="cerrar_turno">Cerrar Turno</string>
+    <string name="historial_viaje">Historial Viajes</string>
+    <string name="perfil">Perfil</string>
+    <string name="vacio">No hay Elementos</string>
+    <string name="sin_viaje">No hay Viajes Asignados</string>
+    <string name="nav_header_subtitle">info@remisluna.com.ar</string>
+    <string name="home">Principal</string>
+    <string name="notificaciones">Notificaciones</string>
+    <string name="configuracion">Preferencias</string>
+    <string name="menu_acerca">Acerca de Remisluna</string>
+    <string name="acerca">Acerca De...</string>
+    <string name="cerrar">Cerrar Sesión</string>
+    <string name="menu_ingreso">Ingreso Usuario</string>
+    <string name="server_client_id">445416273096-84nmpnrpacbsda8lp916ekbi7tr5qc2i.apps.googleusercontent.com</string>
+    <string name="olvido_contraseña">¿Olvidaste la contraseña?</string>
+    <string name="clave_cliente">Contraseña</string>
+    <string name="mail_cliente">Dirección de Email</string>
+    <string name="dialogo_contrasenia">Restablecimiento de contraseña</string>
+    <string name="mensaje_contrasenia">Ingrese la dirección de correo electrónico que utilizó para registrarse.
+    Le enviaremos un mail con instrucciones para definir una nueva contraseña</string>
+    <string name="dialog_aceptar">Aceptar</string>
+
+    <string name="nro_viaje">Nro Viaje</string>
+    <string name="solicitante">Solicitante</string>
+    <string name="documento">Documento</string>
+    <string name="salida">Salida</string>
+    <string name="destino">Destino</string>
+    <string name="alarma">Alarma</string>
+    <string name="suspender">Suspender</string>
+    <string name="terminar">Terminar</string>
+    <string name="iniciar">Iniciar Viaje</string>
+
+    <string name="fecha">Fecha</string>
+    <string name="hora_inicio">Inicio</string>
+    <string name="hora_fin">Fin</string>
+    <string name="kms">Kms Recorridos</string>
+    <string name="recaudacion">Recaudación</string>
+    <string name="ver_viaje">Ver Viajes</string>
+    <string name="ticket">Emitir Ticket</string>
+
+
+</resources>

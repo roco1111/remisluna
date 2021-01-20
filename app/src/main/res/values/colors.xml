@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="purple_200">#FFBB86FC</color>
+    <color name="purple_500">#FF6200EE</color>
+    <color name="purple_700">#FF3700B3</color>
+    <color name="green_200">#80e27e</color>
+    <color name="green_500">#4caf50</color>
+    <color name="green_700">#087f23</color>
+    <color name="teal_200">#FF03DAC5</color>
+    <color name="teal_700">#FF018786</color>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+    <color name="background">#FFFFFFFF</color>
+    <color name="colorSecondaryText">#ffffff</color>
+    <color name="colorPrimaryText">#000000</color>
+    <color name="primaryText">#434343</color>
+    <color name="colorPrimary">#2dd521</color>
+    <color name="colorPrimaryDark">#2a7025</color>
+    <color name="alarma">#FB0000</color>
+    <color name="suspender">#FF6F00</color>
+    <!-- MINI FAB -->
+    <color name="colorNormalMini">#00b0ff</color>
+    <color name="colorPressedMini">#40C4FF</color>
+    <color name="colorRippleMini">#e1f5fe</color>
+
+</resources>

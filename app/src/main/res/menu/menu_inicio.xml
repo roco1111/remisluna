@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <group android:checkableBehavior="single">
+
+    <item
+        android:id="@+id/nav_ingreso"
+        android:checked="true"
+        android:icon="@drawable/ic_home"
+        android:title="@string/menu_ingreso" />
+
+        <item
+            android:id="@+id/nav_acerca"
+            android:icon="@drawable/ic_informacion"
+            android:title="@string/acerca" />
+    </group>
+</menu>

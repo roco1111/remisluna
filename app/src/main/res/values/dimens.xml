@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="tamanio_subtitulo">22sp</dimen>
+    <dimen name="tamanio_parrafo">18sp</dimen>
+    <dimen name="tamanio_texto">15sp</dimen>
+    <dimen name="margin_top">15dp</dimen>
+    <dimen name="margin_top_menu">40dp</dimen>
+    <dimen name="margin_top_menu2">20dp</dimen>
+    <dimen name="margin_top_texto">4dp</dimen>
+    <dimen name="margin_start">8dp</dimen>
+    <dimen name="ancho_boton">54dp</dimen>
+    <dimen name="tamanio_titulo">25sp</dimen>
+    <dimen name="perfil_image_grande">130dp</dimen>
+    <dimen name="fab_margin">16dp</dimen>
+    <dimen name="nav_header_vertical_spacing">8dp</dimen>
+    <dimen name="nav_header_height">196dp</dimen>
+    <dimen name="activity_horizontal_margin">16dp</dimen>
+    <dimen name="activity_vertical_margin">12dp</dimen>
+    <dimen name="perfil_image_size">120dp</dimen>
+    <dimen name="imagen_regla">100dp</dimen>
+    <dimen name="icono_chico">20dp</dimen>
+    <dimen name="margin_top_item">4dp</dimen>
+    <dimen name="item_horizontal_margin">6dp</dimen>
+    <dimen name="item_vertical_margin">4dp</dimen>
+    <dimen name="tamanio_item">16sp</dimen>
+    <dimen name="estrella">30dp</dimen>
+    <dimen name="icono">50dp</dimen>
+    <dimen name="campos_width_medio">250dp</dimen>
+    <dimen name="headerbar_elevation">4dp</dimen>
+    <dimen name="campos_height">42dp</dimen>
+    <dimen name="alto_imagen">70dp</dimen>
+    <dimen name="alto_preferencias">60dp</dimen>
+    <dimen name="padding_small">4dp</dimen>
+    <dimen name="padding_medium">8dp</dimen>
+    <dimen name="padding_large">16dp</dimen>
+    <dimen name="elevation">10dp</dimen>
+</resources>

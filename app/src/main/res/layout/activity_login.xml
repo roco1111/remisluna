@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    android:background="@color/background"
+    android:orientation="horizontal">
+
+    <LinearLayout
+        android:layout_width="0px"
+        android:layout_height="0px"
+        android:focusable="true"
+        android:focusableInTouchMode="true">
+        <requestFocus/>
+
+    </LinearLayout>
+
+
+    <!-- Indicador de progreso -->
+    <RelativeLayout
+        android:id="@+id/login_form"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+        <ImageView
+            android:id="@+id/imageView2"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            app:srcCompat="@drawable/inicio" />
+
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/login_usuario_container"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentStart="true"
+            android:layout_below="@+id/imageView2"
+            android:textColorHint="@color/purple_500"
+            app:boxBackgroundColor="@color/background"
+            app:passwordToggleTint="@color/purple_500">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/editTextUsuario"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_alignParentLeft="true"
+                android:layout_alignParentStart="true"
+                android:layout_below="@+id/textView6"
+                android:layout_marginTop="15dp"
+                android:ems="10"
+                android:hint="@string/mail_cliente"
+                android:inputType="textEmailAddress"
+                android:textColor="@color/colorPrimaryText"
+                android:textColorHint="@color/purple_500"
+                tools:focusable="false"
+                tools:ignore="RtlHardcoded" />
+
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/login_password_container"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentStart="true"
+            android:layout_marginTop="14dp"
+            android:layout_below="@+id/login_usuario_container"
+            android:textColorHint="@color/purple_500"
+            app:passwordToggleEnabled="true"
+            app:passwordToggleTint="@color/purple_500"
+            app:boxBackgroundColor="@color/background"
+            app:passwordToggleTintMode="src_in">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/editTextClave"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_alignParentLeft="true"
+                android:layout_alignParentStart="true"
+                android:ems="10"
+                android:hint="@string/clave_cliente"
+
+                android:inputType="textPassword"
+                android:textColor="@color/colorPrimaryText"
+                android:textColorHint="@color/colorNormalMini"
+                tools:ignore="RtlHardcoded" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <FrameLayout
+            android:id="@+id/idIngreso"
+            android:layout_width="@dimen/campos_width_medio"
+            android:layout_height="@dimen/alto_imagen"
+            android:layout_below="@+id/login_password_container"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="14dp">
+        <Button
+            android:id="@+id/buttonIngreso"
+            android:layout_width="@dimen/campos_width_medio"
+            android:layout_height="@dimen/alto_imagen"
+            android:background="@android:color/transparent"
+            android:drawableTop="@drawable/boton"
+            tools:ignore="RtlHardcoded" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:clickable="false"
+                android:textSize="@dimen/tamanio_parrafo"
+                android:textColor="@color/green_500"
+                android:elevation="@dimen/elevation"
+                android:text="@string/menu_ingresar" />
+        </FrameLayout>
+
+
+
+        <TextView
+            android:id="@+id/olvidaste"
+            android:layout_width="wrap_content"
+            android:layout_height="@dimen/campos_height"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentStart="true"
+            android:layout_below="@+id/idIngreso"
+            android:layout_centerVertical="true"
+            android:layout_marginTop="14dp"
+            android:text="@string/olvido_contraseña"
+            android:textAlignment="center"
+            android:textColor="@color/purple_500"
+            android:textSize="18sp" />
+
+    </RelativeLayout>
+
+    <ProgressBar
+        android:id="@+id/login_progress"
+        style="?android:attr/progressBarStyleLarge"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:visibility="gone" />
+
+</LinearLayout>

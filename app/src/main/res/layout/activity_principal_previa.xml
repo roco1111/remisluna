@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    android:background="@color/background"
+
+    android:orientation="vertical">
+
+    <ImageView
+        android:id="@+id/imageView2"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:scaleType="fitXY"
+        app:srcCompat="@drawable/principal" />
+    <TextView
+        android:id="@+id/bienvenido"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="65dp"
+        android:text="@string/empresa"
+        android:textAlignment="center"
+        android:textColor="@color/white"
+        android:textSize="@dimen/tamanio_titulo" />
+
+    <ImageButton
+        android:id="@+id/imageButtonTurno"
+        android:layout_width="@dimen/ancho_boton"
+        android:layout_height="@dimen/ancho_boton"
+        android:layout_below="@id/imageView2"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="@dimen/margin_top_menu"
+        android:background="@color/background"
+        android:scaleType="fitXY"
+        app:srcCompat="@drawable/turno" />
+    <TextView
+        android:id="@+id/turno"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/imageButtonTurno"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="@dimen/margin_top_texto"
+        android:text="@string/nuevo_turno"
+        android:textAlignment="center"
+        android:textColor="@color/black"
+        android:textSize="@dimen/tamanio_parrafo" />
+    <ImageButton
+        android:id="@+id/imageButtonHistorial"
+        android:layout_width="@dimen/ancho_boton"
+        android:layout_height="@dimen/ancho_boton"
+        android:background="@color/background"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="@dimen/margin_top_menu"
+        android:scaleType="fitXY"
+        android:layout_below="@+id/turno"
+        app:srcCompat="@drawable/historial" />
+    <TextView
+        android:id="@+id/historial"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/imageButtonHistorial"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="@dimen/margin_top_texto"
+        android:text="@string/historial_viaje"
+        android:textAlignment="center"
+        android:textColor="@color/black"
+        android:textSize="@dimen/tamanio_parrafo" />
+    <ImageButton
+        android:id="@+id/imageButtonPerfil"
+        android:layout_width="@dimen/ancho_boton"
+        android:layout_height="@dimen/ancho_boton"
+        android:background="@color/background"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="@dimen/margin_top_menu"
+        android:scaleType="fitXY"
+        android:layout_below="@+id/historial"
+        app:srcCompat="@drawable/perfil" />
+
+    <TextView
+        android:id="@+id/perfil"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/imageButtonPerfil"
+        android:layout_centerHorizontal="true"
+        android:text="@string/perfil"
+        android:layout_marginTop="@dimen/margin_top_texto"
+        android:textAlignment="center"
+        android:textColor="@color/black"
+        android:textSize="@dimen/tamanio_parrafo" />
+
+
+</RelativeLayout>
