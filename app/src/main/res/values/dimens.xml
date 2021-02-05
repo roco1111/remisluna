@@ -6,6 +6,7 @@
     <dimen name="margin_top">15dp</dimen>
     <dimen name="margin_top_menu">40dp</dimen>
     <dimen name="margin_top_menu2">20dp</dimen>
+    <dimen name="margin_boton">10dp</dimen>
     <dimen name="margin_top_texto">4dp</dimen>
     <dimen name="margin_start">8dp</dimen>
     <dimen name="ancho_boton">54dp</dimen>

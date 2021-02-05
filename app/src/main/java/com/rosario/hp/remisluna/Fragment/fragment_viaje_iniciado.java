@@ -24,6 +24,7 @@ import com.android.volley.Response;
 import com.android.volley.error.VolleyError;
 import com.android.volley.request.JsonObjectRequest;
 import com.rosario.hp.remisluna.DeviceList;
+import com.rosario.hp.remisluna.Impresion;
 import com.rosario.hp.remisluna.MainViaje;
 import com.rosario.hp.remisluna.R;
 import com.rosario.hp.remisluna.include.Constantes;
@@ -72,6 +73,7 @@ public class fragment_viaje_iniciado extends Fragment {
     private Double longitud_salida;
     private static BluetoothSocket btsocket;
     private static OutputStream outputStream;
+    private Impresion impresion;
     byte FONT_TYPE;
 
     @Override
@@ -87,6 +89,10 @@ public class fragment_viaje_iniciado extends Fragment {
         terminar = v.findViewById(R.id.buttonTerminar);
         suspender = v.findViewById(R.id.buttonSuspender);
         alarma = v.findViewById(R.id.buttonAlarma);
+
+        impresion = new Impresion();
+
+        conectar_impresora();
 
         SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getContext());
         ls_id_conductor     = settings.getString("id","");
@@ -117,6 +123,11 @@ public class fragment_viaje_iniciado extends Fragment {
         cargarDatos(getContext());
 
         return v;
+    }
+
+    protected void conectar_impresora(){
+        outputStream = impresion.getOutputStream();
+
     }
 
     public void cargarDatos(final Context context) {
@@ -408,7 +419,7 @@ public class fragment_viaje_iniciado extends Fragment {
         // Actualizar datos en el servidor
         VolleySingleton.getInstance(getActivity()).addToRequestQueue(
                 new JsonObjectRequest(
-                        Request.Method.GET,
+                        Request.Method.POST,
                         newURL,
                         null,
                         new Response.Listener<JSONObject>() {
@@ -696,18 +707,12 @@ public class fragment_viaje_iniciado extends Fragment {
     }
 
     protected void printTicket() {
+        btsocket = impresion.getbluetoothSocket();
         if(btsocket == null){
-            Intent BTIntent = new Intent(getContext(), DeviceList.class);
-            this.startActivityForResult(BTIntent, DeviceList.REQUEST_CONNECT_BT);
+            getActivity().startService(new Intent(getActivity(), Impresion.class));
         }
         else{
-            OutputStream opstream = null;
-            try {
-                opstream = btsocket.getOutputStream();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            outputStream = opstream;
+            outputStream = impresion.getOutputStream();
 
             //print command
             try {
@@ -716,7 +721,6 @@ public class fragment_viaje_iniciado extends Fragment {
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
-                outputStream = btsocket.getOutputStream();
 
                 byte[] printformat = { 0x1B, 0*21, FONT_TYPE };
                 //outputStream.write(printformat);
@@ -752,7 +756,7 @@ public class fragment_viaje_iniciado extends Fragment {
                 printNewLine();
                 printNewLine();
 
-                printCustom ("TARIFA  " + fecha_tarifa,0,0);
+                printCustom ("TARIFA AL  " + fecha_tarifa,0,0);
                 printNewLine();
                 printCustom ("VIAJE  " + String.format(Locale.GERMANY,"%.2f",Double.parseDouble(precio)),0,0);
                 printNewLine();
@@ -760,7 +764,7 @@ public class fragment_viaje_iniciado extends Fragment {
                 printNewLine();
                 printNewLine();
 
-                printCustom ("TOTAL" + String.format(Locale.GERMANY,"%.2f",Double.parseDouble(precio)),2,0);
+                printCustom ("TOTAL:  " + String.format(Locale.GERMANY,"%.2f",Double.parseDouble(precio)),2,0);
                 printNewLine();
 
                 //resetPrint(); //reset printer
@@ -887,31 +891,5 @@ public class fragment_viaje_iniciado extends Fragment {
         }
     }
 
-    public void onActivityResult(int requestCode, int resultCode, Intent intent) {
-        super.onActivityResult(requestCode, resultCode, intent);
-        try {
-            btsocket = DeviceList.getSocket();
-            if(btsocket != null){
-                Log.d("conexión","conexión exitosa");
-                //printText("conexión exitosa");
-            }
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-    }
-    public void onDestroy() {
-        super.onDestroy();
-        try {
-            if(btsocket!= null){
-                outputStream.close();
-                btsocket.close();
-                btsocket = null;
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
 
 }

@@ -12,6 +12,7 @@
     <string name="viaje_asignado">Viaje Asignado</string>
     <string name="nuevo_turno">Nuevo Turno</string>
     <string name="cerrar_turno">Cerrar Turno</string>
+    <string name="impresora">Impresora</string>
     <string name="historial_viaje">Historial Viajes</string>
     <string name="perfil">Perfil</string>
     <string name="vacio">No hay Elementos</string>

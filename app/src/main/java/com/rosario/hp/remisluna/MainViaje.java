@@ -52,8 +52,6 @@ public class MainViaje extends AppCompatActivity {
     private static final String TAG = MainViaje.class.getSimpleName();
     String ls_id_conductor;
     String ls_vehiculo;
-    private static BluetoothSocket btsocket;
-    private static OutputStream outputStream;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -112,12 +110,7 @@ public class MainViaje extends AppCompatActivity {
             switch (mensaje) {
                 case "1":
                     fragment = new fragment_viaje_iniciado();
-                    JSONArray mensaje1 = response.getJSONArray("viaje");
 
-                    JSONObject object = mensaje1.getJSONObject(0);
-                    //Parsear objeto
-
-                    ls_vehiculo = object.getString("movil");
                     break;
 
                 case "2":

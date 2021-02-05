@@ -5,6 +5,9 @@ import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.Fragment;
 
 import android.Manifest;
+import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothDevice;
+import android.bluetooth.BluetoothSocket;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -37,6 +40,11 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.UUID;
+
 
 public class MainActivity extends AppCompatActivity {
 
@@ -56,7 +64,11 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
 
+    }
 
     public void cargarDatos(final Context context) {
 
@@ -115,8 +127,6 @@ public class MainActivity extends AppCompatActivity {
                     break;
 
             }
-
-
 
 
         } catch (JSONException e) {
@@ -186,8 +196,6 @@ public class MainActivity extends AppCompatActivity {
                     break;
 
             }
-
-
 
         } catch (JSONException e) {
             e.printStackTrace();

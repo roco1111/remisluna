@@ -29,13 +29,28 @@
         android:textColor="@color/white"
         android:textSize="@dimen/tamanio_titulo" />
 
+    <RelativeLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_below="@id/imageView2"
+        android:layout_marginTop="@dimen/margin_top_menu"
+        android:id="@+id/id_superior"
+        android:orientation="horizontal">
+
+
+    <RelativeLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/id_turno"
+        android:orientation="vertical">
     <ImageButton
         android:id="@+id/imageButtonTurno"
         android:layout_width="@dimen/ancho_boton"
         android:layout_height="@dimen/ancho_boton"
-        android:layout_below="@id/imageView2"
+
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="@dimen/margin_top_menu"
+
         android:background="@color/background"
         android:scaleType="fitXY"
         app:srcCompat="@drawable/turno" />
@@ -50,15 +65,21 @@
         android:textAlignment="center"
         android:textColor="@color/black"
         android:textSize="@dimen/tamanio_parrafo" />
+    </RelativeLayout>
+        <RelativeLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/id_historial"
+        android:layout_toEndOf="@id/id_turno"
+        android:layout_marginStart="@dimen/margin_top_menu"
+        android:orientation="vertical">
     <ImageButton
         android:id="@+id/imageButtonHistorial"
         android:layout_width="@dimen/ancho_boton"
         android:layout_height="@dimen/ancho_boton"
         android:background="@color/background"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="@dimen/margin_top_menu"
         android:scaleType="fitXY"
-        android:layout_below="@+id/turno"
         app:srcCompat="@drawable/historial" />
     <TextView
         android:id="@+id/historial"
@@ -71,15 +92,30 @@
         android:textAlignment="center"
         android:textColor="@color/black"
         android:textSize="@dimen/tamanio_parrafo" />
+        </RelativeLayout>
+    </RelativeLayout>
+    <RelativeLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_below="@id/id_superior"
+        android:layout_marginTop="@dimen/margin_top_menu"
+        android:id="@+id/id_inferior"
+        android:orientation="horizontal">
+
+
+    <RelativeLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/id_perfil"
+        android:orientation="vertical">
     <ImageButton
         android:id="@+id/imageButtonPerfil"
         android:layout_width="@dimen/ancho_boton"
         android:layout_height="@dimen/ancho_boton"
         android:background="@color/background"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="@dimen/margin_top_menu"
         android:scaleType="fitXY"
-        android:layout_below="@+id/historial"
         app:srcCompat="@drawable/perfil" />
 
     <TextView
@@ -93,6 +129,34 @@
         android:textAlignment="center"
         android:textColor="@color/black"
         android:textSize="@dimen/tamanio_parrafo" />
-
+    </RelativeLayout>
+        <RelativeLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/id_impresora"
+            android:layout_toEndOf="@id/id_perfil"
+            android:layout_marginStart="@dimen/alto_imagen"
+            android:orientation="vertical">
+            <ImageButton
+                android:id="@+id/imageButtonImpresora"
+                android:layout_width="@dimen/ancho_boton"
+                android:layout_height="@dimen/ancho_boton"
+                android:background="@color/background"
+                android:layout_centerHorizontal="true"
+                android:scaleType="fitXY"
+                app:srcCompat="@drawable/ic_impresora" />
+            <TextView
+                android:id="@+id/impresora"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/imageButtonImpresora"
+                android:layout_centerHorizontal="true"
+                android:layout_marginTop="@dimen/margin_top_texto"
+                android:text="@string/impresora"
+                android:textAlignment="center"
+                android:textColor="@color/black"
+                android:textSize="@dimen/tamanio_parrafo" />
+        </RelativeLayout>
+    </RelativeLayout>
 
 </RelativeLayout>

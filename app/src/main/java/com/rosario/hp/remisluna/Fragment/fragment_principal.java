@@ -1,5 +1,7 @@
 package com.rosario.hp.remisluna.Fragment;
 
+import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
 import android.content.Context;
 import android.content.Intent;
@@ -14,6 +16,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageButton;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.fragment.app.Fragment;
@@ -25,6 +28,8 @@ import com.android.volley.error.VolleyError;
 import com.android.volley.request.JsonObjectRequest;
 import com.rosario.hp.remisluna.DeviceList;
 import com.rosario.hp.remisluna.Entidades.viaje;
+import com.rosario.hp.remisluna.Impresion;
+import com.rosario.hp.remisluna.ListaBluetoohtActivity;
 import com.rosario.hp.remisluna.MainActivity;
 import com.rosario.hp.remisluna.MainViaje;
 import com.rosario.hp.remisluna.R;
@@ -39,11 +44,15 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
+
+import static android.app.Activity.RESULT_OK;
 
 public class fragment_principal extends Fragment {
 
@@ -52,6 +61,7 @@ public class fragment_principal extends Fragment {
     private ImageButton viaje;
     private ImageButton historial;
     private ImageButton turno;
+    private ImageButton impresora;
     private String ls_id_turno;
     private String recaudacion;
     private String kms;
@@ -61,6 +71,12 @@ public class fragment_principal extends Fragment {
     private static BluetoothSocket btsocket;
     private static OutputStream outputStream;
     byte FONT_TYPE;
+    private static final int REQUEST_DISPOSITIVO = 425;
+    private BluetoothSocket bluetoothSocket;
+    private TextView txtLabel;
+    private volatile boolean pararLectura;
+    private InputStream inputStream;
+    private Impresion impresion;
 
 
     @Override
@@ -72,6 +88,11 @@ public class fragment_principal extends Fragment {
         this.viaje = v.findViewById(R.id.imageButtonViaje);
         this.historial = v.findViewById(R.id.imageButtonHistorial);
         this.turno = v.findViewById(R.id.imageButtonTurno);
+        this.impresora = v.findViewById(R.id.imageButtonImpresora);
+        this.txtLabel = v.findViewById(R.id.referencia);
+        impresion = new Impresion();
+
+
         this.viaje.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -95,8 +116,16 @@ public class fragment_principal extends Fragment {
             }
         });
 
+        this.impresora.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                getActivity().startService(new Intent(getActivity(), Impresion.class));
+            }
+        });
+
         return v;
     }
+
 
     public void datos_turno(final Context context) {
 
@@ -151,8 +180,8 @@ public class fragment_principal extends Fragment {
                     hora_inicio = object.getString("hora_inicio");
                     if(!object.getString("distancia").equals("null")){
                         kms =object.getString("distancia");}
-                    if(!object.getString("dato_recaudacion").equals("null")){
-                        recaudacion = object.getString("dato_recaudacion");}
+                    if(!object.getString("recaudacion").equals("null")){
+                        recaudacion = object.getString("recaudacion");}
                     datos_viajes_turno(context);
                 case "2":
                     Toast.makeText(
@@ -274,7 +303,7 @@ public class fragment_principal extends Fragment {
                         new Response.Listener<JSONObject>() {
                             @Override
                             public void onResponse(JSONObject response) {
-                                procesarRespuestaActualizar(response);
+                                procesarRespuestaCerrarTurno(response);
                             }
                         },
                         new Response.ErrorListener() {
@@ -300,7 +329,7 @@ public class fragment_principal extends Fragment {
                 }
         );
     }
-    private void procesarRespuestaActualizar(JSONObject response) {
+    private void procesarRespuestaCerrarTurno(JSONObject response) {
 
         try {
             // Obtener estado
@@ -326,20 +355,14 @@ public class fragment_principal extends Fragment {
         }
     }
 
-    protected void ticket_turno( ArrayList<viaje> viajes) {
 
+    protected void ticket_turno( ArrayList<viaje> viajes) {
+        btsocket = impresion.getbluetoothSocket();
         if(btsocket == null){
-            Intent BTIntent = new Intent(getContext(), DeviceList.class);
-            this.startActivityForResult(BTIntent, DeviceList.REQUEST_CONNECT_BT);
+            getActivity().startService(new Intent(getActivity(), Impresion.class));
         }
         else {
-            OutputStream opstream = null;
-            try {
-                opstream = btsocket.getOutputStream();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            outputStream = opstream;
+            outputStream = impresion.getOutputStream();
 
             //print command
             try {
@@ -369,6 +392,7 @@ public class fragment_principal extends Fragment {
 
                 printNewLine();
                 printText(fecha);//fecha
+                printText(" - ");
                 printText(hora_inicio);//fecha
                 printNewLine();
                 printNewLine();
@@ -377,34 +401,23 @@ public class fragment_principal extends Fragment {
                 String importe;
 
                 for (viaje Viaje : viajes) {
-
-                    printCustom(getResources().getString(R.string.telefono), 0, 0);
-
-                    id = Viaje.getId();
-                    printText("VIAJE " + id);
                     printNewLine();
+                    id = Viaje.getId();
+                    printCustom("VIAJE " + id, 1, 0);
 
                     importe = Viaje.getImporte();
-                    printText("TOTAL");
-
-                    printCustom(getResources().getString(R.string.telefono), 0, 2);
-
-                    printText(importe);
-
-
+                    printText("TOTAL:  " + importe);
+                    printNewLine();
                 }
                 printNewLine();
-                printCustom(getResources().getString(R.string.telefono), 0, 0);
-                printText("K.TOTAL");
-                printCustom(getResources().getString(R.string.telefono), 0, 2);
+                printText("K.TOTAL:  ");
                 printText(kms);
                 printNewLine();
                 printNewLine();
-                printCustom(getResources().getString(R.string.telefono), 0, 0);
-                printText("RECAUD.");
-                printCustom(getResources().getString(R.string.telefono), 0, 2);
+                printText("RECAUDACION: ");
                 printText(recaudacion);
-
+                printNewLine();
+                printNewLine();
                 //resetPrint(); //reset printer
                 printUnicode();
                 printNewLine();
@@ -530,31 +543,5 @@ public class fragment_principal extends Fragment {
         }
     }
 
-    public void onActivityResult(int requestCode, int resultCode, Intent intent) {
-        super.onActivityResult(requestCode, resultCode, intent);
-        try {
-            btsocket = DeviceList.getSocket();
-            if(btsocket != null){
-                Log.d("conexión","conexión exitosa");
-                //printText("conexión exitosa");
-            }
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-    }
-    public void onDestroy() {
-        super.onDestroy();
-        try {
-            if(btsocket!= null){
-                outputStream.close();
-                btsocket.close();
-                btsocket = null;
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
 
 }

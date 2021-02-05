@@ -74,8 +74,6 @@ public class fragment_viaje extends Fragment {
         SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getContext());
         ls_id_conductor     = settings.getString("id","");
 
-
-
         this.inicio.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -147,11 +145,6 @@ public class fragment_viaje extends Fragment {
                     longitud_destino = object.getString("longitud_destino");
                     latitud_salida = object.getString("latitud_salida");
                     longitud_salida = object.getString("longitud_salida");
-
-                    SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getContext());
-                    SharedPreferences.Editor editor = settings.edit();
-                    editor.putString("vehiculo", object.getString("vehiculo"));
-
                     sin_elementos.setVisibility(View.GONE);
                     datos_viaje.setVisibility(View.VISIBLE);
 

@@ -15,7 +15,7 @@
         android:id="@+id/id_viaje"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="32dp"
+        android:layout_marginTop="@dimen/margin_top_menu2"
         android:orientation="vertical">
         <TextView
             android:id="@+id/viaje"
@@ -43,7 +43,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@id/id_viaje"
-        android:layout_marginTop="22dp"
+        android:layout_marginTop="@dimen/margin_top_menu2"
         android:orientation="vertical">
         <TextView
             android:id="@+id/solicitante"
@@ -70,7 +70,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@id/id_solicitante"
-        android:layout_marginTop="22dp"
+        android:layout_marginTop="@dimen/margin_top_menu2"
         android:orientation="vertical">
         <TextView
             android:id="@+id/documento"
@@ -97,7 +97,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@id/id_documento"
-        android:layout_marginTop="22dp"
+        android:layout_marginTop="@dimen/margin_top_menu2"
         android:orientation="vertical">
         <TextView
             android:id="@+id/salida"
@@ -124,7 +124,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@id/id_salida"
-        android:layout_marginTop="22dp"
+        android:layout_marginTop="@dimen/margin_top_menu2"
         android:orientation="vertical">
         <TextView
             android:id="@+id/destino"
@@ -152,7 +152,7 @@
         android:layout_height="@dimen/alto_imagen"
         android:layout_above="@id/idSuspender"
         android:layout_centerHorizontal="true"
-        android:layout_marginBottom="14dp">
+        android:layout_marginBottom="@dimen/margin_boton">
         <Button
             android:id="@+id/buttonAlarma"
             android:layout_width="@dimen/campos_width_medio"
@@ -178,7 +178,7 @@
         android:layout_height="@dimen/alto_imagen"
         android:layout_above="@id/idTerminar"
         android:layout_centerHorizontal="true"
-        android:layout_marginBottom="14dp">
+        android:layout_marginBottom="@dimen/margin_boton">
         <Button
             android:id="@+id/buttonSuspender"
             android:layout_width="@dimen/campos_width_medio"
@@ -204,7 +204,7 @@
         android:layout_height="@dimen/alto_imagen"
         android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true"
-        android:layout_marginBottom="14dp">
+        android:layout_marginBottom="@dimen/margin_boton">
         <Button
             android:id="@+id/buttonTerminar"
             android:layout_width="@dimen/campos_width_medio"

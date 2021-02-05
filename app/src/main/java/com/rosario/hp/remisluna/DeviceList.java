@@ -46,7 +46,7 @@ public class DeviceList extends ListActivity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        setTitle("Bluetooth Devices");
+        setTitle("Lista de Impresoras");
 
         try {
             if (initDevicesList() != 0) {

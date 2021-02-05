@@ -6,7 +6,8 @@
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
-    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.INTERNET" />
+
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -14,6 +15,11 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.Remisluna">
+
+        <uses-library
+            android:name="org.apache.http.legacy"
+            android:required="false" />
+
         <activity android:name=".SplashScreenActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -21,42 +27,46 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity
-            android:name=".Main_Login">
+        <activity android:name=".Main_Login">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".SplashScreenActivity" />
         </activity>
-        <activity
-            android:name=".MainActivity">
+        <activity android:name=".MainActivity">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".SplashScreenActivity" />
         </activity>
-        <activity
-            android:name=".MainViaje">
+        <activity android:name=".MainViaje">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".MainActivity" />
         </activity>
-        <activity
-            android:name=".turnos_activity">
+        <activity android:name=".ListaBluetoohtActivity">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".MainActivity" />
         </activity>
-        <activity
-            android:name=".MainTurno">
+        <activity android:name=".turnos_activity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".MainActivity" />
+        </activity>
+        <activity android:name=".MainTurno">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".turnos_activity" />
         </activity>
-        <activity
-            android:name=".DeviceList">
+        <activity android:name=".DeviceList">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".MainViaje" />
         </activity>
+
+        <service
+            android:name=".Impresion"
+            android:enabled="true"
+            android:exported="true"></service>
     </application>
 
 </manifest>
