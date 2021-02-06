@@ -8,6 +8,7 @@ import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.os.Binder;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
 import android.util.Log;
@@ -29,6 +30,14 @@ public class Impresion extends Service {
     private BluetoothDevice dispositivoBluetooth;
     private BluetoothAdapter bluetoothAdapter;
     private static final String TAG_DEBUG = "impresion";
+    private final IBinder binder = new LocalBinder();
+
+    public class LocalBinder extends Binder {
+        public Impresion getService() {
+            // Return this instance of LocalService so clients can call public methods
+            return Impresion.this;
+        }
+    }
 
     public InputStream getInputStream() {
         return inputStream;
@@ -43,7 +52,7 @@ public class Impresion extends Service {
     }
 
     public IBinder onBind(Intent intent) {
-        return null;
+        return binder;
     }
 
     public void onCreate(){

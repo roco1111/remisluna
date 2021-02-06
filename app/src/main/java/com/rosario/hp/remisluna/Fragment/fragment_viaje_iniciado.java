@@ -1,12 +1,15 @@
 package com.rosario.hp.remisluna.Fragment;
 
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.location.Location;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -75,6 +78,40 @@ public class fragment_viaje_iniciado extends Fragment {
     private static OutputStream outputStream;
     private Impresion impresion;
     byte FONT_TYPE;
+    boolean mBound = false;
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        // Bind to LocalService
+        Intent intent = new Intent(getActivity(), Impresion.class);
+        getActivity().bindService(intent, connection, Context.BIND_AUTO_CREATE);
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        getActivity().unbindService(connection);
+        mBound = false;
+    }
+
+    /** Defines callbacks for service binding, passed to bindService() */
+    private ServiceConnection connection = new ServiceConnection() {
+
+        @Override
+        public void onServiceConnected(ComponentName className,
+                                       IBinder service) {
+            // We've bound to LocalService, cast the IBinder and get LocalService instance
+            Impresion.LocalBinder binder = (Impresion.LocalBinder) service;
+            impresion = binder.getService();
+            mBound = true;
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName arg0) {
+            mBound = false;
+        }
+    };
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -90,9 +127,6 @@ public class fragment_viaje_iniciado extends Fragment {
         suspender = v.findViewById(R.id.buttonSuspender);
         alarma = v.findViewById(R.id.buttonAlarma);
 
-        impresion = new Impresion();
-
-        conectar_impresora();
 
         SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getContext());
         ls_id_conductor     = settings.getString("id","");
@@ -101,8 +135,10 @@ public class fragment_viaje_iniciado extends Fragment {
         this.terminar.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
-                cargarDatosVehiculo(getContext());
+                if (!mBound) {
+                    getActivity().startService(new Intent(getActivity(), Impresion.class));
+                } else{
+                cargarDatosVehiculo(getContext());}
             }
         });
 
@@ -125,10 +161,6 @@ public class fragment_viaje_iniciado extends Fragment {
         return v;
     }
 
-    protected void conectar_impresora(){
-        outputStream = impresion.getOutputStream();
-
-    }
 
     public void cargarDatos(final Context context) {
 
@@ -707,77 +739,72 @@ public class fragment_viaje_iniciado extends Fragment {
     }
 
     protected void printTicket() {
-        btsocket = impresion.getbluetoothSocket();
-        if(btsocket == null){
-            getActivity().startService(new Intent(getActivity(), Impresion.class));
-        }
-        else{
-            outputStream = impresion.getOutputStream();
 
-            //print command
+        outputStream = impresion.getOutputStream();
+
+        //print command
+        try {
             try {
-                try {
-                    Thread.sleep(1000);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-
-                byte[] printformat = { 0x1B, 0*21, FONT_TYPE };
-                //outputStream.write(printformat);
-
-                //print title
-                printUnicode();
-                //print normal text
-                printCustom (getResources().getString(R.string.empresa),2,1);
-                printNewLine();
-                printPhoto(R.drawable.remisluna_logo_impresion);
-                printNewLine();
-                printCustom (getResources().getString(R.string.telefono),0,1);
-
-                printNewLine();
-                printUnicode();
-                printNewLine();
-                printText(getResources().getString(R.string.recibo)); // total 32 char in a single line
-                printNewLine();
-                printText(fecha);//fecha
-                printNewLine();
-                printCustom ("Chofer: " + chofer,0,0);
-                printNewLine();
-                printNewLine();
-                printCustom ("SALIDA  " + hora_inicio,0,0);
-                printNewLine();
-                printCustom ("DESDE  " + dato_salida.getText().toString(),0,0);
-                printNewLine();
-                printText("HASTA  " + destino.getText().toString());
-                printNewLine();
-                printCustom ("LLEGADA  " + hora_fin,0,0);
-                printNewLine();
-                printCustom ("RECORRIDO  " + String.format(Locale.GERMANY,"%.2f",Double.parseDouble(distancia)),0,0);
-                printNewLine();
-                printNewLine();
-
-                printCustom ("TARIFA AL  " + fecha_tarifa,0,0);
-                printNewLine();
-                printCustom ("VIAJE  " + String.format(Locale.GERMANY,"%.2f",Double.parseDouble(precio)),0,0);
-                printNewLine();
-                printCustom ("ESPERA  ",0,0);
-                printNewLine();
-                printNewLine();
-
-                printCustom ("TOTAL:  " + String.format(Locale.GERMANY,"%.2f",Double.parseDouble(precio)),2,0);
-                printNewLine();
-
-                //resetPrint(); //reset printer
-                printUnicode();
-                printNewLine();
-                printNewLine();
-
-                outputStream.flush();
-                Intent intent2 = new Intent(getContext(), MainViaje.class);
-                getContext().startActivity(intent2);
-            } catch (IOException e) {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
                 e.printStackTrace();
             }
+
+            byte[] printformat = { 0x1B, 0*21, FONT_TYPE };
+            //outputStream.write(printformat);
+
+            //print title
+            printUnicode();
+            //print normal text
+            printCustom (getResources().getString(R.string.empresa),2,1);
+            printNewLine();
+            printPhoto(R.drawable.remisluna_logo_impresion);
+            printNewLine();
+            printCustom (getResources().getString(R.string.telefono),0,1);
+
+            printNewLine();
+            printUnicode();
+            printNewLine();
+            printText(getResources().getString(R.string.recibo)); // total 32 char in a single line
+            printNewLine();
+            printText(fecha);//fecha
+            printNewLine();
+            printCustom ("Chofer: " + chofer,0,0);
+            printNewLine();
+            printNewLine();
+            printCustom ("SALIDA  " + hora_inicio,0,0);
+            printNewLine();
+            printCustom ("DESDE  " + dato_salida.getText().toString(),0,0);
+            printNewLine();
+            printText("HASTA  " + destino.getText().toString());
+            printNewLine();
+            printCustom ("LLEGADA  " + hora_fin,0,0);
+            printNewLine();
+            printCustom ("RECORRIDO  " + String.format(Locale.GERMANY,"%.2f",Double.parseDouble(distancia)),0,0);
+            printNewLine();
+            printNewLine();
+
+            printCustom ("TARIFA AL  " + fecha_tarifa,0,0);
+            printNewLine();
+            printCustom ("VIAJE  " + String.format(Locale.GERMANY,"%.2f",Double.parseDouble(precio)),0,0);
+            printNewLine();
+            printCustom ("ESPERA  ",0,0);
+            printNewLine();
+            printNewLine();
+
+            printCustom ("TOTAL:  " + String.format(Locale.GERMANY,"%.2f",Double.parseDouble(precio)),2,0);
+            printNewLine();
+
+            //resetPrint(); //reset printer
+            printUnicode();
+            printNewLine();
+            printNewLine();
+
+            outputStream.flush();
+            Intent intent2 = new Intent(getContext(), MainViaje.class);
+            getContext().startActivity(intent2);
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
