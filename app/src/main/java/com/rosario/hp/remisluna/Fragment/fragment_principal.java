@@ -3,12 +3,15 @@ package com.rosario.hp.remisluna.Fragment;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -68,15 +71,46 @@ public class fragment_principal extends Fragment {
     private String fecha;
     private String hora_inicio;
     private ArrayList<viaje> viajes = new ArrayList<>();
-    private static BluetoothSocket btsocket;
     private static OutputStream outputStream;
     byte FONT_TYPE;
-    private static final int REQUEST_DISPOSITIVO = 425;
-    private BluetoothSocket bluetoothSocket;
     private TextView txtLabel;
-    private volatile boolean pararLectura;
-    private InputStream inputStream;
     private Impresion impresion;
+    boolean mBound = false;
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        // Bind to LocalService
+        Intent intent = new Intent(getActivity(), Impresion.class);
+        getActivity().bindService(intent, connection, Context.BIND_AUTO_CREATE);
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        getActivity().unbindService(connection);
+        mBound = false;
+    }
+
+    /** Defines callbacks for service binding, passed to bindService() */
+    private ServiceConnection connection = new ServiceConnection() {
+
+        @Override
+        public void onServiceConnected(ComponentName className,
+                                       IBinder service) {
+            // We've bound to LocalService, cast the IBinder and get LocalService instance
+            Impresion.LocalBinder binder = (Impresion.LocalBinder) service;
+            impresion = binder.getService();
+            if(impresion.getbluetoothSocket() != null){
+                mBound = true;
+            }
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName arg0) {
+            mBound = false;
+        }
+    };
 
 
     @Override
@@ -112,7 +146,11 @@ public class fragment_principal extends Fragment {
         this.turno.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                cerrar_turno();
+                if (!mBound) {
+                    getActivity().startService(new Intent(getActivity(), Impresion.class));
+                } else {
+                    cerrar_turno();
+                }
             }
         });
 
@@ -241,12 +279,13 @@ public class fragment_principal extends Fragment {
         try {
             // Obtener atributo "mensaje"
             String mensaje = response.getString("estado");
+            viajes.clear();
             switch (mensaje) {
                 case "1":
                     // Obtener objeto "cliente"
                     JSONArray mensaje1 = response.getJSONArray("viajes");
 
-                    viajes.clear();
+
 
                     for(int i = 0; i < mensaje1.length(); i++) {
                         JSONObject object = mensaje1.getJSONObject(i);
@@ -266,19 +305,10 @@ public class fragment_principal extends Fragment {
                         viajes.add(via);
                     }
 
-                    ticket_turno(viajes);
-
-
-                case "2":
-                    Toast.makeText(
-                            getContext(),
-                            mensaje,
-                            Toast.LENGTH_LONG).show();
-
                     break;
 
             }
-
+            ticket_turno(viajes);
 
         } catch (JSONException e) {
             e.printStackTrace();
@@ -357,80 +387,71 @@ public class fragment_principal extends Fragment {
 
 
     protected void ticket_turno( ArrayList<viaje> viajes) {
-        btsocket = impresion.getbluetoothSocket();
-        if(btsocket == null){
-            getActivity().startService(new Intent(getActivity(), Impresion.class));
-        }
-        else {
-            outputStream = impresion.getOutputStream();
 
-            //print command
+        outputStream = impresion.getOutputStream();
+
+        //print command
+        try {
             try {
-                try {
-                    Thread.sleep(1000);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-                outputStream = btsocket.getOutputStream();
-
-                byte[] printformat = {0x1B, 0 * 21, FONT_TYPE};
-                //outputStream.write(printformat);
-
-                //print title
-                printUnicode();
-                //print normal text
-                printCustom(getResources().getString(R.string.empresa), 2, 1);
-                printNewLine();
-                printPhoto(R.drawable.remisluna_logo_impresion);
-                printNewLine();
-                printCustom(getResources().getString(R.string.telefono), 0, 1);
-
-                printNewLine();
-                printUnicode();
-                printNewLine();
-                printText(getResources().getString(R.string.ticket_turno)); // total 32 char in a single line
-
-                printNewLine();
-                printText(fecha);//fecha
-                printText(" - ");
-                printText(hora_inicio);//fecha
-                printNewLine();
-                printNewLine();
-
-                String id;
-                String importe;
-
-                for (viaje Viaje : viajes) {
-                    printNewLine();
-                    id = Viaje.getId();
-                    printCustom("VIAJE " + id, 1, 0);
-
-                    importe = Viaje.getImporte();
-                    printText("TOTAL:  " + importe);
-                    printNewLine();
-                }
-                printNewLine();
-                printText("K.TOTAL:  ");
-                printText(kms);
-                printNewLine();
-                printNewLine();
-                printText("RECAUDACION: ");
-                printText(recaudacion);
-                printNewLine();
-                printNewLine();
-                //resetPrint(); //reset printer
-                printUnicode();
-                printNewLine();
-                printNewLine();
-
-                outputStream.flush();
-                Intent intent2 = new Intent(getContext(), MainActivity.class);
-                getContext().startActivity(intent2);
-            } catch (IOException e) {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
                 e.printStackTrace();
             }
 
+            byte[] printformat = {0x1B, 0 * 21, FONT_TYPE};
+            //outputStream.write(printformat);
+
+            //print title
+            printUnicode();
+            //print normal text
+            printCustom(getResources().getString(R.string.empresa), 2, 1);
+            printNewLine();
+            printPhoto(R.drawable.remisluna_logo_impresion);
+            printCustom(getResources().getString(R.string.telefono), 1, 1);
+
+            printNewLine();
+            printUnicode();
+            printNewLine();
+            printText(getResources().getString(R.string.ticket_turno)); // total 32 char in a single line
+
+            printNewLine();
+            printText(fecha);//fecha
+            printText(" - ");
+            printText(hora_inicio);//fecha
+            printNewLine();
+
+            String id;
+            String importe;
+
+            for (viaje Viaje : viajes) {
+                id = Viaje.getId();
+                printCustom("VIAJE " + id, 1, 0);
+
+                importe = Viaje.getImporte();
+                printText("TOTAL:  " + importe);
+                printNewLine();
+            }
+            printNewLine();
+            printText("K.TOTAL:  ");
+            printText(kms);
+            printNewLine();
+            printNewLine();
+            printText("RECAUDACION: ");
+            printText(recaudacion);
+            printNewLine();
+            printNewLine();
+            //resetPrint(); //reset printer
+            printUnicode();
+            printNewLine();
+            printNewLine();
+
+            outputStream.flush();
+            Intent intent2 = new Intent(getContext(), MainActivity.class);
+            getContext().startActivity(intent2);
+        } catch (IOException e) {
+            e.printStackTrace();
         }
+
 
     }
     //print custom

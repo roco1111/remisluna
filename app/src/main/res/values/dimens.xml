@@ -20,6 +20,7 @@
     <dimen name="perfil_image_size">120dp</dimen>
     <dimen name="imagen_regla">100dp</dimen>
     <dimen name="icono_chico">20dp</dimen>
+    <dimen name="margin_top_item_grande">12dp</dimen>
     <dimen name="margin_top_item">4dp</dimen>
     <dimen name="item_horizontal_margin">6dp</dimen>
     <dimen name="item_vertical_margin">4dp</dimen>

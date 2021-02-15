@@ -43,6 +43,7 @@
     <string name="suspender">Suspender</string>
     <string name="terminar">Terminar</string>
     <string name="iniciar">Iniciar Viaje</string>
+    <string name="motivo">Motivo</string>
 
     <string name="fecha">Fecha</string>
     <string name="hora_inicio">Inicio</string>
@@ -51,6 +52,7 @@
     <string name="recaudacion">Recaudación</string>
     <string name="ver_viaje">Ver Viajes</string>
     <string name="ticket">Emitir Ticket</string>
-
+    <string name="importe">Importe</string>
+    <string name="suspendido">SUSPENDIDO</string>
 
 </resources>

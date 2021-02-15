@@ -74,7 +74,6 @@ public class fragment_viaje_iniciado extends Fragment {
     private String l_longitud_destino;
     private Double latitud_salida;
     private Double longitud_salida;
-    private static BluetoothSocket btsocket;
     private static OutputStream outputStream;
     private Impresion impresion;
     byte FONT_TYPE;
@@ -104,7 +103,9 @@ public class fragment_viaje_iniciado extends Fragment {
             // We've bound to LocalService, cast the IBinder and get LocalService instance
             Impresion.LocalBinder binder = (Impresion.LocalBinder) service;
             impresion = binder.getService();
+            if(impresion.getbluetoothSocket() != null){
             mBound = true;
+            }
         }
 
         @Override
@@ -750,8 +751,8 @@ public class fragment_viaje_iniciado extends Fragment {
                 e.printStackTrace();
             }
 
-            byte[] printformat = { 0x1B, 0*21, FONT_TYPE };
-            //outputStream.write(printformat);
+            byte[] printformat = { 0x1B,0x21,0x08 };
+            outputStream.write(printformat);
 
             //print title
             printUnicode();
@@ -759,47 +760,36 @@ public class fragment_viaje_iniciado extends Fragment {
             printCustom (getResources().getString(R.string.empresa),2,1);
             printNewLine();
             printPhoto(R.drawable.remisluna_logo_impresion);
-            printNewLine();
-            printCustom (getResources().getString(R.string.telefono),0,1);
+            printCustom (getResources().getString(R.string.telefono),1,1);
 
-            printNewLine();
-            printUnicode();
             printNewLine();
             printText(getResources().getString(R.string.recibo)); // total 32 char in a single line
             printNewLine();
             printText(fecha);//fecha
             printNewLine();
-            printCustom ("Chofer: " + chofer,0,0);
+            printCustom ("Chofer: " + chofer,1,0);
             printNewLine();
+            printText("SALIDA  " + hora_inicio);
             printNewLine();
-            printCustom ("SALIDA  " + hora_inicio,0,0);
-            printNewLine();
-            printCustom ("DESDE  " + dato_salida.getText().toString(),0,0);
+            printText("DESDE  " + dato_salida.getText().toString());
             printNewLine();
             printText("HASTA  " + destino.getText().toString());
             printNewLine();
-            printCustom ("LLEGADA  " + hora_fin,0,0);
+            printText("LLEGADA  " + hora_fin);
             printNewLine();
-            printCustom ("RECORRIDO  " + String.format(Locale.GERMANY,"%.2f",Double.parseDouble(distancia)),0,0);
-            printNewLine();
-            printNewLine();
-
-            printCustom ("TARIFA AL  " + fecha_tarifa,0,0);
-            printNewLine();
-            printCustom ("VIAJE  " + String.format(Locale.GERMANY,"%.2f",Double.parseDouble(precio)),0,0);
-            printNewLine();
-            printCustom ("ESPERA  ",0,0);
+            printText("RECORRIDO  " + String.format(Locale.GERMANY,"%.2f",Double.parseDouble(distancia)));
             printNewLine();
             printNewLine();
-
+            printText("TARIFA AL  " + fecha_tarifa);
+            printNewLine();
+            printText("VIAJE  " + String.format(Locale.GERMANY,"%.2f",Double.parseDouble(precio)));
+            printNewLine();
+            printText("ESPERA  ");
+            printNewLine();
+            printNewLine();
             printCustom ("TOTAL:  " + String.format(Locale.GERMANY,"%.2f",Double.parseDouble(precio)),2,0);
             printNewLine();
-
-            //resetPrint(); //reset printer
-            printUnicode();
             printNewLine();
-            printNewLine();
-
             outputStream.flush();
             Intent intent2 = new Intent(getContext(), MainViaje.class);
             getContext().startActivity(intent2);

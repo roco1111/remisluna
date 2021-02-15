@@ -78,8 +78,6 @@ public class turnoAdapter extends RecyclerView.Adapter<turnoAdapter.HolderTurno>
 
         public void onClick(View v) {
 
-
-
             listener.onItemClick(v, getAdapterPosition());
             Intent intent = new Intent(v.getContext(), MainTurno.class);
             v.getContext().startActivity(intent);

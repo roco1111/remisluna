@@ -15,7 +15,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.RelativeLayout;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -28,13 +28,12 @@ import com.android.volley.error.VolleyError;
 import com.android.volley.request.JsonObjectRequest;
 import com.rosario.hp.remisluna.Entidades.viaje;
 import com.rosario.hp.remisluna.Impresion;
-import com.rosario.hp.remisluna.MainActivity;
+import com.rosario.hp.remisluna.MainViaje;
 import com.rosario.hp.remisluna.R;
 import com.rosario.hp.remisluna.include.Constantes;
 import com.rosario.hp.remisluna.include.PrinterCommands;
 import com.rosario.hp.remisluna.include.Utils;
 import com.rosario.hp.remisluna.include.VolleySingleton;
-import com.rosario.hp.remisluna.turnos_activity;
 import com.rosario.hp.remisluna.viajes_activity;
 
 import org.json.JSONArray;
@@ -45,20 +44,29 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+import java.util.Locale;
 
-public class fragment_turno extends Fragment{
+public class fragment_datos_viaje extends Fragment{
 
     private JsonObjectRequest myRequest;
-    private static final String TAG = fragment_turno.class.getSimpleName();
+    private static final String TAG = fragment_datos_viaje.class.getSimpleName();
     private TextView fecha;
-    private TextView hora_inicio;
-    TextView hora_fin;
-    TextView kms;
-    TextView recaudacion;
+    private TextView nro_viaje;
+    private TextView solicitante;
+    private TextView documento;
+    private TextView salida;
+    private TextView destino;
+    private TextView hora_salida;
+    private TextView hora_destino;
+    private TextView importe;
+    private TextView motivo;
+    private String chofer;
+    private String distancia;
+    private String fecha_tarifa;
+    private LinearLayout suspension;
     private Button imprimir;
-    private Button viajes;
 
-    String ls_id_turno;
+    private String ls_id_viaje;
     private Impresion impresion;
     boolean mBound = false;
     private ArrayList<viaje> viaje = new ArrayList<>();
@@ -103,20 +111,25 @@ public class fragment_turno extends Fragment{
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              final Bundle savedInstanceState) {
-        View v = inflater.inflate(R.layout.activity_turno, container, false);
+        View v = inflater.inflate(R.layout.activity_datos_viaje, container, false);
 
 
         fecha = v.findViewById(R.id.dato_fecha);
-        hora_inicio = v.findViewById(R.id.dato_inicio);
-        hora_fin = v.findViewById(R.id.dato_fin);
-        kms = v.findViewById(R.id.dato_kms);
-        recaudacion = v.findViewById(R.id.dato_recaudacion);
+        nro_viaje = v.findViewById(R.id.dato_viaje);
+        solicitante = v.findViewById(R.id.dato_solicitante);
+        documento = v.findViewById(R.id.dato_documento);
+        salida = v.findViewById(R.id.dato_salida);
+        destino = v.findViewById(R.id.dato_destino);
+        hora_salida = v.findViewById(R.id.hora_salida);
+        hora_destino = v.findViewById(R.id.hora_destino);
+        importe = v.findViewById(R.id.dato_importe);
+        motivo = v.findViewById(R.id.dato_motivo);
         impresion = new Impresion();
         imprimir = v.findViewById(R.id.buttonTicket);
-        viajes = v.findViewById(R.id.buttonViaje);
+        suspension = v.findViewById(R.id.id_suspension);
 
         SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getContext());
-        ls_id_turno     = settings.getString("id_turno","");
+        ls_id_viaje     = settings.getString("id_viaje","");
         cargarDatos(getContext());
 
         this.imprimir.setOnClickListener(new View.OnClickListener() {
@@ -125,18 +138,11 @@ public class fragment_turno extends Fragment{
                 if (!mBound) {
                     getActivity().startService(new Intent(getActivity(), Impresion.class));
                 } else {
-                    datos_viajes_turno(getContext());
+                    printTicket();
                 }
             }
         });
 
-        this.viajes.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent2 = new Intent(getContext(), viajes_activity.class);
-                getContext().startActivity(intent2);
-            }
-        });
 
         return v;
     }
@@ -144,7 +150,7 @@ public class fragment_turno extends Fragment{
     public void cargarDatos(final Context context) {
 
         // Añadir parámetro a la URL del web service
-        String newURL = Constantes.GET_TURNO_BY_ID + "?id=" + ls_id_turno;
+        String newURL = Constantes.GET_VIAJE_BY_ID + "?id=" + ls_id_viaje;
         Log.d(TAG,newURL);
 
         // Realizar petición GET_BY_ID
@@ -185,19 +191,30 @@ public class fragment_turno extends Fragment{
             switch (mensaje) {
                 case "1":
                     // Obtener objeto "cliente"
-                    JSONArray mensaje1 = response.getJSONArray("turno");
+                    JSONArray mensaje1 = response.getJSONArray("viaje");
 
                     JSONObject object = mensaje1.getJSONObject(0);
                     //Parsear objeto
 
                     fecha.setText(object.getString("fecha"));
-                    hora_inicio.setText(object.getString("hora_inicio"));
-                    if(!object.getString("hora_fin").equals("null")){
-                    hora_fin.setText(object.getString("hora_fin"));}
-                    if(!object.getString("distancia").equals("null")){
-                    kms.setText(object.getString("distancia"));}
-                    if(!object.getString("dato_recaudacion").equals("null")){
-                    recaudacion.setText(object.getString("dato_recaudacion"));}
+                    nro_viaje.setText(object.getString("id"));
+                    solicitante.setText(object.getString("solicitante"));
+                    documento.setText(object.getString("nro_documento"));
+                    salida.setText(object.getString("salida"));
+                    destino.setText(object.getString("destino"));
+                    hora_salida.setText(object.getString("hora_inicio"));
+                    hora_destino.setText(object.getString("hora_fin"));
+                    importe.setText(object.getString("importe"));
+                    motivo.setText(object.getString("motivo"));
+                    chofer = object.getString("chofer");
+                    distancia = object.getString("distancia");
+                    fecha_tarifa = object.getString("fecha_tarifa");
+                    if(object.getString("estado").equals("4")){
+                        suspension.setVisibility(View.VISIBLE);
+                    }else{
+                        suspension.setVisibility(View.INVISIBLE);
+                    }
+
                 case "2":
                     Toast.makeText(
                             getContext(),
@@ -215,85 +232,8 @@ public class fragment_turno extends Fragment{
 
     }
 
-    public void datos_viajes_turno(final Context context) {
 
-        // Añadir parámetro a la URL del web service
-        String newURL = Constantes.GET_VIAJES_TURNO + "?turno=" + ls_id_turno;
-        Log.d(TAG,newURL);
-
-        // Realizar petición GET_BY_ID
-        VolleySingleton.getInstance(context).addToRequestQueue(
-                myRequest = new JsonObjectRequest(
-                        Request.Method.POST,
-                        newURL,
-                        null,
-                        new Response.Listener<JSONObject>() {
-
-                            @Override
-                            public void onResponse(JSONObject response) {
-                                // Procesar respuesta Json
-                                procesarRespuestaViajes(response, context);
-                            }
-                        },
-                        new Response.ErrorListener() {
-                            @Override
-                            public void onErrorResponse(VolleyError error) {
-                                Log.d(TAG, "Error Volley turno: " + error.getMessage());
-
-                            }
-                        }
-                )
-        );
-        myRequest.setRetryPolicy(new DefaultRetryPolicy(
-                50000,
-                5,//DefaultRetryPolicy.DEFAULT_MAX_RETRIES
-                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
-
-    }
-
-    private void procesarRespuestaViajes(JSONObject response, Context context) {
-
-        try {
-            // Obtener atributo "mensaje"
-            String mensaje = response.getString("estado");
-            viaje.clear();
-            switch (mensaje) {
-                case "1":
-                    // Obtener objeto "cliente"
-                    JSONArray mensaje1 = response.getJSONArray("viajes");
-
-
-
-                    for(int i = 0; i < mensaje1.length(); i++) {
-                        JSONObject object = mensaje1.getJSONObject(i);
-
-                        viaje via = new viaje();
-
-                        via.setId(String.valueOf(i));
-
-                        String hora = object.getString("hora_inicio");
-
-                        via.setHora_inicio(hora);
-
-                        String importe = object.getString("importe");
-
-                        via.setImporte(importe);
-
-                        viaje.add(via);
-                    }
-
-                    break;
-
-            }
-            ticket_turno(viaje);
-
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-
-    }
-
-    protected void ticket_turno( ArrayList<viaje> viajes) {
+    protected void printTicket() {
 
         outputStream = impresion.getOutputStream();
 
@@ -305,60 +245,51 @@ public class fragment_turno extends Fragment{
                 e.printStackTrace();
             }
 
-            byte[] printformat = {0x1B, 0 * 21, FONT_TYPE};
-            //outputStream.write(printformat);
+            byte[] printformat = { 0x1B,0x21,0x08 };
+            outputStream.write(printformat);
 
             //print title
             printUnicode();
             //print normal text
-            printCustom(getResources().getString(R.string.empresa), 2, 1);
+            printCustom (getResources().getString(R.string.empresa),2,1);
             printNewLine();
             printPhoto(R.drawable.remisluna_logo_impresion);
-            printCustom(getResources().getString(R.string.telefono), 1, 1);
+            printCustom (getResources().getString(R.string.telefono),1,1);
 
             printNewLine();
-            printUnicode();
-            printNewLine();
-            printText(getResources().getString(R.string.ticket_turno)); // total 32 char in a single line
-
+            printText(getResources().getString(R.string.recibo)); // total 32 char in a single line
             printNewLine();
             printText(fecha.getText().toString());//fecha
-            printText(" - ");
-            printText(hora_inicio.getText().toString());//fecha
             printNewLine();
-
-            String id;
-            String importe;
-
-            for (viaje Viaje : viajes) {
-                id = Viaje.getId();
-                printCustom("VIAJE " + id, 1, 0);
-
-                importe = Viaje.getImporte();
-                printText("TOTAL:  " + importe);
-                printNewLine();
-            }
+            printCustom ("Chofer: " + chofer,1,0);
             printNewLine();
-            printText("K.TOTAL:  ");
-            printText(kms.getText().toString());
+            printText("SALIDA  " + hora_salida.getText());
+            printNewLine();
+            printText("DESDE  " + salida.getText().toString());
+            printNewLine();
+            printText("HASTA  " + destino.getText().toString());
+            printNewLine();
+            printText("LLEGADA  " + hora_destino.getText());
+            printNewLine();
+            printText("RECORRIDO  " + String.format(Locale.GERMANY,"%.2f",Double.parseDouble(distancia)));
             printNewLine();
             printNewLine();
-            printText("RECAUDACION: ");
-            printText(recaudacion.getText().toString());
+            printText("TARIFA AL  " + fecha_tarifa);
+            printNewLine();
+            printText("VIAJE  " + String.format(Locale.GERMANY,"%.2f",Double.parseDouble(importe.getText().toString())));
+            printNewLine();
+            printText("ESPERA  ");
             printNewLine();
             printNewLine();
-            //resetPrint(); //reset printer
-            printUnicode();
+            printCustom ("TOTAL:  " + String.format(Locale.GERMANY,"%.2f",Double.parseDouble(importe.getText().toString())),2,0);
             printNewLine();
             printNewLine();
-
             outputStream.flush();
-            
+            Intent intent2 = new Intent(getContext(), MainViaje.class);
+            getContext().startActivity(intent2);
         } catch (IOException e) {
             e.printStackTrace();
         }
-
-
     }
     //print custom
     private void printCustom(String msg, int size, int align) {

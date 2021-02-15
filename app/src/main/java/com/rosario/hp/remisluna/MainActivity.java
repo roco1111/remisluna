@@ -49,6 +49,7 @@ import java.util.UUID;
 public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = MainActivity.class.getSimpleName();
+
     String ls_id_conductor;
     private JsonObjectRequest myRequest;
 
@@ -114,6 +115,19 @@ public class MainActivity extends AppCompatActivity {
             Fragment fragment = null;
             switch (mensaje) {
                 case "1":
+                    JSONArray mensaje1 = response.getJSONArray("conductor");
+                    JSONObject object = mensaje1.getJSONObject(0);
+
+                    SharedPreferences settings1 = PreferenceManager.getDefaultSharedPreferences(context);
+
+                    SharedPreferences.Editor editor = settings1.edit();
+
+
+                    editor.putString("id_turno_chofer",object.getString("id"));
+                    editor.apply();
+
+                    editor.commit();
+
                     cargarViajes(context);
 
                     break;

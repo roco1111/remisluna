@@ -29,6 +29,7 @@ import com.rosario.hp.remisluna.MainActivity;
 import com.rosario.hp.remisluna.R;
 import com.rosario.hp.remisluna.include.Constantes;
 import com.rosario.hp.remisluna.include.VolleySingleton;
+import com.rosario.hp.remisluna.turnos_activity;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -44,6 +45,7 @@ public class fragment_principal_previa extends Fragment {
 
     private ImageButton turno;
     private ImageButton impresora;
+    private ImageButton historial;
     private String ls_id_conductor;
     private static final String TAG = fragment_principal_previa.class.getSimpleName();
     private TextView txtLabel;
@@ -59,6 +61,8 @@ public class fragment_principal_previa extends Fragment {
         turno = v.findViewById(R.id.imageButtonTurno);
         this.impresora = v.findViewById(R.id.imageButtonImpresora);
         this.txtLabel = v.findViewById(R.id.referencia);
+        this.turno = v.findViewById(R.id.imageButtonTurno);
+        this.historial = v.findViewById(R.id.imageButtonHistorial);
         act = getActivity();
 
         SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getContext());
@@ -75,6 +79,13 @@ public class fragment_principal_previa extends Fragment {
             @Override
             public void onClick(View v) {
                 getActivity().startService(new Intent(getActivity(), Impresion.class));
+            }
+        });
+        this.historial.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent2 = new Intent(getContext(), turnos_activity.class);
+                getContext().startActivity(intent2);
             }
         });
 

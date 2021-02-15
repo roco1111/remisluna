@@ -53,6 +53,7 @@ public class MainViaje extends AppCompatActivity {
 
     private JsonObjectRequest myRequest;
     private static final String TAG = MainViaje.class.getSimpleName();
+    public static final String ACTION_NOTIFY_NEW_PROMO = "NOTIFY_NEW_PROMO";
     String ls_id_conductor;
     String ls_vehiculo;
     Impresion mService;
