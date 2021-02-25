@@ -12,16 +12,22 @@
     android:orientation="vertical">
 
     <LinearLayout
-        android:id="@+id/id_viaje"
+        android:id="@+id/id_datos_solicitante"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="@dimen/margin_top_menu2"
+        android:orientation="horizontal">
+
+    <LinearLayout
+        android:id="@+id/id_viaje"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:orientation="vertical">
         <TextView
             android:id="@+id/viaje"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/nro_viaje"
+            android:text="@string/nro_viaje2"
             android:textAlignment="center"
             android:textColor="@color/black"
             android:textSize="@dimen/tamanio_texto"
@@ -40,10 +46,9 @@
 
     <LinearLayout
         android:id="@+id/id_solicitante"
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@id/id_viaje"
-        android:layout_marginTop="@dimen/margin_top_menu2"
+        android:layout_marginStart="@dimen/margin_top_menu2"
         android:orientation="vertical">
         <TextView
             android:id="@+id/solicitante"
@@ -69,8 +74,7 @@
         android:id="@+id/id_documento"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@id/id_solicitante"
-        android:layout_marginTop="@dimen/margin_top_menu2"
+        android:layout_marginStart="@dimen/margin_top_menu2"
         android:orientation="vertical">
         <TextView
             android:id="@+id/documento"
@@ -91,13 +95,19 @@
             android:textColor="@color/black"
             android:textSize="@dimen/tamanio_texto" />
     </LinearLayout>
-
+    </LinearLayout>
     <LinearLayout
-        android:id="@+id/id_salida"
+        android:id="@+id/id_datos_viaje"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@id/id_documento"
         android:layout_marginTop="@dimen/margin_top_menu2"
+        android:layout_below="@id/id_datos_solicitante"
+        android:orientation="horizontal">
+    <LinearLayout
+        android:id="@+id/id_salida"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+
         android:orientation="vertical">
         <TextView
             android:id="@+id/salida"
@@ -121,10 +131,9 @@
 
     <LinearLayout
         android:id="@+id/id_destino"
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@id/id_salida"
-        android:layout_marginTop="@dimen/margin_top_menu2"
+        android:layout_marginStart="@dimen/margin_top_menu2"
         android:orientation="vertical">
         <TextView
             android:id="@+id/destino"
@@ -145,6 +154,37 @@
             android:textColor="@color/black"
             android:textSize="@dimen/tamanio_texto" />
     </LinearLayout>
+    </LinearLayout>
+
+    <RelativeLayout
+        android:id="@+id/id_numeros"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/margin_top"
+        android:layout_below="@id/id_datos_viaje"
+        android:orientation="vertical">
+        <TextView
+            android:id="@+id/kms"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/cero_distancia"
+            android:textAlignment="center"
+            android:layout_centerHorizontal="true"
+            android:textColor="@color/purple_700"
+            android:textSize="@dimen/tamanio_numero" />
+
+        <TextView
+            android:id="@+id/precio"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/cero_pesos"
+            android:layout_below="@id/kms"
+            android:textAlignment="center"
+            android:layout_marginTop="@dimen/margin_start"
+            android:layout_centerHorizontal="true"
+            android:textColor="@color/alarma"
+            android:textSize="@dimen/tamanio_numero" />
+    </RelativeLayout>
 
     <FrameLayout
         android:id="@+id/idAlarma"

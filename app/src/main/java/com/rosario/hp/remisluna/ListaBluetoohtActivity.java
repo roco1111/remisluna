@@ -12,6 +12,7 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.View;
+import android.widget.Switch;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -91,11 +92,36 @@ public class ListaBluetoohtActivity extends AppCompatActivity {
             editor.commit();
 
             startService(new Intent(getApplicationContext(), Impresion.class));
-            Intent intentMain = new Intent(getApplicationContext(), MainActivity.class);
-            intentMain.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
-            startActivity(intentMain);
-            finish();
+            onBackPressed();
         }
+    }
+
+    @Override
+    public void onBackPressed()  {
+
+        SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        String tipo;
+        tipo = settings.getString("tipo_ventana","");
+
+        Intent mainIntent = null;
+
+        switch (tipo) {
+            case "main":
+                mainIntent = new Intent().setClass(getApplicationContext(), MainActivity.class);
+                break;
+            case "viaje":
+                mainIntent = new Intent().setClass(getApplicationContext(), MainViaje.class);
+                break;
+            case "datos_viaje":
+                mainIntent = new Intent().setClass(getApplicationContext(), Main_datos_viaje.class);
+                break;
+            case "turno":
+                mainIntent = new Intent().setClass(getApplicationContext(), MainTurno.class);
+                break;
+        }
+        mainIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+        startActivity(mainIntent);
+        finish();
     }
 
     @Override

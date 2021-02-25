@@ -46,6 +46,8 @@ import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Locale;
 
+import static com.rosario.hp.remisluna.include.Utils.stringABytes;
+
 public class fragment_datos_viaje extends Fragment{
 
     private JsonObjectRequest myRequest;
@@ -63,6 +65,7 @@ public class fragment_datos_viaje extends Fragment{
     private String chofer;
     private String distancia;
     private String fecha_tarifa;
+    private String movil;
     private LinearLayout suspension;
     private Button imprimir;
 
@@ -136,6 +139,9 @@ public class fragment_datos_viaje extends Fragment{
             @Override
             public void onClick(View v) {
                 if (!mBound) {
+                    SharedPreferences.Editor editor = settings.edit();
+                    editor.putString("tipo_ventana","datos_viaje");
+                    editor.commit();
                     getActivity().startService(new Intent(getActivity(), Impresion.class));
                 } else {
                     printTicket();
@@ -209,6 +215,7 @@ public class fragment_datos_viaje extends Fragment{
                     chofer = object.getString("chofer");
                     distancia = object.getString("distancia");
                     fecha_tarifa = object.getString("fecha_tarifa");
+                    movil = object.getString("movil");
                     if(object.getString("estado").equals("4")){
                         suspension.setVisibility(View.VISIBLE);
                     }else{
@@ -255,13 +262,15 @@ public class fragment_datos_viaje extends Fragment{
             printNewLine();
             printPhoto(R.drawable.remisluna_logo_impresion);
             printCustom (getResources().getString(R.string.telefono),1,1);
-
             printNewLine();
             printText(getResources().getString(R.string.recibo)); // total 32 char in a single line
+            printNewLine();
+            printText(stringABytes(getResources().getString(R.string.servicio)));
             printNewLine();
             printText(fecha.getText().toString());//fecha
             printNewLine();
             printCustom ("Chofer: " + chofer,1,0);
+            printCustom ("Nro Remis: " + movil,1,0);
             printNewLine();
             printText("SALIDA  " + hora_salida.getText());
             printNewLine();
@@ -271,22 +280,21 @@ public class fragment_datos_viaje extends Fragment{
             printNewLine();
             printText("LLEGADA  " + hora_destino.getText());
             printNewLine();
-            printText("RECORRIDO  " + String.format(Locale.GERMANY,"%.2f",Double.parseDouble(distancia)));
+            printText("RECORRIDO  " + String.format(Locale.GERMANY,"%.2f",Double.parseDouble(distancia)) + " Kms.");
             printNewLine();
             printNewLine();
             printText("TARIFA AL  " + fecha_tarifa);
             printNewLine();
-            printText("VIAJE  " + String.format(Locale.GERMANY,"%.2f",Double.parseDouble(importe.getText().toString())));
+            printText("VIAJE  " + '$' + String.format(Locale.GERMANY,"%.2f",Double.parseDouble(importe.getText().toString())));
             printNewLine();
             printText("ESPERA  ");
             printNewLine();
             printNewLine();
-            printCustom ("TOTAL:  " + String.format(Locale.GERMANY,"%.2f",Double.parseDouble(importe.getText().toString())),2,0);
+            printCustom ("TOTAL:  " + '$' + String.format(Locale.GERMANY,"%.2f",Double.parseDouble(importe.getText().toString())),2,0);
             printNewLine();
             printNewLine();
             outputStream.flush();
-            Intent intent2 = new Intent(getContext(), MainViaje.class);
-            getContext().startActivity(intent2);
+
         } catch (IOException e) {
             e.printStackTrace();
         }

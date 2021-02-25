@@ -20,6 +20,7 @@ public class Constantes {
     public static final String GET_TURNO = "https://" + IP + PUERTO_HOST + "/obtener_turno.php";
     public static final String GET_TURNO_BY_ID = "https://" + IP + PUERTO_HOST + "/obtener_un_turno.php";
     public static final String GET_TURNOS = "https://" + IP + PUERTO_HOST + "/obtener_turnos.php";
+    public static final String GET_TURNOS_RECAUDACION = "https://" + IP + PUERTO_HOST + "/obtener_turnos_recaudacion.php";
     public static final String GET_VIAJES_TURNO = "https://" + IP + PUERTO_HOST + "/obtener_viajes_turno.php";
     public static final String GET_VIAJE_BY_ID = "https://" + IP + PUERTO_HOST + "/obtener_un_viaje.php";
 

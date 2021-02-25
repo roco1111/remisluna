@@ -1,13 +1,17 @@
 package com.rosario.hp.remisluna.Fragment;
 
+import android.content.BroadcastReceiver;
 import android.content.ComponentName;
+
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.location.Location;
+import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
@@ -18,7 +22,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
-import android.bluetooth.BluetoothSocket;
+
 import androidx.fragment.app.Fragment;
 
 import com.android.volley.DefaultRetryPolicy;
@@ -26,10 +30,10 @@ import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.error.VolleyError;
 import com.android.volley.request.JsonObjectRequest;
-import com.rosario.hp.remisluna.DeviceList;
 import com.rosario.hp.remisluna.Impresion;
 import com.rosario.hp.remisluna.MainViaje;
 import com.rosario.hp.remisluna.R;
+import com.rosario.hp.remisluna.ServicioGeolocalizacion;
 import com.rosario.hp.remisluna.include.Constantes;
 import com.rosario.hp.remisluna.include.PrinterCommands;
 import com.rosario.hp.remisluna.include.Utils;
@@ -43,9 +47,12 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.text.DecimalFormat;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
+
+import static com.rosario.hp.remisluna.include.Utils.stringABytes;
 
 public class fragment_viaje_iniciado extends Fragment {
     private JsonObjectRequest myRequest;
@@ -56,6 +63,8 @@ public class fragment_viaje_iniciado extends Fragment {
     private TextView documento;
     private TextView dato_salida;
     private TextView destino;
+    private TextView kms;
+    private TextView importe;
     private String hora_inicio;
     private String hora_fin;
     private String fecha_tarifa;
@@ -65,6 +74,7 @@ public class fragment_viaje_iniciado extends Fragment {
     private String precio;
     private String id_vehiculo;
     private String id_turno;
+    private String movil;
     private Button terminar;
     private Button suspender;
     private Button alarma;
@@ -78,6 +88,19 @@ public class fragment_viaje_iniciado extends Fragment {
     private Impresion impresion;
     byte FONT_TYPE;
     boolean mBound = false;
+    private LocationManager mLocationManager;
+
+    @Override
+    public void onPause() {
+        getActivity().unregisterReceiver(onBroadcast);
+        super.onPause();
+    }
+
+    @Override
+    public void onResume() {
+        getActivity().registerReceiver(onBroadcast, new IntentFilter("key"));
+        super.onResume();
+    }
 
     @Override
     public void onStart() {
@@ -119,6 +142,9 @@ public class fragment_viaje_iniciado extends Fragment {
                              final Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.activity_viaje_iniciado, container, false);
 
+
+        mLocationManager = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
+
         id_viaje = v.findViewById(R.id.dato_viaje);
         solicitante = v.findViewById(R.id.dato_solicitante);
         documento = v.findViewById(R.id.dato_documento);
@@ -127,19 +153,26 @@ public class fragment_viaje_iniciado extends Fragment {
         terminar = v.findViewById(R.id.buttonTerminar);
         suspender = v.findViewById(R.id.buttonSuspender);
         alarma = v.findViewById(R.id.buttonAlarma);
-
+        kms = v.findViewById(R.id.kms);
+        importe = v.findViewById(R.id.precio);
 
         SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getContext());
         ls_id_conductor     = settings.getString("id","");
         id_turno            = settings.getString("id_turno_chofer","");
 
+
+
         this.terminar.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if (!mBound) {
+                    SharedPreferences.Editor editor = settings.edit();
+                    editor.putString("tipo_ventana","viaje");
+                    editor.commit();
                     getActivity().startService(new Intent(getActivity(), Impresion.class));
                 } else{
-                cargarDatosVehiculo(getContext());}
+                    getActivity().stopService(new Intent(getActivity(), ServicioGeolocalizacion.class));
+                    cargarDatosVehiculo(getContext());}
             }
         });
 
@@ -160,6 +193,38 @@ public class fragment_viaje_iniciado extends Fragment {
         cargarDatos(getContext());
 
         return v;
+    }
+
+    private BroadcastReceiver onBroadcast = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context ctxt, Intent i) {
+
+            //blanqueamos el texto de las coordenadas si esta el texto default
+            if (kms.getText().equals(getString(R.string.esperando))) {
+                kms.setText("");
+            }
+
+            String datos = i.getStringExtra("coordenadas");//obtenemos las coordenadas envidas del servicioGeolocalizaci—n
+            String[] tokens = datos.split(";");//separamos por tocken
+            kms.setText( tokens[2]);
+
+            Double ficha = Double.parseDouble(importe_ficha);
+            Double distancia = Double.parseDouble(kms.getText().toString());
+
+            Double precio = ficha * distancia;
+
+            precio = Double.parseDouble(getTwoDecimals(precio));
+
+            importe.setText("$ " + String.format(Locale.GERMANY,"%.2f",precio));
+
+
+            //kms.append("\n");//agregamos salto de linea
+        }
+    };
+
+    private static String getTwoDecimals(double value){
+        DecimalFormat df = new DecimalFormat("0.00");
+        return df.format(value);
     }
 
 
@@ -223,6 +288,7 @@ public class fragment_viaje_iniciado extends Fragment {
                     importe_ficha = object.getString("importe_ficha");
                     latitud_salida = Double.parseDouble(object.getString("latitud_salida"));
                     longitud_salida = Double.parseDouble(object.getString("longitud_salida"));
+                    movil = object.getString("movil");
 
                     break;
 
@@ -765,9 +831,12 @@ public class fragment_viaje_iniciado extends Fragment {
             printNewLine();
             printText(getResources().getString(R.string.recibo)); // total 32 char in a single line
             printNewLine();
+            printText(stringABytes(getResources().getString(R.string.servicio)));
+            printNewLine();
             printText(fecha);//fecha
             printNewLine();
             printCustom ("Chofer: " + chofer,1,0);
+            printCustom ("Nro Remis: " + movil,1,0);
             printNewLine();
             printText("SALIDA  " + hora_inicio);
             printNewLine();
@@ -782,12 +851,12 @@ public class fragment_viaje_iniciado extends Fragment {
             printNewLine();
             printText("TARIFA AL  " + fecha_tarifa);
             printNewLine();
-            printText("VIAJE  " + String.format(Locale.GERMANY,"%.2f",Double.parseDouble(precio)));
+            printText("VIAJE  " + '$' + String.format(Locale.GERMANY,"%.2f",Double.parseDouble(precio)));
             printNewLine();
             printText("ESPERA  ");
             printNewLine();
             printNewLine();
-            printCustom ("TOTAL:  " + String.format(Locale.GERMANY,"%.2f",Double.parseDouble(precio)),2,0);
+            printCustom ("TOTAL:  " + '$' +String.format(Locale.GERMANY,"%.2f",Double.parseDouble(precio)),2,0);
             printNewLine();
             printNewLine();
             outputStream.flush();

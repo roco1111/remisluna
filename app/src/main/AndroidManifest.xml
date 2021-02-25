@@ -6,6 +6,7 @@
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.INTERNET" />
 
     <application
@@ -67,11 +68,6 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".turnos_activity" />
         </activity>
-        <activity android:name=".DeviceList">
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value=".MainViaje" />
-        </activity>
         <service android:name=".FCMService">
             <intent-filter>
                 <action android:name="com.google.firebase.MESSAGING_EVENT" />
@@ -85,7 +81,10 @@
         <service
             android:name=".Impresion"
             android:enabled="true"
-            android:exported="true"></service>
+            android:exported="true">
+
+        </service>
+        <service android:name=".ServicioGeolocalizacion" />
     </application>
 
 </manifest>

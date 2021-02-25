@@ -1,9 +1,14 @@
 package com.rosario.hp.remisluna.Fragment;
 
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.location.Address;
+import android.location.Geocoder;
 import android.location.Location;
+import android.location.LocationManager;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.util.Log;
@@ -22,9 +27,9 @@ import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.error.VolleyError;
 import com.android.volley.request.JsonObjectRequest;
-import com.rosario.hp.remisluna.MainActivity;
 import com.rosario.hp.remisluna.MainViaje;
 import com.rosario.hp.remisluna.R;
+import com.rosario.hp.remisluna.ServicioGeolocalizacion;
 import com.rosario.hp.remisluna.include.Constantes;
 import com.rosario.hp.remisluna.include.VolleySingleton;
 
@@ -32,10 +37,14 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+
+import io.socket.SocketIO;
 
 public class fragment_viaje extends Fragment {
     private JsonObjectRequest myRequest;
@@ -46,20 +55,26 @@ public class fragment_viaje extends Fragment {
     private TextView documento;
     private TextView dato_salida;
     private TextView destino;
+
     private String latitud_salida;
     private String longitud_salida;
     private String latitud_destino;
     private String longitud_destino;
     private String distancia;
+    private String salida_coordenada;
+    private String destino_coordenada;
     private Button inicio;
-    private Button turno;
     private RelativeLayout datos_viaje;
     private RelativeLayout sin_elementos;
+    private LocationManager mLocationManager;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              final Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.activity_viaje, container, false);
+
+
+        mLocationManager = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
 
         id_viaje = v.findViewById(R.id.dato_viaje);
         solicitante = v.findViewById(R.id.dato_solicitante);
@@ -77,13 +92,46 @@ public class fragment_viaje extends Fragment {
         this.inicio.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                iniciar_viaje();
+
+                if (!mLocationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+                    showDialogGPS("GPS apagado", "Deseas activarlo?");
+                }else{
+                    /**
+                     * Se inicia el servicio de geolocalizaci—n
+                     */
+                    //ServicioGeolocalizacion.taxiActivity = MainViaje.this;
+                    iniciar_viaje();
+                }
+
             }
         });
 
         cargarDatos(getContext());
 
         return v;
+    }
+
+    public void showDialogGPS(String title, String message) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+        builder.setTitle(title);
+        builder.setMessage(message);
+        builder.setPositiveButton("Si", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                Intent settingsIntent = new Intent(android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+                settingsIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
+                startActivity(settingsIntent);
+            }
+        });
+        builder.setNegativeButton("No", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                dialog.cancel();
+            }
+        });
+
+        AlertDialog dialog = builder.create();
+        dialog.show();
+        dialog.setCancelable(false);
+        dialog.setCanceledOnTouchOutside(false);
     }
 
     public void cargarDatos(final Context context) {
@@ -141,12 +189,11 @@ public class fragment_viaje extends Fragment {
                     documento.setText(object.getString("nro_documento"));
                     dato_salida.setText(object.getString("salida"));
                     destino.setText(object.getString("destino"));
-                    latitud_destino = object.getString("latitud_destino");
-                    longitud_destino = object.getString("longitud_destino");
-                    latitud_salida = object.getString("latitud_salida");
-                    longitud_salida = object.getString("longitud_salida");
+                    salida_coordenada = object.getString("salida_coordenadas");
+                    destino_coordenada = object.getString("destino_coordenadas");
                     sin_elementos.setVisibility(View.GONE);
                     datos_viaje.setVisibility(View.VISIBLE);
+                    actualizar_coordenadas();
 
                     break;
 
@@ -165,6 +212,40 @@ public class fragment_viaje extends Fragment {
 
     }
 
+
+    private void actualizar_coordenadas(){
+
+        Geocoder coder = new Geocoder(getContext());
+        try {
+            ArrayList<Address> adresses = (ArrayList<Address>) coder.getFromLocationName(salida_coordenada, 50);
+            for(Address add : adresses){
+                if (!adresses.isEmpty()) {
+
+                    longitud_salida = String.valueOf(add.getLongitude());
+                    latitud_salida = String.valueOf(add.getLatitude());
+                } } }
+        catch (IOException e)
+        {
+            e.printStackTrace();
+        }
+
+        try {
+            ArrayList<Address> adresses = (ArrayList<Address>) coder.getFromLocationName(destino_coordenada, 50);
+            for(Address add : adresses){
+                if (!adresses.isEmpty()) {
+
+                    longitud_destino = String.valueOf(add.getLongitude());
+                    latitud_destino = String.valueOf(add.getLatitude());
+                } } }
+        catch (IOException e)
+        {
+            e.printStackTrace();
+        }
+
+
+    }
+
+
     private void iniciar_viaje(){
 
         Location location_salida = new Location("salida");
@@ -182,6 +263,10 @@ public class fragment_viaje extends Fragment {
 
         map.put("id", ls_viaje);
         map.put("distancia", distancia);
+        map.put("latitud_salida", latitud_salida);
+        map.put("longitud_salida", longitud_salida);
+        map.put("latitud_destino", latitud_destino);
+        map.put("longitud_destino", longitud_destino);
 
         JSONObject jobject = new JSONObject(map);
 
@@ -252,6 +337,8 @@ public class fragment_viaje extends Fragment {
 
             switch (estado) {
                 case "1":
+
+                    getActivity().startService(new Intent(getActivity(),ServicioGeolocalizacion.class));
                     Intent intent2 = new Intent(getContext(), MainViaje.class);
                     getContext().startActivity(intent2);
                     break;

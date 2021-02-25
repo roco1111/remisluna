@@ -20,12 +20,8 @@ import java.util.Calendar;
 public class FCMService extends FirebaseMessagingService {
 
     private static final String TAG = "MyFirebaseMsgService";
-    private String codUsuario;
     private String titulo;
     private String texto;
-    private String ls_fecha;
-    private String ls_hora;
-    Calendar c1 = Calendar.getInstance();
 
 
     @Override
@@ -67,6 +63,7 @@ public class FCMService extends FirebaseMessagingService {
             notificationManager.createNotificationChannel(notificationChannel);
 
             builder = new NotificationCompat.Builder(getApplicationContext(), notificationChannel.getId());
+            //builder = new NotificationCompat.Builder(getApplicationContext());
         } else {
             builder = new NotificationCompat.Builder(getApplicationContext());
         }

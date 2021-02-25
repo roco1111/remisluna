@@ -1,8 +1,5 @@
 package com.rosario.hp.remisluna.Fragment;
 
-import android.bluetooth.BluetoothAdapter;
-import android.bluetooth.BluetoothDevice;
-import android.bluetooth.BluetoothSocket;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -17,7 +14,6 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -29,10 +25,9 @@ import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.error.VolleyError;
 import com.android.volley.request.JsonObjectRequest;
-import com.rosario.hp.remisluna.DeviceList;
+import com.rosario.hp.remisluna.Entidades.turno;
 import com.rosario.hp.remisluna.Entidades.viaje;
 import com.rosario.hp.remisluna.Impresion;
-import com.rosario.hp.remisluna.ListaBluetoohtActivity;
 import com.rosario.hp.remisluna.MainActivity;
 import com.rosario.hp.remisluna.MainViaje;
 import com.rosario.hp.remisluna.R;
@@ -47,15 +42,13 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.UUID;
 
-import static android.app.Activity.RESULT_OK;
+import static com.rosario.hp.remisluna.include.Utils.stringABytes;
 
 public class fragment_principal extends Fragment {
 
@@ -65,6 +58,7 @@ public class fragment_principal extends Fragment {
     private ImageButton historial;
     private ImageButton turno;
     private ImageButton impresora;
+    private ImageButton ic_recaudacion;
     private String ls_id_turno;
     private String recaudacion;
     private String kms;
@@ -75,7 +69,9 @@ public class fragment_principal extends Fragment {
     byte FONT_TYPE;
     private TextView txtLabel;
     private Impresion impresion;
+    private ArrayList<turno> datos;
     boolean mBound = false;
+    private String ls_id_conductor;
 
     @Override
     public void onStart() {
@@ -124,7 +120,11 @@ public class fragment_principal extends Fragment {
         this.turno = v.findViewById(R.id.imageButtonTurno);
         this.impresora = v.findViewById(R.id.imageButtonImpresora);
         this.txtLabel = v.findViewById(R.id.referencia);
+        this.ic_recaudacion = v.findViewById(R.id.imageButtonRecaudacion);
+        datos = new ArrayList<>();
         impresion = new Impresion();
+        SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getContext());
+        ls_id_conductor     = settings.getString("id","");
 
 
         this.viaje.setOnClickListener(new View.OnClickListener() {
@@ -147,6 +147,10 @@ public class fragment_principal extends Fragment {
             @Override
             public void onClick(View v) {
                 if (!mBound) {
+                    SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getContext());
+                    SharedPreferences.Editor editor = settings.edit();
+                    editor.putString("tipo_ventana","main");
+                    editor.commit();
                     getActivity().startService(new Intent(getActivity(), Impresion.class));
                 } else {
                     cerrar_turno();
@@ -157,7 +161,26 @@ public class fragment_principal extends Fragment {
         this.impresora.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getContext());
+                SharedPreferences.Editor editor = settings.edit();
+                editor.putString("tipo_ventana","main");
+                editor.commit();
                 getActivity().startService(new Intent(getActivity(), Impresion.class));
+            }
+        });
+
+        this.ic_recaudacion.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (!mBound) {
+                    SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getContext());
+                    SharedPreferences.Editor editor = settings.edit();
+                    editor.putString("tipo_ventana","main");
+                    editor.commit();
+                    getActivity().startService(new Intent(getActivity(), Impresion.class));
+                } else {
+                    cargarDatos();
+                }
             }
         });
 
@@ -383,6 +406,159 @@ public class fragment_principal extends Fragment {
         } catch (JSONException e) {
             e.printStackTrace();
         }
+    }
+
+    public void cargarDatos() {
+
+        // Añadir parámetro a la URL del web service
+        String newURL = Constantes.GET_TURNOS + "?conductor=" + ls_id_conductor;
+        Log.d(TAG,newURL);
+
+        // Realizar petición GET_BY_ID
+        VolleySingleton.getInstance(getContext()).addToRequestQueue(
+                myRequest = new JsonObjectRequest(
+                        Request.Method.POST,
+                        newURL,
+                        null,
+                        new Response.Listener<JSONObject>() {
+
+                            @Override
+                            public void onResponse(JSONObject response) {
+                                // Procesar respuesta Json
+                                procesarRespuesta(response);
+                            }
+                        },
+                        new Response.ErrorListener() {
+                            @Override
+                            public void onErrorResponse(VolleyError error) {
+                                Log.d(TAG, "Error Volley viaje: " + error.getMessage());
+
+                            }
+                        }
+                )
+        );
+        myRequest.setRetryPolicy(new DefaultRetryPolicy(
+                50000,
+                5,//DefaultRetryPolicy.DEFAULT_MAX_RETRIES
+                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+
+    }
+
+    private void procesarRespuesta(JSONObject response) {
+        try {
+            // Obtener atributo "estado"
+            String estado = response.getString("estado");
+
+            switch (estado) {
+                case "1": // EXITO
+
+                    JSONArray mensaje = response.getJSONArray("turno");
+
+                    datos.clear();
+
+                    for(int i = 0; i < mensaje.length(); i++)
+                    {JSONObject object = mensaje.getJSONObject(i);
+                        com.rosario.hp.remisluna.Entidades.turno tur = new turno();
+
+                        String id = object.getString("ID");
+
+                        tur.setId(id);
+
+                        String fecha = object.getString("FECHA");
+
+                        tur.setFecha(fecha);
+
+                        String hora_inicio = object.getString("HORA_INICIO");
+
+                        tur.setHora_inicio(hora_inicio);
+
+                        String hora_fin = object.getString("HORA_FIN");
+
+                        tur.setHora_fin(hora_fin);
+
+                        String recaudacion = object.getString("RECAUDACION");
+
+                        tur.setRecaudacion(recaudacion);
+
+
+
+                        datos.add(tur);
+
+                    }
+
+                    ticket_recaudacion( datos);
+
+                    break;
+
+            }
+
+        } catch (JSONException e) {
+            Log.d(TAG, e.getMessage());
+        }
+
+    }
+
+    protected void ticket_recaudacion( ArrayList<turno> turnos) {
+        outputStream = impresion.getOutputStream();
+
+        //print command
+        try {
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+
+            byte[] printformat = {0x1B, 0 * 21, FONT_TYPE};
+            //outputStream.write(printformat);
+
+            //print title
+            printUnicode();
+            //print normal text
+            printCustom(getResources().getString(R.string.empresa), 2, 1);
+            printNewLine();
+            printPhoto(R.drawable.remisluna_logo_impresion);
+            printCustom(getResources().getString(R.string.telefono), 1, 1);
+
+            printNewLine();
+            printText(stringABytes(getResources().getString(R.string.ticket_recaudacion))); // total 32 char in a single line
+
+            printNewLine();
+
+            String id;
+            String fecha;
+            String hora_inicio;
+            String hora_fin;
+            String importe;
+
+            for (turno Turno : turnos) {
+                printNewLine();
+                id = Turno.getId();
+                fecha = Turno.getFecha();
+                hora_inicio = Turno.getHora_inicio();
+                hora_fin = Turno.getHora_fin();
+                printCustom("TURNO " + id, 1, 0);
+                printCustom("Fecha " + fecha, 1, 0);
+                printCustom("Hora Inicio " + hora_inicio, 1, 0);
+                printCustom("Hora Fin " + hora_fin, 1, 0);
+                importe = Turno.getRecaudacion();
+                printText("TOTAL:  " + importe);
+                printNewLine();
+            }
+
+            printNewLine();
+            printNewLine();
+            //resetPrint(); //reset printer
+            printUnicode();
+            printNewLine();
+            printNewLine();
+
+            outputStream.flush();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
     }
 
 

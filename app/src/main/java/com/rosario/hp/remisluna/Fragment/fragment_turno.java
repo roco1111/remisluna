@@ -123,6 +123,10 @@ public class fragment_turno extends Fragment{
             @Override
             public void onClick(View v) {
                 if (!mBound) {
+                    SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getContext());
+                    SharedPreferences.Editor editor = settings.edit();
+                    editor.putString("tipo_ventana","turno");
+                    editor.commit();
                     getActivity().startService(new Intent(getActivity(), Impresion.class));
                 } else {
                     datos_viajes_turno(getContext());

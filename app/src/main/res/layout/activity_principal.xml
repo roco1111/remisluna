@@ -111,7 +111,7 @@
         android:layout_centerHorizontal="true"
         android:layout_below="@id/id_superior"
         android:layout_marginTop="@dimen/margin_top_menu"
-        android:id="@+id/id_inferior"
+        android:id="@+id/id_intermedio"
         android:orientation="horizontal">
 
 
@@ -172,11 +172,18 @@
         android:textSize="@dimen/tamanio_parrafo" />
         </RelativeLayout>
     </RelativeLayout>
+    <RelativeLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_below="@id/id_intermedio"
+        android:layout_marginTop="@dimen/margin_top_menu"
+        android:id="@+id/id_inferior"
+        android:orientation="horizontal">
         <RelativeLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@id/id_inferior"
-        android:layout_centerHorizontal="true"
+        android:id="@+id/id_impresora"
         android:layout_marginTop="@dimen/margin_top_menu"
         android:orientation="vertical">
         <ImageButton
@@ -199,7 +206,36 @@
             android:textAlignment="center"
             android:textColor="@color/black"
             android:textSize="@dimen/tamanio_parrafo" />
-
         </RelativeLayout>
+            <RelativeLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/alto_imagen"
+                android:layout_marginTop="@dimen/margin_top_menu"
+                android:layout_toEndOf="@id/id_impresora"
+                android:orientation="vertical">
+                <ImageButton
+                    android:id="@+id/imageButtonRecaudacion"
+                    android:layout_width="@dimen/ancho_boton"
+                    android:layout_height="@dimen/ancho_boton"
+                    android:background="@color/background"
+                    android:layout_centerHorizontal="true"
 
+                    android:scaleType="fitXY"
+                    app:srcCompat="@drawable/recaudacion" />
+                <TextView
+                    android:id="@+id/recaudacion"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@+id/imageButtonRecaudacion"
+                    android:layout_centerHorizontal="true"
+                    android:layout_marginTop="@dimen/margin_top_texto"
+                    android:text="@string/recaudacion"
+                    android:textAlignment="center"
+                    android:textColor="@color/black"
+                    android:textSize="@dimen/tamanio_parrafo" />
+
+    </RelativeLayout>
+
+</RelativeLayout>
 </RelativeLayout>

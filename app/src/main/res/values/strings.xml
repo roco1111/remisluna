@@ -3,7 +3,9 @@
     <string name="empresa">Remisluna</string>
     <string name="telefono">341375869</string>
     <string name="recibo">Ticket para el Pasajero</string>
+    <string name="servicio">Servicio Público VGG</string>
     <string name="ticket_turno">Totales Turno</string>
+    <string name="ticket_recaudacion">Recaudación Últimos 10 Turnos</string>
     <string name="title_activity_notifications">Notificaciones</string>
     <string name="menu_registro">Registro Usuario</string>
     <string name="menu_ingresar">Ingreso Usuario</string>
@@ -33,8 +35,14 @@
     <string name="mensaje_contrasenia">Ingrese la dirección de correo electrónico que utilizó para registrarse.
     Le enviaremos un mail con instrucciones para definir una nueva contraseña</string>
     <string name="dialog_aceptar">Aceptar</string>
+    <string name="cero_distancia">0</string>
+    <string name="cero_pesos">$ 0.00</string>
+
+
+    <string name="esperando">esperando...</string>
 
     <string name="nro_viaje">Nro Viaje</string>
+    <string name="nro_viaje2">Viaje</string>
     <string name="solicitante">Solicitante</string>
     <string name="documento">Documento</string>
     <string name="salida">Salida</string>
