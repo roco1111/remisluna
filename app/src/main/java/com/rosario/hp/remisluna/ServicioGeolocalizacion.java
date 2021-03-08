@@ -57,14 +57,16 @@ public class ServicioGeolocalizacion extends Service implements Runnable {
     private double latitud_inicial = 0;
     private double longitud_inicial = 0;
     private double distancia_acumulada = 0;
-    private double cuadras = 0;
-    private double precio = 0;
     private Location currentLocation = null;
     private Thread thread;
     private String ls_id_conductor;
     private JsonObjectRequest myRequest;
     private static final String TAG = login.class.getSimpleName();
     private String salida_coordenada;
+    private Long l_inicio;
+    private Long l_final;
+    private Long l_diferencia = 0L;
+    private Long tiempo_acumulado = 0L;
 
     @Override
     public void onCreate() {
@@ -153,6 +155,7 @@ public class ServicioGeolocalizacion extends Service implements Runnable {
 
                     longitud_inicial = add.getLongitude();
                     latitud_inicial = add.getLatitude();
+                    l_inicio = System.currentTimeMillis();
 
                 } } }
         catch (IOException e)
@@ -209,6 +212,8 @@ public class ServicioGeolocalizacion extends Service implements Runnable {
             double latitud = Double.parseDouble(currentLocation.getLatitude() + "");
             double longitud = Double.parseDouble(currentLocation.getLongitude() + "");
 
+            Log.d("gps","Lat:" + String.valueOf(latitud) + " -Long:" + String.valueOf(longitud));
+
             Location locationA = new Location("punto A");
             locationA.setLatitude(latitud_inicial);
             locationA.setLongitude(longitud_inicial);
@@ -218,19 +223,40 @@ public class ServicioGeolocalizacion extends Service implements Runnable {
             locationB.setLongitude(longitud);
 
             float distance = locationA.distanceTo(locationB) / 100;
-            latitud_inicial = latitud;
-            longitud_inicial = longitud;
+            if(distance > 0.30) {
+                latitud_inicial = latitud;
+                longitud_inicial = longitud;
+
+                tiempo_acumulado = 0L;
+                distancia_acumulada += distance;
+                distancia_acumulada = Double.valueOf(getTwoDecimals(distancia_acumulada));
+
+                if (distancia_acumulada >= 1) {
+                    distancia_acumulada = 0;
+
+                    getApplicationContext().sendBroadcast(
+                            new Intent("key").putExtra("coordenadas", latitud + ";"
+                                    + longitud + ";" + 1 + ""));
+                }
+            }else{
+                l_final = System.currentTimeMillis();
+                l_diferencia = l_final - l_inicio;
+                if(l_diferencia < 0) {
+                    Log.d("diferencia negativa", "ok");
+                }
+                l_inicio = l_final;
+                tiempo_acumulado += l_diferencia;
+                Log.d("tiempo",String.valueOf(tiempo_acumulado));
+                if(tiempo_acumulado >= 300000){
+                    Log.d("tiempo_acumulado","ok");
+                    distancia_acumulada = 0;
+                    tiempo_acumulado = 0L;
+                    getApplicationContext().sendBroadcast(
+                            new Intent("key").putExtra("coordenadas", latitud + ";"
+                                    + longitud + ";" + 2 + ""));
+                }
 
 
-            distancia_acumulada += distance;
-            distancia_acumulada = Double.valueOf(getTwoDecimals(distancia_acumulada));
-
-            if(distancia_acumulada >= 1){
-                cuadras++;
-                distancia_acumulada = 0;
-                getApplicationContext().sendBroadcast(
-                        new Intent("key").putExtra("coordenadas", latitud + ";"
-                                + longitud + ";" + cuadras +  ""));
             }
 
         }
@@ -258,7 +284,7 @@ public class ServicioGeolocalizacion extends Service implements Runnable {
                 // for ActivityCompat#requestPermissions for more details.
                 return;
             }
-            mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 4000, 0, mLocationListener);
+            mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 3000, 0, mLocationListener);
             Looper.loop();
             Looper.myLooper().quit();
         } else {

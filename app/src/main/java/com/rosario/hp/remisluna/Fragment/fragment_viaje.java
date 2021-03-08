@@ -1,15 +1,18 @@
 package com.rosario.hp.remisluna.Fragment;
 
 import android.app.AlertDialog;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
 import android.location.LocationManager;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -27,6 +30,7 @@ import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.error.VolleyError;
 import com.android.volley.request.JsonObjectRequest;
+import com.rosario.hp.remisluna.Impresion;
 import com.rosario.hp.remisluna.MainViaje;
 import com.rosario.hp.remisluna.R;
 import com.rosario.hp.remisluna.ServicioGeolocalizacion;
@@ -67,6 +71,43 @@ public class fragment_viaje extends Fragment {
     private RelativeLayout datos_viaje;
     private RelativeLayout sin_elementos;
     private LocationManager mLocationManager;
+    boolean mBound = false;
+    private Impresion impresion;
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        // Bind to LocalService
+        Intent intent = new Intent(getActivity(), Impresion.class);
+        getActivity().bindService(intent, connection, Context.BIND_AUTO_CREATE);
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        getActivity().unbindService(connection);
+        mBound = false;
+    }
+
+    /** Defines callbacks for service binding, passed to bindService() */
+    private ServiceConnection connection = new ServiceConnection() {
+
+        @Override
+        public void onServiceConnected(ComponentName className,
+                                       IBinder service) {
+            // We've bound to LocalService, cast the IBinder and get LocalService instance
+            Impresion.LocalBinder binder = (Impresion.LocalBinder) service;
+            impresion = binder.getService();
+            if(impresion.getbluetoothSocket() != null){
+                mBound = true;
+            }
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName arg0) {
+            mBound = false;
+        }
+    };
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -96,11 +137,14 @@ public class fragment_viaje extends Fragment {
                 if (!mLocationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
                     showDialogGPS("GPS apagado", "Deseas activarlo?");
                 }else{
-                    /**
-                     * Se inicia el servicio de geolocalizaci—n
-                     */
-                    //ServicioGeolocalizacion.taxiActivity = MainViaje.this;
-                    iniciar_viaje();
+                    if (!mBound) {
+                        SharedPreferences.Editor editor = settings.edit();
+                        editor.putString("tipo_ventana","viaje");
+                        editor.commit();
+                        getActivity().startService(new Intent(getActivity(), Impresion.class));
+                    } else {
+                        iniciar_viaje();
+                    }
                 }
 
             }

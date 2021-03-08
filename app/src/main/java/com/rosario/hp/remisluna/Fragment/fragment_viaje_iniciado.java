@@ -24,6 +24,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.fragment.app.Fragment;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.Request;
@@ -71,7 +72,9 @@ public class fragment_viaje_iniciado extends Fragment {
     private String fecha;
     private String distancia;
     private String chofer;
-    private String precio;
+    private String ls_precio = "0.00";
+    private String ls_ficha = "0.00";
+    private String ls_espera = "0.00";
     private String id_vehiculo;
     private String id_turno;
     private String movil;
@@ -80,10 +83,12 @@ public class fragment_viaje_iniciado extends Fragment {
     private Button alarma;
     private String importe_bajada;
     private String importe_ficha;
+    private String importe_espera;
     private String l_latitud_destino;
     private String l_longitud_destino;
-    private Double latitud_salida;
-    private Double longitud_salida;
+    private Long espera= 0L;
+    private Long ficha= 0L;
+    private Long cuadras = 0L;
     private static OutputStream outputStream;
     private Impresion impresion;
     byte FONT_TYPE;
@@ -172,7 +177,7 @@ public class fragment_viaje_iniciado extends Fragment {
                     getActivity().startService(new Intent(getActivity(), Impresion.class));
                 } else{
                     getActivity().stopService(new Intent(getActivity(), ServicioGeolocalizacion.class));
-                    cargarDatosVehiculo(getContext());}
+                    cargarDatosVehiculo(getContext()); }
             }
         });
 
@@ -196,6 +201,7 @@ public class fragment_viaje_iniciado extends Fragment {
     }
 
     private BroadcastReceiver onBroadcast = new BroadcastReceiver() {
+
         @Override
         public void onReceive(Context ctxt, Intent i) {
 
@@ -206,17 +212,27 @@ public class fragment_viaje_iniciado extends Fragment {
 
             String datos = i.getStringExtra("coordenadas");//obtenemos las coordenadas envidas del servicioGeolocalizaci—n
             String[] tokens = datos.split(";");//separamos por tocken
-            kms.setText( tokens[2]);
+            cuadras++;
+            kms.setText( String.valueOf(cuadras));
 
-            Double ficha = Double.parseDouble(importe_ficha);
-            Double distancia = Double.parseDouble(kms.getText().toString());
+            Double valor_ficha ;
 
-            Double precio = ficha * distancia;
+            if(tokens[2].equals("1")){
+                ficha++;
+                valor_ficha = Double.parseDouble(importe_ficha);
+            }else{
+                espera++;
+                valor_ficha = Double.parseDouble(importe_espera);
+            }
+
+
+            Double precio = valor_ficha * Double.parseDouble(String.valueOf(cuadras));
 
             precio = Double.parseDouble(getTwoDecimals(precio));
 
             importe.setText("$ " + String.format(Locale.GERMANY,"%.2f",precio));
 
+            ls_precio = String.format(Locale.GERMANY,"%.2f",precio);
 
             //kms.append("\n");//agregamos salto de linea
         }
@@ -283,11 +299,10 @@ public class fragment_viaje_iniciado extends Fragment {
                     documento.setText(object.getString("nro_documento"));
                     dato_salida.setText(object.getString("salida"));
                     destino.setText(object.getString("destino"));
-                    id_vehiculo = object.getString("movil");
+                    id_vehiculo = object.getString("id_movil");
                     importe_bajada = object.getString("importe_bajada");
                     importe_ficha = object.getString("importe_ficha");
-                    latitud_salida = Double.parseDouble(object.getString("latitud_salida"));
-                    longitud_salida = Double.parseDouble(object.getString("longitud_salida"));
+                    importe_espera = object.getString("importe_espera");
                     movil = object.getString("movil");
 
                     break;
@@ -470,18 +485,7 @@ public class fragment_viaje_iniciado extends Fragment {
 
         String ls_viaje = id_viaje.getText().toString();
 
-        Location location_salida = new Location("salida");
-        location_salida.setLatitude(latitud_salida);  //latitud
-        location_salida.setLongitude(longitud_salida); //longitud
-        Location location_destino = new Location("destino");
-        location_destino.setLatitude(Double.parseDouble(l_latitud_destino));  //latitud
-        location_destino.setLongitude(Double.parseDouble(l_longitud_destino)); //longitud
-        double distance = location_salida.distanceTo(location_destino);
-        distancia = String.valueOf(distance);
-
-        Double importe = Double.parseDouble(importe_bajada) + ((distance * 10) * Double.parseDouble(importe_ficha));
-
-        precio = String.valueOf(importe);
+        distancia = String.valueOf(cuadras / 10);
 
         HashMap<String, String> map = new HashMap<>();// Mapeo previo
 
@@ -489,7 +493,7 @@ public class fragment_viaje_iniciado extends Fragment {
         map.put("latitud", l_latitud_destino);
         map.put("longitud", l_longitud_destino);
         map.put("distancia", distancia);
-        map.put("precio", precio);
+        map.put("precio", ls_precio);
 
         JSONObject jobject = new JSONObject(map);
 
@@ -584,7 +588,7 @@ public class fragment_viaje_iniciado extends Fragment {
 
         map.put("id", id_turno);
         map.put("distancia", distancia);
-        map.put("recaudacion", precio );
+        map.put("recaudacion", ls_precio );
 
         JSONObject jobject = new JSONObject(map);
 
@@ -846,17 +850,17 @@ public class fragment_viaje_iniciado extends Fragment {
             printNewLine();
             printText("LLEGADA  " + hora_fin);
             printNewLine();
-            printText("RECORRIDO  " + String.format(Locale.GERMANY,"%.2f",Double.parseDouble(distancia)));
+            printText("RECORRIDO  " + String.valueOf(cuadras));
             printNewLine();
             printNewLine();
             printText("TARIFA AL  " + fecha_tarifa);
             printNewLine();
-            printText("VIAJE  " + '$' + String.format(Locale.GERMANY,"%.2f",Double.parseDouble(precio)));
+            printText("VIAJE  " + '$' + ls_precio);
             printNewLine();
             printText("ESPERA  ");
             printNewLine();
             printNewLine();
-            printCustom ("TOTAL:  " + '$' +String.format(Locale.GERMANY,"%.2f",Double.parseDouble(precio)),2,0);
+            printCustom ("TOTAL:  " + '$' +ls_precio,2,0);
             printNewLine();
             printNewLine();
             outputStream.flush();

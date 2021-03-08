@@ -44,7 +44,7 @@
     <string name="nro_viaje">Nro Viaje</string>
     <string name="nro_viaje2">Viaje</string>
     <string name="solicitante">Solicitante</string>
-    <string name="documento">Documento</string>
+    <string name="documento">DNI</string>
     <string name="salida">Salida</string>
     <string name="destino">Destino</string>
     <string name="alarma">Alarma</string>
