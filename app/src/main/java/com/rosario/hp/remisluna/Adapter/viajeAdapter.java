@@ -66,6 +66,8 @@ public class viajeAdapter extends RecyclerView.Adapter<viajeAdapter.HolderTurno>
                 break;
         }
 
+
+
         holder.importe.setText('$' + viajes.get(position).getImporte());
 
     }

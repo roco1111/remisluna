@@ -209,8 +209,19 @@ public class fragment_datos_viaje extends Fragment{
                     salida.setText(object.getString("salida"));
                     destino.setText(object.getString("destino"));
                     hora_salida.setText(object.getString("hora_inicio"));
+                    if(object.getString("estado").equals("6")){
+                        hora_destino.setVisibility(View.INVISIBLE);
+                    }else{
+                        hora_destino.setVisibility(View.VISIBLE);
+                    }
                     hora_destino.setText(object.getString("hora_fin"));
-                    importe.setText(object.getString("importe"));
+                    String ls_importe;
+                    ls_importe = object.getString("importe");
+                    if(ls_importe.equals("null"))
+                    {
+                        ls_importe = "0,00";
+                    }
+                    importe.setText(ls_importe);
                     motivo.setText(object.getString("motivo"));
                     chofer = object.getString("chofer");
                     distancia = object.getString("distancia");

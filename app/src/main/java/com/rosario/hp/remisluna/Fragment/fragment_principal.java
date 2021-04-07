@@ -31,6 +31,7 @@ import com.rosario.hp.remisluna.Impresion;
 import com.rosario.hp.remisluna.MainActivity;
 import com.rosario.hp.remisluna.MainViaje;
 import com.rosario.hp.remisluna.R;
+import com.rosario.hp.remisluna.activity_preferencias;
 import com.rosario.hp.remisluna.include.Constantes;
 import com.rosario.hp.remisluna.include.PrinterCommands;
 import com.rosario.hp.remisluna.include.Utils;
@@ -59,6 +60,7 @@ public class fragment_principal extends Fragment {
     private ImageButton turno;
     private ImageButton impresora;
     private ImageButton ic_recaudacion;
+    private ImageButton ic_perfil;
     private String ls_id_turno;
     private String recaudacion;
     private String kms;
@@ -121,6 +123,7 @@ public class fragment_principal extends Fragment {
         this.impresora = v.findViewById(R.id.imageButtonImpresora);
         this.txtLabel = v.findViewById(R.id.referencia);
         this.ic_recaudacion = v.findViewById(R.id.imageButtonRecaudacion);
+        this.ic_perfil = v.findViewById(R.id.imageButtonPerfil);
         datos = new ArrayList<>();
         impresion = new Impresion();
         SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getContext());
@@ -139,6 +142,14 @@ public class fragment_principal extends Fragment {
             @Override
             public void onClick(View v) {
                 Intent intent2 = new Intent(getContext(), turnos_activity.class);
+                getContext().startActivity(intent2);
+            }
+        });
+
+        this.ic_perfil.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent2 = new Intent(getContext(), activity_preferencias.class);
                 getContext().startActivity(intent2);
             }
         });

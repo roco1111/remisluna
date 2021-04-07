@@ -58,6 +58,19 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".MainActivity" />
         </activity>
+        <activity
+            android:name=".WebActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".activity_preferencias" />
+        </activity>
+
+        <activity android:name=".activity_preferencias"
+            android:parentActivityName=".MainActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".MainActivity" />
+        </activity>
         <activity android:name=".turnos_activity">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"

@@ -201,7 +201,7 @@ public class fragment_turno extends Fragment{
                     if(!object.getString("distancia").equals("null")){
                     kms.setText(object.getString("distancia"));}
                     if(!object.getString("dato_recaudacion").equals("null")){
-                    recaudacion.setText(object.getString("dato_recaudacion"));}
+                    recaudacion.setText(object.getString("recaudacion"));}
                 case "2":
                     Toast.makeText(
                             getContext(),
@@ -332,13 +332,16 @@ public class fragment_turno extends Fragment{
             printNewLine();
 
             String id;
-            String importe;
+            String importe ;
 
             for (viaje Viaje : viajes) {
                 id = Viaje.getId();
                 printCustom("VIAJE " + id, 1, 0);
 
                 importe = Viaje.getImporte();
+                if(importe.equals("null")){
+                    importe = "0,00";
+                }
                 printText("TOTAL:  " + importe);
                 printNewLine();
             }

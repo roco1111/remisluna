@@ -137,14 +137,7 @@ public class fragment_viaje extends Fragment {
                 if (!mLocationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
                     showDialogGPS("GPS apagado", "Deseas activarlo?");
                 }else{
-                    if (!mBound) {
-                        SharedPreferences.Editor editor = settings.edit();
-                        editor.putString("tipo_ventana","viaje");
-                        editor.commit();
-                        getActivity().startService(new Intent(getActivity(), Impresion.class));
-                    } else {
-                        iniciar_viaje();
-                    }
+                    iniciar_viaje();
                 }
 
             }

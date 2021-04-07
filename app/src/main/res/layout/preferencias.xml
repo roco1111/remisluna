@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <RelativeLayout
+        android:layout_width="wrap_content"
+        android:layout_height="75dp"
+
+        android:id="@+id/nav_perfil">
+        <TextView
+            android:id="@+id/textViewPerfil"
+            android:layout_marginStart="5dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="@dimen/tamanio_parrafo"
+            android:layout_centerVertical="true"
+            android:text="@string/menu_perfil" />
+
+        <View
+            android:id="@+id/divider_perfil"
+            android:layout_width="fill_parent"
+            android:layout_height="1dp"
+            android:layout_alignParentBottom="true"
+
+            android:background="@android:color/darker_gray" />
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:layout_width="wrap_content"
+        android:layout_height="75dp"
+        android:layout_below="@id/nav_perfil"
+        android:id="@+id/nav_politicas">
+        <TextView
+            android:id="@+id/textViewpoliticas"
+            android:layout_marginStart="5dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="@dimen/tamanio_parrafo"
+            android:layout_centerVertical="true"
+            android:text="@string/menu_politicas" />
+
+        <View
+            android:id="@+id/divider_politicas"
+            android:layout_width="fill_parent"
+            android:layout_height="1dp"
+            android:layout_alignParentBottom="true"
+
+            android:background="@android:color/darker_gray" />
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:layout_width="wrap_content"
+        android:layout_height="75dp"
+        android:layout_below="@id/nav_politicas"
+        android:id="@+id/nav_terminos">
+        <TextView
+            android:id="@+id/textViewTerminos"
+            android:layout_marginStart="5dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="@dimen/tamanio_parrafo"
+            android:layout_centerVertical="true"
+            android:text="@string/menu_terminos" />
+
+        <View
+            android:id="@+id/divider_terminos"
+            android:layout_width="fill_parent"
+            android:layout_height="1dp"
+            android:layout_alignParentBottom="true"
+
+            android:background="@android:color/darker_gray" />
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:layout_width="wrap_content"
+        android:layout_height="75dp"
+        android:layout_below="@id/nav_terminos"
+        android:id="@+id/nav_acerca">
+        <TextView
+            android:id="@+id/textView"
+            android:layout_marginStart="5dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="@dimen/tamanio_parrafo"
+            android:layout_centerVertical="true"
+            android:text="@string/acerca" />
+
+        <View
+            android:id="@+id/divider_acerca"
+            android:layout_width="fill_parent"
+            android:layout_height="1dp"
+            android:layout_alignParentBottom="true"
+
+            android:background="@android:color/darker_gray" />
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:layout_width="wrap_content"
+        android:layout_height="75dp"
+        android:layout_below="@id/nav_acerca"
+        android:id="@+id/nav_salir">
+        <TextView
+            android:id="@+id/textViewSalir"
+            android:layout_marginStart="5dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="@dimen/tamanio_parrafo"
+            android:layout_centerVertical="true"
+            android:text="@string/cerrar" />
+
+        <View
+            android:id="@+id/divider_salir"
+            android:layout_width="fill_parent"
+            android:layout_height="1dp"
+            android:layout_alignParentBottom="true"
+
+            android:background="@android:color/darker_gray" />
+    </RelativeLayout>
+</RelativeLayout>

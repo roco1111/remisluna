@@ -153,6 +153,10 @@ public class fragment_viajes extends Fragment {
 
                         String hora_inicio = object.getString("hora_inicio");
 
+                        if(hora_inicio.equals("null")){
+                            hora_inicio = "No Iniciado";
+                        }
+
                         via.setHora_inicio(hora_inicio);
 
                         String salida = object.getString("salida");
@@ -164,6 +168,10 @@ public class fragment_viajes extends Fragment {
                         via.setDestino(destino);
 
                         String importe = object.getString("importe");
+
+                        if(importe.equals("null")){
+                            importe = "0,00";
+                        }
 
                         via.setImporte(importe);
 

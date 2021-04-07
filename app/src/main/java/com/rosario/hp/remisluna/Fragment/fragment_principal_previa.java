@@ -37,6 +37,7 @@ import com.rosario.hp.remisluna.Impresion;
 import com.rosario.hp.remisluna.ListaBluetoohtActivity;
 import com.rosario.hp.remisluna.MainActivity;
 import com.rosario.hp.remisluna.R;
+import com.rosario.hp.remisluna.activity_preferencias;
 import com.rosario.hp.remisluna.include.Constantes;
 import com.rosario.hp.remisluna.include.PrinterCommands;
 import com.rosario.hp.remisluna.include.Utils;
@@ -64,6 +65,7 @@ public class fragment_principal_previa extends Fragment {
     private ImageButton impresora;
     private ImageButton historial;
     private ImageButton ic_recaudacion;
+    private ImageButton ic_perfil;
     private String ls_id_conductor;
     private static final String TAG = fragment_principal_previa.class.getSimpleName();
     private TextView txtLabel;
@@ -122,6 +124,7 @@ public class fragment_principal_previa extends Fragment {
         this.turno = v.findViewById(R.id.imageButtonTurno);
         this.historial = v.findViewById(R.id.imageButtonHistorial);
         this.ic_recaudacion = v.findViewById(R.id.imageButtonRecaudacion);
+        this.ic_perfil = v.findViewById(R.id.imageButtonPerfil);
         datos = new ArrayList<>();
         act = getActivity();
 
@@ -149,6 +152,14 @@ public class fragment_principal_previa extends Fragment {
             @Override
             public void onClick(View v) {
                 Intent intent2 = new Intent(getContext(), turnos_activity.class);
+                getContext().startActivity(intent2);
+            }
+        });
+
+        this.ic_perfil.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent2 = new Intent(getContext(), activity_preferencias.class);
                 getContext().startActivity(intent2);
             }
         });

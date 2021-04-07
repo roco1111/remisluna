@@ -170,15 +170,10 @@ public class fragment_viaje_iniciado extends Fragment {
         this.terminar.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (!mBound) {
-                    SharedPreferences.Editor editor = settings.edit();
-                    editor.putString("tipo_ventana","viaje");
-                    editor.commit();
-                    getActivity().startService(new Intent(getActivity(), Impresion.class));
-                } else{
-                    getActivity().stopService(new Intent(getActivity(), ServicioGeolocalizacion.class));
-                    cargarDatosVehiculo(getContext()); }
-            }
+
+            getActivity().stopService(new Intent(getActivity(), ServicioGeolocalizacion.class));
+            cargarDatosVehiculo(getContext()); }
+
         });
 
         this.suspender.setOnClickListener(new View.OnClickListener() {
@@ -384,7 +379,13 @@ public class fragment_viaje_iniciado extends Fragment {
                     fecha = object.getString("fecha");
                     chofer = object.getString("chofer");
 
-                    printTicket();
+                    if (!mBound) {
+                        Intent intent2 = new Intent(getContext(), MainViaje.class);
+                        getContext().startActivity(intent2);
+                    } else {
+
+                        printTicket();
+                    }
 
                     break;
 

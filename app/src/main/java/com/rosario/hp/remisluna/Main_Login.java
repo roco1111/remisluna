@@ -6,6 +6,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 
+import android.view.KeyEvent;
 import android.view.MenuItem;
 
 import androidx.appcompat.app.ActionBar;
@@ -116,16 +117,14 @@ public class Main_Login extends AppCompatActivity implements login.Callback  {
 
     }
 
-
     @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case android.R.id.home:
-                drawerLayout.openDrawer(GravityCompat.START);
-                return true;
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        // TODO Auto-generated method stub
+        if (keyCode == event.KEYCODE_BACK) {this.finish();
         }
-        return super.onOptionsItemSelected(item);
+        return super.onKeyDown(keyCode, event);
     }
+
 
     @Override
     public void onInvokeGooglePlayServices(int errorCode) {
