@@ -157,15 +157,7 @@ public class fragment_principal extends Fragment {
         this.turno.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (!mBound) {
-                    SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getContext());
-                    SharedPreferences.Editor editor = settings.edit();
-                    editor.putString("tipo_ventana","main");
-                    editor.commit();
-                    getActivity().startService(new Intent(getActivity(), Impresion.class));
-                } else {
-                    cerrar_turno();
-                }
+                cerrar_turno();
             }
         });
 
@@ -183,15 +175,9 @@ public class fragment_principal extends Fragment {
         this.ic_recaudacion.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (!mBound) {
-                    SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getContext());
-                    SharedPreferences.Editor editor = settings.edit();
-                    editor.putString("tipo_ventana","main");
-                    editor.commit();
-                    getActivity().startService(new Intent(getActivity(), Impresion.class));
-                } else {
-                    cargarDatos();
-                }
+
+                cargarDatos();
+
             }
         });
 
@@ -342,8 +328,12 @@ public class fragment_principal extends Fragment {
                     break;
 
             }
-            ticket_turno(viajes);
-
+            if (mBound) {
+                ticket_turno(viajes);
+            }else{
+                Intent intent2 = new Intent(getContext(), MainActivity.class);
+                getContext().startActivity(intent2);
+            }
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -496,9 +486,9 @@ public class fragment_principal extends Fragment {
                         datos.add(tur);
 
                     }
-
-                    ticket_recaudacion( datos);
-
+                    if (mBound) {
+                        ticket_recaudacion(datos);
+                    }
                     break;
 
             }
@@ -551,7 +541,9 @@ public class fragment_principal extends Fragment {
                 printCustom("TURNO " + id, 1, 0);
                 printCustom("Fecha " + fecha, 1, 0);
                 printCustom("Hora Inicio " + hora_inicio, 1, 0);
-                printCustom("Hora Fin " + hora_fin, 1, 0);
+                if(!hora_fin.equals("null")) {
+                    printCustom("Hora Fin " + hora_fin, 1, 0);
+                }
                 importe = Turno.getRecaudacion();
                 printText("TOTAL:  " + importe);
                 printNewLine();
