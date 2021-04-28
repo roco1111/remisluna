@@ -22,6 +22,7 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.provider.Settings;
 import android.util.Log;
+import android.view.View;
 import android.widget.Toast;
 
 import com.android.volley.DefaultRetryPolicy;
@@ -213,18 +214,82 @@ public class MainActivity extends AppCompatActivity {
 
                 case "2":
 
+                    cargarDatos_solicitados(context);
+                    break;
+
+            }
+
+
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    public void cargarDatos_solicitados(final Context context) {
+
+        // Añadir parámetro a la URL del web service
+        String newURL = Constantes.GET_VIAJE_SOLICITADOS + "?conductor=" + ls_id_conductor;
+        Log.d(TAG,newURL);
+
+        // Realizar petición GET_BY_ID
+        VolleySingleton.getInstance(context).addToRequestQueue(
+                myRequest = new JsonObjectRequest(
+                        Request.Method.POST,
+                        newURL,
+                        null,
+                        new Response.Listener<JSONObject>() {
+
+                            @Override
+                            public void onResponse(JSONObject response) {
+                                // Procesar respuesta Json
+                                procesarRespuesta_solicitados(response, context);
+                            }
+                        },
+                        new Response.ErrorListener() {
+                            @Override
+                            public void onErrorResponse(VolleyError error) {
+                                Log.d(TAG, "Error Volley viaje: " + error.getMessage());
+
+                            }
+                        }
+                )
+        );
+        myRequest.setRetryPolicy(new DefaultRetryPolicy(
+                50000,
+                5,//DefaultRetryPolicy.DEFAULT_MAX_RETRIES
+                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+
+    }
+
+    private void procesarRespuesta_solicitados(JSONObject response, Context context) {
+
+        try {
+            // Obtener atributo "mensaje"
+            String mensaje = response.getString("estado");
+            Fragment fragment = null;
+            switch (mensaje) {
+                case "1":
+                    JSONArray mensaje1 = response.getJSONArray("viaje");
+                    Intent intent2 = new Intent(getApplicationContext(), MainViaje.class);
+                    intent2.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK );
+                    getApplicationContext().startActivity(intent2);
+
+                    break;
+
+                case "2":
+
                     fragment = new fragment_principal();
 
 
                     getSupportFragmentManager().beginTransaction()
                             .replace(R.id.main_content, fragment)
                             .commit();
+                    cargarDaIdVehiculo(context);
                     break;
 
             }
-            cargarDaIdVehiculo(context);
-
-
         } catch (JSONException e) {
             e.printStackTrace();
         }

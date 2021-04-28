@@ -4,6 +4,7 @@ public class conductor_titular {
 
     String id;
     String nombre;
+    String apellido;
     String mail;
     String estado;
     String clave;
@@ -26,6 +27,14 @@ public class conductor_titular {
 
     public void setNombre(String nombre) {
         this.nombre = nombre;
+    }
+
+    public String getApellido() {
+        return apellido;
+    }
+
+    public void setApellido(String apellido) {
+        this.apellido = apellido;
     }
 
     public String getMail() {

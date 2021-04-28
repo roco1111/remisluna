@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -161,7 +161,6 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="@dimen/margin_top"
-        android:layout_below="@id/id_datos_viaje"
         android:orientation="vertical">
         <TextView
             android:id="@+id/kms"
@@ -184,87 +183,57 @@
             android:layout_centerHorizontal="true"
             android:textColor="@color/alarma"
             android:textSize="@dimen/tamanio_numero" />
-    </RelativeLayout>
 
-    <FrameLayout
-        android:id="@+id/idAlarma"
-        android:layout_width="@dimen/campos_width_medio"
-        android:layout_height="@dimen/alto_imagen"
-        android:layout_above="@id/idSuspender"
-        android:layout_centerHorizontal="true"
-        android:layout_marginBottom="@dimen/margin_boton">
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/precio"
+
+            android:layout_marginTop="@dimen/margin_top_menu2"
+            android:id="@+id/idTicket"
+            android:layout_centerHorizontal="true">
+
+            <Button
+                android:id="@+id/buttonSinTicket"
+                android:layout_width="@dimen/perfil_image_size"
+                android:layout_height="@dimen/alto_imagen"
+                android:background="@android:color/transparent"
+                android:drawableTop="@drawable/sin_ticket"
+                tools:ignore="RtlHardcoded" />
+
+            <Button
+                android:id="@+id/buttonConTicket"
+                android:layout_width="@dimen/perfil_image_size"
+                android:layout_height="@dimen/alto_imagen"
+                android:layout_marginStart="10dp"
+                android:background="@android:color/transparent"
+                android:drawableTop="@drawable/con_ticket"
+                tools:ignore="RtlHardcoded" />
+
+        </LinearLayout>
+
         <Button
             android:id="@+id/buttonAlarma"
+            android:layout_below="@id/idTicket"
             android:layout_width="@dimen/campos_width_medio"
             android:layout_height="@dimen/alto_imagen"
             android:background="@android:color/transparent"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="@dimen/margin_top_item"
             android:drawableTop="@drawable/boton_alarma"
             tools:ignore="RtlHardcoded" />
-        <TextView
-            android:id="@+id/textAlarma"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:clickable="false"
-            android:textSize="@dimen/tamanio_parrafo"
-            android:textColor="@color/alarma"
-            android:elevation="@dimen/elevation"
-            android:text="@string/alarma" />
-    </FrameLayout>
 
-    <FrameLayout
-        android:id="@+id/idSuspender"
-        android:layout_width="@dimen/campos_width_medio"
-        android:layout_height="@dimen/alto_imagen"
-        android:layout_above="@id/idTerminar"
-        android:layout_centerHorizontal="true"
-        android:layout_marginBottom="@dimen/margin_boton">
         <Button
             android:id="@+id/buttonSuspender"
+            android:layout_below="@id/buttonAlarma"
             android:layout_width="@dimen/campos_width_medio"
             android:layout_height="@dimen/alto_imagen"
             android:background="@android:color/transparent"
             android:drawableTop="@drawable/boton_suspender"
+            android:layout_marginTop="@dimen/margin_top_item"
+            android:layout_centerHorizontal="true"
             tools:ignore="RtlHardcoded" />
-        <TextView
-            android:id="@+id/textSuspender"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:clickable="false"
-            android:textSize="@dimen/tamanio_parrafo"
-            android:textColor="@color/suspender"
-            android:elevation="@dimen/elevation"
-            android:text="@string/suspender" />
-    </FrameLayout>
-
-    <FrameLayout
-        android:id="@+id/idTerminar"
-        android:layout_width="@dimen/campos_width_medio"
-        android:layout_height="@dimen/alto_imagen"
-        android:layout_alignParentBottom="true"
-        android:layout_centerHorizontal="true"
-        android:layout_marginBottom="@dimen/margin_boton">
-        <Button
-            android:id="@+id/buttonTerminar"
-            android:layout_width="@dimen/campos_width_medio"
-            android:layout_height="@dimen/alto_imagen"
-            android:background="@android:color/transparent"
-            android:drawableTop="@drawable/boton"
-            tools:ignore="RtlHardcoded" />
-        <TextView
-            android:id="@+id/textTerminar"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:clickable="false"
-            android:textSize="@dimen/tamanio_parrafo"
-            android:textColor="@color/green_500"
-            android:elevation="@dimen/elevation"
-            android:text="@string/terminar" />
-    </FrameLayout>
+    </RelativeLayout>
 
 
-
-
-</RelativeLayout>
+</LinearLayout>

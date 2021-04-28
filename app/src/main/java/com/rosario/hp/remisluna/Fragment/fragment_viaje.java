@@ -31,6 +31,7 @@ import com.android.volley.Response;
 import com.android.volley.error.VolleyError;
 import com.android.volley.request.JsonObjectRequest;
 import com.rosario.hp.remisluna.Impresion;
+import com.rosario.hp.remisluna.MainActivity;
 import com.rosario.hp.remisluna.MainViaje;
 import com.rosario.hp.remisluna.R;
 import com.rosario.hp.remisluna.ServicioGeolocalizacion;
@@ -68,6 +69,7 @@ public class fragment_viaje extends Fragment {
     private String salida_coordenada;
     private String destino_coordenada;
     private Button inicio;
+    private Button anular;
     private RelativeLayout datos_viaje;
     private RelativeLayout sin_elementos;
     private LocationManager mLocationManager;
@@ -123,6 +125,7 @@ public class fragment_viaje extends Fragment {
         dato_salida = v.findViewById(R.id.dato_salida);
         destino = v.findViewById(R.id.dato_destino);
         inicio = v.findViewById(R.id.buttonInicio);
+        anular = v.findViewById(R.id.buttonAnular);
 
         datos_viaje = v.findViewById(R.id.datos_viaje);
         sin_elementos = v.findViewById(R.id.sin_elementos);
@@ -139,6 +142,15 @@ public class fragment_viaje extends Fragment {
                 }else{
                     iniciar_viaje();
                 }
+
+            }
+        });
+
+        this.anular.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                anular_viaje();
 
             }
         });
@@ -377,6 +389,76 @@ public class fragment_viaje extends Fragment {
 
                     getActivity().startService(new Intent(getActivity(),ServicioGeolocalizacion.class));
                     Intent intent2 = new Intent(getContext(), MainViaje.class);
+                    getContext().startActivity(intent2);
+                    break;
+                case "2":
+                    // Mostrar mensaje
+                    Toast.makeText(
+                            getContext(),
+                            mensaje,
+                            Toast.LENGTH_LONG).show();
+                    // Enviar código de falla
+                    break;
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void anular_viaje(){
+
+        String ls_viaje = id_viaje.getText().toString();
+
+        String newURL = Constantes.ANULAR_VIAJE + "?id=" + ls_viaje;
+
+        Log.d(TAG,newURL);
+
+        // Actualizar datos en el servidor
+        VolleySingleton.getInstance(getActivity()).addToRequestQueue(
+                new JsonObjectRequest(
+                        Request.Method.GET,
+                        newURL,
+                        null,
+                        new Response.Listener<JSONObject>() {
+                            @Override
+                            public void onResponse(JSONObject response) {
+                                procesarRespuestaActualizarAnular(response);
+                            }
+                        },
+                        new Response.ErrorListener() {
+                            @Override
+                            public void onErrorResponse(VolleyError error) {
+                                Log.d(TAG, "Error inicio: " + error.getMessage());
+
+                            }
+                        }
+
+                ) {
+                    @Override
+                    public Map<String, String> getHeaders() {
+                        Map<String, String> headers = new HashMap<>();
+                        headers.put("Content-Type", "application/json; charset=utf-8");
+                        return headers;
+                    }
+
+                    @Override
+                    public String getBodyContentType() {
+                        return "application/json; charset=utf-8" + getParamsEncoding();
+                    }
+                }
+        );
+    }
+    private void procesarRespuestaActualizarAnular(JSONObject response) {
+
+        try {
+            // Obtener estado
+            String estado = response.getString("estado");
+            // Obtener mensaje
+            String mensaje = response.getString("mensaje");
+
+            switch (estado) {
+                case "1":
+                    Intent intent2 = new Intent(getContext(), MainActivity.class);
                     getContext().startActivity(intent2);
                     break;
                 case "2":

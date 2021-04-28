@@ -37,6 +37,12 @@
     <string name="dialog_aceptar">Aceptar</string>
     <string name="cero_distancia">0</string>
     <string name="cero_pesos">$ 0.00</string>
+    <string name="nombre_usuario">Nombre y Apellido</string>
+    <string name="nombre">Nombre y Apellido</string>
+    <string name="apellido">Nombre y Apellido</string>
+
+    <string name="confirmar_cliente">Confirmar Contraseña</string>
+    <string name="foto">Foto Perfil</string>
 
 
     <string name="esperando">esperando...</string>
@@ -66,5 +72,6 @@
     <string name="menu_perfil">Perfil</string>
     <string name="menu_politicas">Políticas de Privacidad</string>
     <string name="menu_terminos">Términos y Condiciones</string>
+    <string name="menu_guardar">Guardar</string>
 
 </resources>

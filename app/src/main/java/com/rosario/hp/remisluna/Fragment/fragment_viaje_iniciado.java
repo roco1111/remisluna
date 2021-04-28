@@ -32,6 +32,7 @@ import com.android.volley.Response;
 import com.android.volley.error.VolleyError;
 import com.android.volley.request.JsonObjectRequest;
 import com.rosario.hp.remisluna.Impresion;
+import com.rosario.hp.remisluna.MainActivity;
 import com.rosario.hp.remisluna.MainViaje;
 import com.rosario.hp.remisluna.R;
 import com.rosario.hp.remisluna.ServicioGeolocalizacion;
@@ -78,7 +79,8 @@ public class fragment_viaje_iniciado extends Fragment {
     private String id_vehiculo;
     private String id_turno;
     private String movil;
-    private Button terminar;
+    private Button sin_ticket;
+    private Button con_ticket;
     private Button suspender;
     private Button alarma;
     private String importe_bajada;
@@ -94,6 +96,7 @@ public class fragment_viaje_iniciado extends Fragment {
     byte FONT_TYPE;
     boolean mBound = false;
     private LocationManager mLocationManager;
+    boolean lb_ticket;
 
     @Override
     public void onPause() {
@@ -155,7 +158,8 @@ public class fragment_viaje_iniciado extends Fragment {
         documento = v.findViewById(R.id.dato_documento);
         dato_salida = v.findViewById(R.id.dato_salida);
         destino = v.findViewById(R.id.dato_destino);
-        terminar = v.findViewById(R.id.buttonTerminar);
+        sin_ticket = v.findViewById(R.id.buttonSinTicket);
+        con_ticket = v.findViewById(R.id.buttonConTicket);
         suspender = v.findViewById(R.id.buttonSuspender);
         alarma = v.findViewById(R.id.buttonAlarma);
         kms = v.findViewById(R.id.kms);
@@ -167,12 +171,21 @@ public class fragment_viaje_iniciado extends Fragment {
 
 
 
-        this.terminar.setOnClickListener(new View.OnClickListener() {
+        this.con_ticket.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
+            lb_ticket = true;
             getActivity().stopService(new Intent(getActivity(), ServicioGeolocalizacion.class));
             cargarDatosVehiculo(getContext()); }
+
+        });
+
+        this.sin_ticket.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                lb_ticket = false;
+                getActivity().stopService(new Intent(getActivity(), ServicioGeolocalizacion.class));
+                cargarDatosVehiculo(getContext()); }
 
         });
 
@@ -379,13 +392,19 @@ public class fragment_viaje_iniciado extends Fragment {
                     fecha = object.getString("fecha");
                     chofer = object.getString("chofer");
 
-                    if (!mBound) {
-                        Intent intent2 = new Intent(getContext(), MainViaje.class);
-                        getContext().startActivity(intent2);
-                    } else {
+                    if(lb_ticket) {
 
-                        printTicket();
-                    }
+                        if (!mBound) {
+                            Intent intent2 = new Intent(getContext(), MainActivity.class);
+                            getContext().startActivity(intent2);
+                        } else {
+
+                            printTicket();
+                        }
+                    }else{
+                        Intent intent2 = new Intent(getContext(), MainActivity.class);
+                        getContext().startActivity(intent2);
+                        }
 
                     break;
 

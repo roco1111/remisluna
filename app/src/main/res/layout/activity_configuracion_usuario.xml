@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:background="@color/background"
+    android:paddingTop="10dp">
+
+    <LinearLayout
+        android:layout_width="0px"
+        android:layout_height="0px"
+        android:focusable="true"
+        android:focusableInTouchMode="true">
+
+        <requestFocus />
+
+    </LinearLayout>
+
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <de.hdodenhof.circleimageview.CircleImageView
+            android:id="@+id/imageViewfoto"
+            android:layout_width="@dimen/perfil_image_size"
+            android:layout_height="@dimen/perfil_image_size"
+            app:civ_border_width="2dp"
+            app:civ_border_color="@color/colorPrimary"
+            android:layout_alignParentTop="true"
+            android:layout_marginTop="24dp"
+            android:scaleType="centerCrop"
+            android:src="@drawable/ic_account_circle"
+            android:visibility="visible"
+             />
+
+        <EditText
+            android:id="@+id/editTextNombre"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/campos_height"
+            android:layout_below="@+id/imageViewfoto"
+            android:layout_marginTop="14dp"
+            android:ems="10"
+            android:hint="@string/nombre"
+            android:inputType="textPersonName"
+            android:textColor="@color/purple_700"
+            android:textColorHint="@color/colorPrimary" />
+
+        <EditText
+            android:id="@+id/editTextApellido"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/campos_height"
+            android:layout_below="@+id/editTextNombre"
+            android:layout_marginTop="14dp"
+            android:ems="10"
+            android:hint="@string/apellido"
+            android:inputType="textPersonName"
+            android:textColor="@color/purple_700"
+            android:textColorHint="@color/colorPrimary" />
+
+
+        <EditText
+            android:id="@+id/editTextMail"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/campos_height"
+            android:layout_below="@+id/editTextApellido"
+            android:ems="10"
+            android:hint="@string/mail_cliente"
+            android:inputType="textEmailAddress"
+            android:textColor="@color/purple_700"
+            android:textColorHint="@color/colorPrimary" />
+
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/login_password_container"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/editTextMail"
+            android:textColor="@color/purple_700"
+            android:textColorHint="@color/colorPrimary"
+            app:passwordToggleEnabled="true"
+            app:passwordToggleTint="@color/colorPrimary"
+            app:passwordToggleTintMode="src_in">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/editTextClave"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/campos_height"
+                android:layout_alignParentStart="true"
+                android:layout_alignParentLeft="true"
+                android:ems="10"
+                android:hint="@string/clave_cliente"
+                android:background="@color/white"
+                android:inputType="textPassword"
+                android:textColor="@color/purple_700"
+                android:textColorHint="@color/colorPrimary"
+                tools:ignore="RtlHardcoded" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/login_confirmm_container"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/login_password_container"
+            android:layout_alignStart="@+id/login_password_container"
+            android:textColor="@color/purple_700"
+            android:textColorHint="@color/colorPrimary"
+            android:background="@color/white"
+            app:passwordToggleEnabled="true"
+            app:passwordToggleTint="@color/colorPrimary"
+            app:passwordToggleTintMode="src_in">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/editTextConfirmar"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/campos_height"
+                android:layout_alignParentStart="true"
+                android:layout_alignParentLeft="true"
+                android:ems="10"
+                android:hint="@string/confirmar_cliente"
+                android:background="@color/white"
+                android:inputType="textPassword"
+                android:textColor="@color/purple_700"
+                android:textColorHint="@color/purple_500"
+                tools:ignore="RtlHardcoded" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <Button
+            android:id="@+id/buttonRegistro"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/login_confirmm_container"
+            android:layout_marginTop="14dp"
+            android:background="@drawable/boton"
+            android:layout_centerHorizontal="true"
+            android:text="@string/menu_guardar"
+            android:textColor="@color/colorSecondaryText"
+            tools:ignore="RtlHardcoded" />
+
+        <Button
+            android:id="@+id/buttonFoto"
+            android:layout_width="140dp"
+            android:layout_height="46dp"
+            android:layout_marginStart="10dp"
+            android:layout_marginLeft="10dp"
+            android:layout_marginTop="79dp"
+            android:layout_toEndOf="@id/imageViewfoto"
+            android:background="@color/colorPrimary"
+            android:text="@string/foto"
+            android:textColor="@color/colorSecondaryText"
+            tools:ignore="RtlHardcoded" />
+
+
+
+
+    </RelativeLayout>
+
+
+</RelativeLayout>
