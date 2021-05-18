@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/menu_ayuda"
+        android:title="@string/menu_ayuda_ventana" />
+    <item
+        android:id="@+id/menu_ayuda_app"
+        android:title="@string/menu_ayuda_app" />
+    <item
+        android:id="@+id/menu_ayuda_impresa"
+        android:title="@string/menu_ayuda_ventana_impresa" />
+    <item
+        android:id="@+id/menu_app_impresa"
+        android:title="@string/menu_ayuda_app_impresa" />
+</menu>

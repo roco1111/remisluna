@@ -30,7 +30,6 @@
             android:id="@+id/imageView2"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
             app:srcCompat="@drawable/inicio" />
 
 
@@ -93,30 +92,17 @@
                 tools:ignore="RtlHardcoded" />
         </com.google.android.material.textfield.TextInputLayout>
 
-        <FrameLayout
-            android:id="@+id/idIngreso"
-            android:layout_width="@dimen/campos_width_medio"
-            android:layout_height="@dimen/alto_imagen"
-            android:layout_below="@+id/login_password_container"
-            android:layout_centerHorizontal="true"
-            android:layout_marginTop="14dp">
+
         <Button
             android:id="@+id/buttonIngreso"
             android:layout_width="@dimen/campos_width_medio"
             android:layout_height="@dimen/alto_imagen"
             android:background="@android:color/transparent"
-            android:drawableTop="@drawable/boton"
+            android:drawableTop="@drawable/ingreso_usuario"
+            android:layout_below="@+id/login_password_container"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="14dp"
             tools:ignore="RtlHardcoded" />
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:clickable="false"
-                android:textSize="@dimen/tamanio_parrafo"
-                android:textColor="@color/green_500"
-                android:elevation="@dimen/elevation"
-                android:text="@string/menu_ingresar" />
-        </FrameLayout>
 
 
 
@@ -126,7 +112,7 @@
             android:layout_height="@dimen/campos_height"
             android:layout_alignParentEnd="true"
             android:layout_alignParentStart="true"
-            android:layout_below="@+id/idIngreso"
+            android:layout_below="@+id/buttonIngreso"
             android:layout_centerVertical="true"
             android:layout_marginTop="14dp"
             android:text="@string/olvido_contraseña"

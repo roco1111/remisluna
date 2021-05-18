@@ -7,7 +7,9 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 
 import android.view.KeyEvent;
+import android.view.Menu;
 import android.view.MenuItem;
+import android.view.SubMenu;
 
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
@@ -115,6 +117,40 @@ public class Main_Login extends AppCompatActivity implements login.Callback  {
                 .commit();
 
 
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.menu_principal, menu);
+        MenuItem myMenuItem = menu.findItem(R.id.menu_principal);
+        getMenuInflater().inflate(R.menu.sub_menu_ayuda, myMenuItem.getSubMenu());
+
+        return true;
+    }
+
+    @Override
+        public boolean onOptionsItemSelected(MenuItem item) {
+
+        int id = item.getItemId();
+
+        switch (id) {
+            case R.id.menu_ayuda:// CONFIRMAR
+
+                SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+                SharedPreferences.Editor editor = settings.edit();
+
+                editor.putString("url", "https://remisluna.com.ar/remiseria/pagina_ayuda.php?id=1");
+                editor.apply();
+
+                Intent intent = new Intent(getApplicationContext(), WebActivity.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                getApplicationContext().startActivity(intent);
+                editor.commit();
+                break;
+
+        }
+        return super.onOptionsItemSelected(item);
     }
 
     @Override

@@ -23,7 +23,7 @@ public class MainViajes extends AppCompatActivity {
 
         SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
         ls_id_turno     = settings.getString("id_turno","");
-        getSupportActionBar().setTitle("Datos Turno");
+        getSupportActionBar().setTitle("Historial Turnos");
 
         Fragment fragment = null;
 

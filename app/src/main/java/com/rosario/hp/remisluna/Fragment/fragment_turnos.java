@@ -162,7 +162,9 @@ public class fragment_turnos extends Fragment {
 
                         tur.setRecaudacion(recaudacion);
 
+                        String estado_turno = object.getString("ESTADO");
 
+                        tur.setEstado(estado_turno);
 
                         datos.add(tur);
 

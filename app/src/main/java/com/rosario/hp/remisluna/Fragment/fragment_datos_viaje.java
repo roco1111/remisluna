@@ -139,10 +139,10 @@ public class fragment_datos_viaje extends Fragment{
             @Override
             public void onClick(View v) {
                 if (!mBound) {
-                    SharedPreferences.Editor editor = settings.edit();
-                    editor.putString("tipo_ventana","datos_viaje");
-                    editor.commit();
-                    getActivity().startService(new Intent(getActivity(), Impresion.class));
+                    Toast.makeText(
+                            getContext(),
+                            R.string.no_impresora,
+                            Toast.LENGTH_LONG).show();
                 } else {
                     printTicket();
                 }

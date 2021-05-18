@@ -385,7 +385,7 @@ public class datosUsuario extends Fragment {
         int id = item.getItemId();
 
         switch (id) {
-            case R.id.menu_guardar:// CONFIRMAR
+            case R.id.menu_ayuda:// CONFIRMAR
                 if (!validar()) {
 
                     if (compara_clave()) {

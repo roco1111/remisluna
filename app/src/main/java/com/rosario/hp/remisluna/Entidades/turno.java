@@ -9,6 +9,7 @@ public class turno {
     String hora_fin;
     String distancia;
     String recaudacion;
+    String estado;
 
     public String getId() {
         return id;
@@ -28,6 +29,14 @@ public class turno {
 
     public String getFecha() {
         return fecha;
+    }
+
+    public String getEstado() {
+        return estado;
+    }
+
+    public void setEstado(String estado) {
+        this.estado = estado;
     }
 
     public void setFecha(String fecha) {

@@ -15,7 +15,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -28,13 +27,11 @@ import com.android.volley.error.VolleyError;
 import com.android.volley.request.JsonObjectRequest;
 import com.rosario.hp.remisluna.Entidades.viaje;
 import com.rosario.hp.remisluna.Impresion;
-import com.rosario.hp.remisluna.MainActivity;
 import com.rosario.hp.remisluna.R;
 import com.rosario.hp.remisluna.include.Constantes;
 import com.rosario.hp.remisluna.include.PrinterCommands;
 import com.rosario.hp.remisluna.include.Utils;
 import com.rosario.hp.remisluna.include.VolleySingleton;
-import com.rosario.hp.remisluna.turnos_activity;
 import com.rosario.hp.remisluna.viajes_activity;
 
 import org.json.JSONArray;
@@ -55,6 +52,7 @@ public class fragment_turno extends Fragment{
     TextView hora_fin;
     TextView kms;
     TextView recaudacion;
+    private String estado;
     private Button imprimir;
     private Button viajes;
 
@@ -122,15 +120,16 @@ public class fragment_turno extends Fragment{
         this.imprimir.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (!mBound) {
-                    SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getContext());
-                    SharedPreferences.Editor editor = settings.edit();
-                    editor.putString("tipo_ventana","turno");
-                    editor.commit();
-                    getActivity().startService(new Intent(getActivity(), Impresion.class));
-                } else {
+                if(mBound) {
+
                     datos_viajes_turno(getContext());
+                }else{
+                    Toast.makeText(
+                            getContext(),
+                            R.string.no_impresora,
+                            Toast.LENGTH_LONG).show();
                 }
+
             }
         });
 
@@ -200,8 +199,9 @@ public class fragment_turno extends Fragment{
                     hora_fin.setText(object.getString("hora_fin"));}
                     if(!object.getString("distancia").equals("null")){
                     kms.setText(object.getString("distancia"));}
-                    if(!object.getString("dato_recaudacion").equals("null")){
+                    if(!object.getString("recaudacion").equals("null")){
                     recaudacion.setText(object.getString("recaudacion"));}
+                    estado = object.getString("estado");
                 case "2":
                     Toast.makeText(
                             getContext(),
@@ -289,7 +289,11 @@ public class fragment_turno extends Fragment{
                     break;
 
             }
-            ticket_turno(viaje);
+            if(estado.equals("1")){
+                ticket_turno_parcial(viaje);
+            }else{
+                ticket_turno(viaje);
+            }
 
         } catch (JSONException e) {
             e.printStackTrace();
@@ -361,6 +365,57 @@ public class fragment_turno extends Fragment{
 
             outputStream.flush();
             
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+
+    }
+
+    protected void ticket_turno_parcial( ArrayList<viaje> viajes) {
+
+        outputStream = impresion.getOutputStream();
+
+        //print command
+        try {
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+
+            byte[] printformat = {0x1B, 0 * 21, FONT_TYPE};
+            //outputStream.write(printformat);
+
+            //print title
+            printUnicode();
+            //print normal text
+            printCustom(getResources().getString(R.string.empresa), 2, 1);
+            printNewLine();
+            printCustom(getResources().getString(R.string.parcial_turno), 1, 0); // total 32 char in a single line
+
+            printNewLine();
+            printText(fecha.getText().toString());
+            printText(" - ");
+            printText(hora_inicio.getText().toString());//fecha
+            printNewLine();
+
+            printNewLine();
+            printText("K.TOTAL:  ");
+            printText(kms.getText().toString());
+            printNewLine();
+            printNewLine();
+            printText("RECAUDACION: ");
+            printText(recaudacion.getText().toString());
+            printNewLine();
+            printNewLine();
+            //resetPrint(); //reset printer
+            printUnicode();
+            printNewLine();
+            printNewLine();
+
+            outputStream.flush();
+
         } catch (IOException e) {
             e.printStackTrace();
         }

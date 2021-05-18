@@ -155,58 +155,28 @@
                 android:textSize="@dimen/tamanio_texto" />
         </LinearLayout>
 
-
-
-        <FrameLayout
-            android:id="@+id/idViajes"
+        <Button
+            android:id="@+id/buttonViaje"
             android:layout_width="@dimen/campos_width_medio"
             android:layout_height="@dimen/alto_imagen"
-            android:layout_above="@id/idTickets"
+            android:background="@android:color/transparent"
+            android:drawableTop="@drawable/ver_viajes"
+            android:layout_above="@id/buttonTicket"
             android:layout_centerHorizontal="true"
-            android:layout_marginBottom="14dp">
-            <Button
-                android:id="@+id/buttonViaje"
-                android:layout_width="@dimen/campos_width_medio"
-                android:layout_height="@dimen/alto_imagen"
-                android:background="@android:color/transparent"
-                android:drawableTop="@drawable/boton"
-                tools:ignore="RtlHardcoded" />
-            <TextView
-                android:id="@+id/textViaje"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:clickable="false"
-                android:textSize="@dimen/tamanio_parrafo"
-                android:textColor="@color/green_500"
-                android:elevation="@dimen/elevation"
-                android:text="@string/ver_viaje" />
-        </FrameLayout>
+            android:layout_marginBottom="14dp"
+            tools:ignore="RtlHardcoded" />
 
-        <FrameLayout
-            android:id="@+id/idTickets"
-            android:layout_width="@dimen/campos_width_medio"
-            android:layout_height="@dimen/alto_imagen"
-            android:layout_alignParentBottom="true"
-            android:layout_centerHorizontal="true"
-            android:layout_marginBottom="14dp">
+
             <Button
                 android:id="@+id/buttonTicket"
                 android:layout_width="@dimen/campos_width_medio"
                 android:layout_height="@dimen/alto_imagen"
                 android:background="@android:color/transparent"
-                android:drawableTop="@drawable/boton"
+                android:drawableTop="@drawable/emitir_ticket"
+                android:layout_alignParentBottom="true"
+                android:layout_centerHorizontal="true"
+                android:layout_marginBottom="14dp"
                 tools:ignore="RtlHardcoded" />
-            <TextView
-                android:id="@+id/textTicket"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:clickable="false"
-                android:textSize="@dimen/tamanio_parrafo"
-                android:textColor="@color/green_500"
-                android:elevation="@dimen/elevation"
-                android:text="@string/ticket" />
-        </FrameLayout>
+
     </RelativeLayout>
 </RelativeLayout>

@@ -8,6 +8,7 @@ import android.preference.PreferenceManager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.rosario.hp.remisluna.MainTurno;
@@ -56,6 +57,15 @@ public class turnoAdapter extends RecyclerView.Adapter<turnoAdapter.HolderTurno>
             holder.importe.setText(turnos.get(position).getRecaudacion());
         }
 
+        switch (turnos.get(position).getEstado()){
+            case "2":
+                holder.indicador.setImageDrawable(context.getResources().getDrawable(R.drawable.terminado));
+                break;
+            case "1":
+                holder.indicador.setImageDrawable(context.getResources().getDrawable(R.drawable.en_curso));
+                break;
+        }
+
 
     }
 
@@ -65,12 +75,14 @@ public class turnoAdapter extends RecyclerView.Adapter<turnoAdapter.HolderTurno>
         public TextView fecha;
         public TextView hora;
         public TextView importe;
+        public ImageView indicador;
         public ItemClickListener6 listener;
         public HolderTurno(View v, ItemClickListener6 listener) {
             super(v);
             fecha = v.findViewById(R.id.fecha);
             hora = v.findViewById(R.id.hora);
             importe = v.findViewById(R.id.importe);
+            indicador = v.findViewById(R.id.indicador);
             this.listener = listener;
 
             v.setOnClickListener(this);

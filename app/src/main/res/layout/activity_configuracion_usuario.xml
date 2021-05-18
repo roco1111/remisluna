@@ -73,6 +73,7 @@
             android:hint="@string/mail_cliente"
             android:inputType="textEmailAddress"
             android:textColor="@color/purple_700"
+            android:enabled="false"
             android:textColorHint="@color/colorPrimary" />
 
 

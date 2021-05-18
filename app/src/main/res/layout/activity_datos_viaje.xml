@@ -284,31 +284,18 @@
         </LinearLayout>
         </LinearLayout>
 
-        <FrameLayout
-            android:id="@+id/idViajes"
-            android:layout_width="@dimen/campos_width_medio"
-            android:layout_height="@dimen/alto_imagen"
-            android:layout_alignParentBottom="true"
-            android:layout_centerHorizontal="true"
-            android:layout_marginBottom="14dp">
+
             <Button
                 android:id="@+id/buttonTicket"
                 android:layout_width="@dimen/campos_width_medio"
                 android:layout_height="@dimen/alto_imagen"
                 android:background="@android:color/transparent"
-                android:drawableTop="@drawable/boton"
+                android:drawableTop="@drawable/emitir_ticket"
+                android:layout_alignParentBottom="true"
+                android:layout_centerHorizontal="true"
+                android:layout_marginBottom="14dp"
                 tools:ignore="RtlHardcoded" />
-            <TextView
-                android:id="@+id/textViaje"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:clickable="false"
-                android:textSize="@dimen/tamanio_parrafo"
-                android:textColor="@color/green_500"
-                android:elevation="@dimen/elevation"
-                android:text="@string/ticket" />
-        </FrameLayout>
+
 
 
     </RelativeLayout>

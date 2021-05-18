@@ -40,5 +40,8 @@ public class Constantes {
     public static final String UPDATE_CONDUCTOR = "https://" + IP + PUERTO_HOST + "/actualizar_conductor.php";
     public static final String GET_CONDUCTOR_BY_ID = "https://" + IP + PUERTO_HOST + "/obtener_un_conductor.php";
 
+    public static final String GET_AYUDAS = "https://" + IP + PUERTO_HOST + "/obtener_ayudas.php";
+    public static final String GET_ID_AYUDA = "https://" + IP + PUERTO_HOST + "/obtener_ayuda.php";
+
 
 }

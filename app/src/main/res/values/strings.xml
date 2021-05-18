@@ -5,6 +5,7 @@
     <string name="recibo">Ticket para el Pasajero</string>
     <string name="servicio">Servicio Público VGG</string>
     <string name="ticket_turno">Totales Turno</string>
+    <string name="parcial_turno">Parcial Turno</string>
     <string name="ticket_recaudacion">Recaudación Últimos 10 Turnos</string>
     <string name="title_activity_notifications">Notificaciones</string>
     <string name="menu_registro">Registro Usuario</string>
@@ -15,7 +16,7 @@
     <string name="nuevo_turno">Nuevo Turno</string>
     <string name="cerrar_turno">Cerrar Turno</string>
     <string name="impresora">Impresora</string>
-    <string name="historial_viaje">Historial Viajes</string>
+    <string name="historial_viaje">Historial Turnos</string>
     <string name="perfil">Perfil</string>
     <string name="vacio">No hay Elementos</string>
     <string name="sin_viaje">No hay Viajes Asignados</string>
@@ -43,6 +44,8 @@
 
     <string name="confirmar_cliente">Confirmar Contraseña</string>
     <string name="foto">Foto Perfil</string>
+
+    <string name="no_impresora">Debe conectar la impresora para poder imprimir</string>
 
 
     <string name="esperando">esperando...</string>
@@ -73,5 +76,10 @@
     <string name="menu_politicas">Políticas de Privacidad</string>
     <string name="menu_terminos">Términos y Condiciones</string>
     <string name="menu_guardar">Guardar</string>
+    <string name="menu_ayuda">Ayuda</string>
+    <string name="menu_ayuda_ventana">Ayuda Pantalla</string>
+    <string name="menu_ayuda_ventana_impresa">Ayuda Pantalla Impresa</string>
+    <string name="menu_ayuda_app">Ayuda App</string>
+    <string name="menu_ayuda_app_impresa">Ayuda App Impresa</string>
 
 </resources>
