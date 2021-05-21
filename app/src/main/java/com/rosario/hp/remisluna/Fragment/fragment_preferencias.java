@@ -17,6 +17,8 @@ import com.rosario.hp.remisluna.WebActivity;
 import com.rosario.hp.remisluna.Main_Login;
 import com.rosario.hp.remisluna.insertUsuario;
 
+import java.util.Objects;
+
 public class fragment_preferencias extends Fragment {
 
 
@@ -58,12 +60,12 @@ public class fragment_preferencias extends Fragment {
                 SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getContext());
                 SharedPreferences.Editor editor = settings.edit();
 
-                editor.putString("url", "https://goldrules.infinitydesigner.com.ar/politicas/privacidad.php");
+                editor.putString("url", "https://remisluna.com.ar/politicas/privacidad.php");
                 editor.apply();
 
                 Intent intent = new Intent(getContext(), WebActivity.class);
                 intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                getActivity().startActivity(intent);
+                Objects.requireNonNull(getActivity()).startActivity(intent);
                 editor.commit();
             }
         });

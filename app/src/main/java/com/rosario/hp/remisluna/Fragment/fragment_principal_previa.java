@@ -151,8 +151,8 @@ public class fragment_principal_previa extends Fragment {
         this.historial.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent2 = new Intent(getContext(), turnos_activity.class);
-                getContext().startActivity(intent2);
+                Intent intent2 = new Intent(act, turnos_activity.class);
+                act.startActivity(intent2);
             }
         });
 

@@ -124,7 +124,7 @@
         android:layout_height="wrap_content"
         android:layout_below="@+id/imageButtonPerfil"
         android:layout_centerHorizontal="true"
-        android:text="@string/perfil"
+        android:text="@string/menu_preferencias"
         android:layout_marginTop="@dimen/margin_top_texto"
         android:textAlignment="center"
         android:textColor="@color/black"

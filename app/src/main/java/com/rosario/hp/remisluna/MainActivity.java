@@ -315,6 +315,11 @@ public class MainActivity extends AppCompatActivity {
 
                     JSONObject object = mensaje1.getJSONObject(0);
                     ls_vehiculo = object.getString("id_movil");
+                    if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                        ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION,}, 1000);
+                    } else {
+                        locationStart();
+                    }
                     Intent intent2 = new Intent(getApplicationContext(), MainViaje.class);
                     intent2.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK );
                     getApplicationContext().startActivity(intent2);
@@ -381,6 +386,11 @@ public class MainActivity extends AppCompatActivity {
             switch (mensaje) {
                 case "1":
                     JSONArray mensaje1 = response.getJSONArray("viaje");
+                    if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                        ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION,}, 1000);
+                    } else {
+                        locationStart();
+                    }
                     Intent intent2 = new Intent(getApplicationContext(), MainViaje.class);
                     intent2.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK );
                     getApplicationContext().startActivity(intent2);
