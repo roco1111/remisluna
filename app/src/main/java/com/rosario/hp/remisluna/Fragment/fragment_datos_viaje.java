@@ -66,6 +66,9 @@ public class fragment_datos_viaje extends Fragment{
     private String distancia;
     private String fecha_tarifa;
     private String movil;
+    private TextView total;
+    private TextView descuento;
+    private TextView espera;
     private LinearLayout suspension;
     private Button imprimir;
 
@@ -130,6 +133,9 @@ public class fragment_datos_viaje extends Fragment{
         impresion = new Impresion();
         imprimir = v.findViewById(R.id.buttonTicket);
         suspension = v.findViewById(R.id.id_suspension);
+        espera = v.findViewById(R.id.espera);
+        total = v.findViewById(R.id.total);
+        descuento = v.findViewById(R.id.descuento);
 
         SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getContext());
         ls_id_viaje     = settings.getString("id_viaje","");
@@ -222,6 +228,29 @@ public class fragment_datos_viaje extends Fragment{
                         ls_importe = "0,00";
                     }
                     importe.setText(ls_importe);
+
+
+                    ls_importe = object.getString("espera");
+                    if(ls_importe.equals("null"))
+                    {
+                        ls_importe = "0,00";
+                    }
+                    espera.setText(ls_importe);
+
+                    ls_importe = object.getString("descuento");
+                    if(ls_importe.equals("null"))
+                    {
+                        ls_importe = "0,00";
+                    }
+                    descuento.setText(ls_importe);
+
+                    ls_importe = object.getString("total");
+                    if(ls_importe.equals("null"))
+                    {
+                        ls_importe = "0,00";
+                    }
+                    total.setText(ls_importe);
+
                     motivo.setText(object.getString("motivo"));
                     chofer = object.getString("chofer");
                     distancia = object.getString("distancia");

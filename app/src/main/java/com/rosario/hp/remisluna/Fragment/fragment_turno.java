@@ -290,7 +290,7 @@ public class fragment_turno extends Fragment{
 
             }
             if(estado.equals("1")){
-                ticket_turno_parcial(viaje);
+                ticket_turno_parcial();
             }else{
                 ticket_turno(viaje);
             }
@@ -372,7 +372,7 @@ public class fragment_turno extends Fragment{
 
     }
 
-    protected void ticket_turno_parcial( ArrayList<viaje> viajes) {
+    protected void ticket_turno_parcial( ) {
 
         outputStream = impresion.getOutputStream();
 

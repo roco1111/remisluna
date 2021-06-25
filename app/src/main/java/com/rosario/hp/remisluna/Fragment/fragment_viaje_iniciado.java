@@ -10,7 +10,6 @@ import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.location.Location;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.IBinder;
@@ -24,13 +23,13 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.fragment.app.Fragment;
-import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.error.VolleyError;
 import com.android.volley.request.JsonObjectRequest;
+import com.rosario.hp.remisluna.Entidades.parametro;
 import com.rosario.hp.remisluna.Impresion;
 import com.rosario.hp.remisluna.MainActivity;
 import com.rosario.hp.remisluna.MainViaje;
@@ -91,12 +90,17 @@ public class fragment_viaje_iniciado extends Fragment {
     private Long espera= 0L;
     private Long ficha= 0L;
     private Long cuadras = 0L;
+    private Double precio_total = 0.00;
+    private Double precio_ficha = 0.00;
+    private Double precio_espera = 0.00;
+    private Integer id_trayecto = 0;
     private static OutputStream outputStream;
     private Impresion impresion;
     byte FONT_TYPE;
     boolean mBound = false;
     private LocationManager mLocationManager;
     boolean lb_ticket;
+    private Double l_porcentaje;
 
     @Override
     public void onPause() {
@@ -169,8 +173,6 @@ public class fragment_viaje_iniciado extends Fragment {
         ls_id_conductor     = settings.getString("id","");
         id_turno            = settings.getString("id_turno_chofer","");
 
-
-
         this.con_ticket.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -219,7 +221,7 @@ public class fragment_viaje_iniciado extends Fragment {
             }
 
             String datos = i.getStringExtra("coordenadas");//obtenemos las coordenadas envidas del servicioGeolocalizaci—n
-            String[] tokens = datos.split(";");//separamos por tocken
+            String[] tokens = datos.split(";");//separamos por token
             cuadras++;
             kms.setText( String.valueOf(cuadras));
 
@@ -228,19 +230,29 @@ public class fragment_viaje_iniciado extends Fragment {
             if(tokens[2].equals("1")){
                 ficha++;
                 valor_ficha = Double.parseDouble(importe_ficha);
+                precio_ficha = precio_ficha + valor_ficha ;
             }else{
                 espera++;
                 valor_ficha = Double.parseDouble(importe_espera);
+                precio_espera = precio_espera + valor_ficha ;
             }
 
 
-            Double precio = valor_ficha * Double.parseDouble(String.valueOf(cuadras));
+            precio_total = precio_total + valor_ficha ;
 
-            precio = Double.parseDouble(getTwoDecimals(precio));
+            precio_total = Double.parseDouble(getTwoDecimals(precio_total));
 
-            importe.setText("$ " + String.format(Locale.GERMANY,"%.2f",precio));
+            importe.setText("$ " + String.format(Locale.GERMANY,"%.2f",precio_total));
 
-            ls_precio = String.format(Locale.GERMANY,"%.2f",precio);
+            ls_precio = String.format(Locale.GERMANY,"%.2f",precio_total);
+
+            String latitud;
+            String longitud;
+
+            latitud = tokens[0];
+            longitud = tokens[0];
+
+            guardar_trayectoria(latitud,longitud);
 
             //kms.append("\n");//agregamos salto de linea
         }
@@ -249,6 +261,161 @@ public class fragment_viaje_iniciado extends Fragment {
     private static String getTwoDecimals(double value){
         DecimalFormat df = new DecimalFormat("0.00");
         return df.format(value);
+    }
+
+
+    private void guardar_trayectoria(String latitud, String longitud){
+
+        HashMap<String, String> map = new HashMap<>();// Mapeo previo
+        id_trayecto++;
+        map.put("id_viaje", id_viaje.getText().toString());
+        map.put("id_trayecto", String.valueOf(id_trayecto));
+        map.put("latitud", latitud);
+        map.put("longitud", longitud);
+
+        // Crear nuevo objeto Json basado en el mapa
+        JSONObject jobject = new JSONObject(map);
+
+
+        // Depurando objeto Json...
+        Log.d(TAG, jobject.toString());
+
+        StringBuilder encodedParams = new StringBuilder();
+        try {
+            for (Map.Entry<String, String> entry : map.entrySet()) {
+                encodedParams.append(URLEncoder.encode(entry.getKey(), "utf-8"));
+                encodedParams.append('=');
+                encodedParams.append(URLEncoder.encode(entry.getValue(), "utf-8"));
+                encodedParams.append('&');
+            }
+        } catch (UnsupportedEncodingException uee) {
+            throw new RuntimeException("Encoding not supported: " + "utf-8", uee);
+        }
+
+        encodedParams.setLength(Math.max(encodedParams.length() - 1, 0));
+
+        String newURL = Constantes.INSERTAR_TRAYECTORIA + "?" + encodedParams;
+        Log.d(TAG,newURL);
+        // Actualizar datos en el servidor
+        VolleySingleton.getInstance(getContext()).addToRequestQueue(
+                new JsonObjectRequest(
+                        Request.Method.POST,
+                        newURL,
+                        null,
+                        new Response.Listener<JSONObject>() {
+                            @Override
+                            public void onResponse(JSONObject response) {
+                                procesarRespuestaActualizarUbicacion(response);
+                            }
+                        },
+                        new Response.ErrorListener() {
+                            @Override
+                            public void onErrorResponse(VolleyError error) {
+                                Log.d(TAG, "Error trayectoria: " + error.getMessage());
+
+                            }
+                        }
+
+                ) {
+                    @Override
+                    public Map<String, String> getHeaders() {
+                        Map<String, String> headers = new HashMap<>();
+                        headers.put("Content-Type", "application/json; charset=utf-8");
+                        return headers;
+                    }
+
+                    @Override
+                    public String getBodyContentType() {
+                        return "application/json; charset=utf-8" + getParamsEncoding();
+                    }
+                }
+        );
+    }
+    private void procesarRespuestaActualizarUbicacion(JSONObject response) {
+
+        try {
+            // Obtener estado
+            String estado = response.getString("estado");
+            // Obtener mensaje
+            String mensaje = response.getString("mensaje");
+
+            switch (estado) {
+                case "2":
+                    // Mostrar mensaje
+                    Toast.makeText(
+                            getContext(),
+                            mensaje,
+                            Toast.LENGTH_LONG).show();
+                    // Enviar código de falla
+                    break;
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void cargarParametro(final Context context) {
+
+        // Añadir parámetro a la URL del web service
+        String newURL = Constantes.GET_ID_PARAMETRO + "?parametro=10";
+        Log.d(TAG,newURL);
+
+        // Realizar petición GET_BY_ID
+        VolleySingleton.getInstance(context).addToRequestQueue(
+                myRequest = new JsonObjectRequest(
+                        Request.Method.POST,
+                        newURL,
+                        null,
+                        new Response.Listener<JSONObject>() {
+
+                            @Override
+                            public void onResponse(JSONObject response) {
+                                // Procesar respuesta Json
+                                procesarRespuestaParametro(response, context);
+                            }
+                        },
+                        new Response.ErrorListener() {
+                            @Override
+                            public void onErrorResponse(VolleyError error) {
+                                Log.d(TAG, "Error Volley viaje: " + error.getMessage());
+
+                            }
+                        }
+                )
+        );
+        myRequest.setRetryPolicy(new DefaultRetryPolicy(
+                50000,
+                5,//DefaultRetryPolicy.DEFAULT_MAX_RETRIES
+                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+
+    }
+
+    private void procesarRespuestaParametro(JSONObject response, Context context) {
+
+        try {
+            // Obtener atributo "mensaje"
+            String mensaje = response.getString("estado");
+
+            switch (mensaje) {
+                case "1":
+                    JSONArray datos_parametro = response.getJSONArray("parametro");
+
+                    for(int i = 0; i < datos_parametro.length(); i++)
+                    {JSONObject object = datos_parametro.getJSONObject(i);
+
+                        l_porcentaje = Double.parseDouble(object.getString("valor"));
+
+                    }
+
+                    break;
+
+            }
+
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
     }
 
 
@@ -312,6 +479,10 @@ public class fragment_viaje_iniciado extends Fragment {
                     importe_ficha = object.getString("importe_ficha");
                     importe_espera = object.getString("importe_espera");
                     movil = object.getString("movil");
+
+                    precio_total = Double.parseDouble(importe_bajada);
+
+                    cargarParametro(context);
 
                     break;
 
@@ -507,6 +678,12 @@ public class fragment_viaje_iniciado extends Fragment {
 
         distancia = String.valueOf(cuadras / 10);
 
+        Double descuento;
+        Double total;
+
+        descuento = Double.parseDouble(ls_precio) * (l_porcentaje / 100);
+        total = Double.parseDouble(ls_precio) - descuento;
+
         HashMap<String, String> map = new HashMap<>();// Mapeo previo
 
         map.put("id", ls_viaje);
@@ -514,6 +691,10 @@ public class fragment_viaje_iniciado extends Fragment {
         map.put("longitud", l_longitud_destino);
         map.put("distancia", distancia);
         map.put("precio", ls_precio);
+        map.put("espera", ls_espera);
+        map.put("descuento", String.format(Locale.GERMANY,"%.2f",descuento));
+        map.put("total", String.format(Locale.GERMANY,"%.2f",total));
+
 
         JSONObject jobject = new JSONObject(map);
 
@@ -875,9 +1056,9 @@ public class fragment_viaje_iniciado extends Fragment {
             printNewLine();
             printText("TARIFA AL  " + fecha_tarifa);
             printNewLine();
-            printText("VIAJE  " + '$' + ls_precio);
+            printText("VIAJE  " + '$' + String.format(Locale.GERMAN,"%.2f",precio_ficha));
             printNewLine();
-            printText("ESPERA  ");
+            printText("ESPERA  "+ '$' + String.format(Locale.GERMAN,"%.2f",precio_espera));
             printNewLine();
             printNewLine();
             printCustom ("TOTAL:  " + '$' +ls_precio,2,0);

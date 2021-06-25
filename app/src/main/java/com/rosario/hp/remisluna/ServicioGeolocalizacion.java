@@ -223,21 +223,26 @@ public class ServicioGeolocalizacion extends Service implements Runnable {
             locationB.setLongitude(longitud);
 
             float distance = locationA.distanceTo(locationB) / 100;
+
+            latitud_inicial = latitud;
+            longitud_inicial = longitud;
+
+
+            distancia_acumulada += distance;
+            distancia_acumulada = Double.valueOf(getTwoDecimals(distancia_acumulada));
+
+            if (distancia_acumulada >= 1) {
+                distancia_acumulada = 0;
+                tiempo_acumulado = 0L;
+
+                getApplicationContext().sendBroadcast(
+                        new Intent("key").putExtra("coordenadas", latitud + ";"
+                                + longitud + ";" + 1 + ""));
+            }
             if(distance > 0.30) {
-                latitud_inicial = latitud;
-                longitud_inicial = longitud;
 
                 tiempo_acumulado = 0L;
-                distancia_acumulada += distance;
-                distancia_acumulada = Double.valueOf(getTwoDecimals(distancia_acumulada));
 
-                if (distancia_acumulada >= 1) {
-                    distancia_acumulada = 0;
-
-                    getApplicationContext().sendBroadcast(
-                            new Intent("key").putExtra("coordenadas", latitud + ";"
-                                    + longitud + ";" + 1 + ""));
-                }
             }else{
                 l_final = System.currentTimeMillis();
                 l_diferencia = l_final - l_inicio;

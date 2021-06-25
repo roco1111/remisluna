@@ -8,6 +8,9 @@ public class viaje {
     String salida;
     String destino;
     String estado;
+    String total;
+    String descuento;
+    String espera;
 
     public String getId() {
         return id;
@@ -19,6 +22,30 @@ public class viaje {
 
     public String getHora_inicio() {
         return hora_inicio;
+    }
+
+    public String getTotal() {
+        return total;
+    }
+
+    public void setTotal(String total) {
+        this.total = total;
+    }
+
+    public String getEspera() {
+        return espera;
+    }
+
+    public void setEspera(String espera) {
+        this.espera = espera;
+    }
+
+    public String getDescuento() {
+        return descuento;
+    }
+
+    public void setDescuento(String descuento) {
+        this.descuento = descuento;
     }
 
     public void setHora_inicio(String hora_inicio) {

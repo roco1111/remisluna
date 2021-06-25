@@ -10,30 +10,11 @@
 
     android:orientation="vertical">
 
-    <ImageView
-        android:id="@+id/imageView2"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_centerHorizontal="true"
-        android:scaleType="fitXY"
-        app:srcCompat="@drawable/principal" />
-    <TextView
-        android:id="@+id/bienvenido"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="65dp"
-        android:text="@string/empresa"
-        android:textAlignment="center"
-        android:textColor="@color/white"
-        android:textSize="@dimen/tamanio_titulo" />
 
     <RelativeLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_centerHorizontal="true"
-        android:layout_below="@id/imageView2"
         android:layout_marginTop="@dimen/margin_top_menu"
         android:id="@+id/id_superior"
         android:orientation="horizontal">
@@ -162,6 +143,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_below="@id/id_inferior"
+            android:id="@+id/id_recaudacion"
             android:layout_centerHorizontal="true"
             android:layout_marginTop="@dimen/margin_top_menu"
             android:orientation="vertical">
@@ -187,6 +169,128 @@
                 android:textSize="@dimen/tamanio_parrafo" />
 
         </RelativeLayout>
+    <RelativeLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_below="@id/id_recaudacion"
+        android:layout_marginTop="@dimen/margin_top_menu"
+        android:id="@+id/id_teclado_sup"
+        android:orientation="horizontal">
 
+        <ImageButton
+            android:id="@+id/imageButtonNueve"
+            android:layout_width="@dimen/ancho_boton"
+            android:layout_height="@dimen/ancho_boton"
+            android:background="@color/background"
+            android:scaleType="fitXY"
+            app:srcCompat="@drawable/nueve" />
+        <ImageButton
+            android:id="@+id/imageButtonOcho"
+            android:layout_width="@dimen/ancho_boton"
+            android:layout_height="@dimen/ancho_boton"
+            android:background="@color/background"
+            android:layout_toEndOf = "@id/imageButtonNueve"
+            android:scaleType="fitXY"
+            android:layout_marginStart="@dimen/campos_height"
+            app:srcCompat="@drawable/ocho" />
+
+        <ImageButton
+            android:id="@+id/imageButtonSiete"
+            android:layout_width="@dimen/ancho_boton"
+            android:layout_height="@dimen/ancho_boton"
+            android:background="@color/background"
+            android:layout_marginStart="@dimen/campos_height"
+            android:layout_toEndOf = "@id/imageButtonOcho"
+            android:scaleType="fitXY"
+            app:srcCompat="@drawable/siete" />
+
+    </RelativeLayout>
+    <RelativeLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_below="@id/id_teclado_sup"
+        android:layout_marginTop="@dimen/margin_top_menu2"
+        android:id="@+id/id_teclado_medio"
+        android:orientation="horizontal">
+
+        <ImageButton
+            android:id="@+id/imageButtonSeis"
+            android:layout_width="@dimen/ancho_boton"
+            android:layout_height="@dimen/ancho_boton"
+            android:background="@color/background"
+            android:scaleType="fitXY"
+            app:srcCompat="@drawable/seis" />
+        <ImageButton
+            android:id="@+id/imageButtonCinco"
+            android:layout_width="@dimen/ancho_boton"
+            android:layout_height="@dimen/ancho_boton"
+            android:background="@color/background"
+            android:layout_toEndOf = "@id/imageButtonSeis"
+            android:scaleType="fitXY"
+            android:layout_marginStart="@dimen/campos_height"
+            app:srcCompat="@drawable/cinco" />
+
+        <ImageButton
+            android:id="@+id/imageButtonCuatro"
+            android:layout_width="@dimen/ancho_boton"
+            android:layout_height="@dimen/ancho_boton"
+            android:background="@color/background"
+            android:layout_marginStart="@dimen/campos_height"
+            android:layout_toEndOf = "@id/imageButtonCinco"
+            android:scaleType="fitXY"
+            app:srcCompat="@drawable/cuatro" />
+
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_below="@id/id_teclado_medio"
+        android:layout_marginTop="@dimen/margin_top_menu2"
+        android:id="@+id/id_teclado_inferior"
+        android:orientation="horizontal">
+
+        <ImageButton
+            android:id="@+id/imageButtonTres"
+            android:layout_width="@dimen/ancho_boton"
+            android:layout_height="@dimen/ancho_boton"
+            android:background="@color/background"
+            android:scaleType="fitXY"
+            app:srcCompat="@drawable/tres" />
+        <ImageButton
+            android:id="@+id/imageButtonDos"
+            android:layout_width="@dimen/ancho_boton"
+            android:layout_height="@dimen/ancho_boton"
+            android:background="@color/background"
+            android:layout_toEndOf = "@id/imageButtonTres"
+            android:scaleType="fitXY"
+            android:layout_marginStart="@dimen/campos_height"
+            app:srcCompat="@drawable/dos" />
+
+        <ImageButton
+            android:id="@+id/imageButtonUno"
+            android:layout_width="@dimen/ancho_boton"
+            android:layout_height="@dimen/ancho_boton"
+            android:background="@color/background"
+            android:layout_marginStart="@dimen/campos_height"
+            android:layout_toEndOf = "@id/imageButtonDos"
+            android:scaleType="fitXY"
+            app:srcCompat="@drawable/uno" />
+
+        <ImageButton
+            android:id="@+id/imageButtonCero"
+            android:layout_width="@dimen/ancho_boton"
+            android:layout_height="@dimen/ancho_boton"
+            android:background="@color/background"
+            android:layout_marginStart="@dimen/campos_height"
+            android:layout_toEndOf = "@id/imageButtonUno"
+            android:scaleType="fitXY"
+            app:srcCompat="@drawable/cero" />
+
+
+    </RelativeLayout>
 
 </RelativeLayout>

@@ -33,6 +33,7 @@ import com.android.volley.Response;
 import com.android.volley.error.VolleyError;
 import com.android.volley.request.JsonObjectRequest;
 import com.rosario.hp.remisluna.Entidades.ayuda;
+import com.rosario.hp.remisluna.Fragment.fragment_principal;
 import com.rosario.hp.remisluna.Fragment.fragment_viaje;
 import com.rosario.hp.remisluna.Fragment.fragment_viaje_iniciado;
 import com.rosario.hp.remisluna.Fragment.login;
@@ -338,9 +339,6 @@ public class MainViaje extends AppCompatActivity {
                 }
                 ticket_ayuda_app(ayudas);
 
-
-
-
             }
 
 
@@ -538,8 +536,11 @@ public class MainViaje extends AppCompatActivity {
                     break;
 
                 case "2":
-
-                    fragment = new fragment_viaje();
+                    Toast.makeText(
+                            getApplicationContext(),
+                            "No hay viajes asignados",
+                            Toast.LENGTH_LONG).show();
+                    fragment = new fragment_principal();
                     break;
 
             }
@@ -615,7 +616,7 @@ public class MainViaje extends AppCompatActivity {
             String longitud;
             latitud = String.valueOf(loc.getLatitude());
             longitud = String.valueOf(loc.getLongitude());
-            guardar_trayectoria(latitud, longitud);
+            guardar_ubicacion(latitud, longitud);
             String Text = "Lat = "+ loc.getLatitude() + "\n Long = " + loc.getLongitude();
             Log.d("Guardar trayectoria",Text);
             setLocation(loc);
@@ -731,106 +732,13 @@ public class MainViaje extends AppCompatActivity {
                     // Enviar código de falla
                     break;
             }
-            if(i_pasadas == 5){
-                guardar_ubicacion(latitud,longitud);
-                i_pasadas = 0;
-            }else{
-                i_pasadas++;
-            }
+
         } catch (JSONException e) {
             e.printStackTrace();
         }
     }
 
-    private void guardar_trayectoria(String latitud, String longitud){
 
-        HashMap<String, String> map = new HashMap<>();// Mapeo previo
-        id_trayecto++;
-        map.put("id_viaje", ls_viaje);
-        map.put("id_trayecto", String.valueOf(id_trayecto));
-        map.put("latitud", latitud);
-        map.put("longitud", longitud);
-
-        // Crear nuevo objeto Json basado en el mapa
-        JSONObject jobject = new JSONObject(map);
-
-
-        // Depurando objeto Json...
-        Log.d(TAG, jobject.toString());
-
-        StringBuilder encodedParams = new StringBuilder();
-        try {
-            for (Map.Entry<String, String> entry : map.entrySet()) {
-                encodedParams.append(URLEncoder.encode(entry.getKey(), "utf-8"));
-                encodedParams.append('=');
-                encodedParams.append(URLEncoder.encode(entry.getValue(), "utf-8"));
-                encodedParams.append('&');
-            }
-        } catch (UnsupportedEncodingException uee) {
-            throw new RuntimeException("Encoding not supported: " + "utf-8", uee);
-        }
-
-        encodedParams.setLength(Math.max(encodedParams.length() - 1, 0));
-
-        String newURL = Constantes.INSERTAR_TRAYECTORIA + "?" + encodedParams;
-        Log.d(TAG,newURL);
-        // Actualizar datos en el servidor
-        VolleySingleton.getInstance(getApplicationContext()).addToRequestQueue(
-                new JsonObjectRequest(
-                        Request.Method.POST,
-                        newURL,
-                        null,
-                        new Response.Listener<JSONObject>() {
-                            @Override
-                            public void onResponse(JSONObject response) {
-                                procesarRespuestaActualizar(response);
-                            }
-                        },
-                        new Response.ErrorListener() {
-                            @Override
-                            public void onErrorResponse(VolleyError error) {
-                                Log.d(TAG, "Error trayectoria: " + error.getMessage());
-
-                            }
-                        }
-
-                ) {
-                    @Override
-                    public Map<String, String> getHeaders() {
-                        Map<String, String> headers = new HashMap<>();
-                        headers.put("Content-Type", "application/json; charset=utf-8");
-                        return headers;
-                    }
-
-                    @Override
-                    public String getBodyContentType() {
-                        return "application/json; charset=utf-8" + getParamsEncoding();
-                    }
-                }
-        );
-    }
-    private void procesarRespuestaActualizar(JSONObject response) {
-
-        try {
-            // Obtener estado
-            String estado = response.getString("estado");
-            // Obtener mensaje
-            String mensaje = response.getString("mensaje");
-
-            switch (estado) {
-                case "2":
-                    // Mostrar mensaje
-                    Toast.makeText(
-                            getApplicationContext(),
-                            mensaje,
-                            Toast.LENGTH_LONG).show();
-                    // Enviar código de falla
-                    break;
-            }
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-    }
 
 
 }

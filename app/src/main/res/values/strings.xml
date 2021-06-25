@@ -36,8 +36,12 @@
     <string name="mensaje_contrasenia">Ingrese la dirección de correo electrónico que utilizó para registrarse.
     Le enviaremos un mail con instrucciones para definir una nueva contraseña</string>
     <string name="dialog_aceptar">Aceptar</string>
-    <string name="cero_distancia">0</string>
-    <string name="cero_pesos">$ 0.00</string>
+    <string name="cero_distancia">0.00 km</string>
+    <string name="cero_tiempo">00:00</string>
+    <string name="gps">GPS</string>
+    <string name="tarifa">Tarifa</string>
+    <string name="libre">Libre</string>
+    <string name="cero_pesos">0.00</string>
     <string name="nombre_usuario">Nombre y Apellido</string>
     <string name="nombre">Nombre y Apellido</string>
     <string name="apellido">Nombre y Apellido</string>
@@ -70,6 +74,10 @@
     <string name="ver_viaje">Ver Viajes</string>
     <string name="ticket">Emitir Ticket</string>
     <string name="importe">Importe</string>
+    <string name="subtotal">Subtotal</string>
+    <string name="descuento">Descuento</string>
+    <string name="espera">Espera</string>
+    <string name="total">Total</string>
     <string name="suspendido">SUSPENDIDO</string>
 
     <string name="menu_perfil">Perfil</string>
@@ -82,5 +90,18 @@
     <string name="menu_ayuda_ventana_impresa">Ayuda Pantalla Impresa</string>
     <string name="menu_ayuda_app">Ayuda App</string>
     <string name="menu_ayuda_app_impresa">Ayuda App Impresa</string>
+    <string name="menu_reportes">Reportes Disponibles</string>
+
+    <string name="reporte_ayuda">0: Ayuda</string>
+    <string name="reporte_parcial">1: Parcial</string>
+    <string name="reporte_turno">2: Final Turno</string>
+    <string name="reporte_ultimos">3: Últimos 10 Finales de Turno</string>
+    <string name="reporte_resumen">4: Viaje x Viaje</string>
+    <string name="reporte_impresora">5: Habilitar Ticket</string>
+    <string name="reporte_ticket">6: Repetir Ticket</string>
+    <string name="reporte_perfil">7: Perfil</string>
+    <string name="reporte_viajes">8: Historial</string>
+    <string name="reporte_viaje">9:Viaje Asignado</string>
+
 
 </resources>

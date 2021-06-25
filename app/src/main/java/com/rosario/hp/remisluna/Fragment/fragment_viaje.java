@@ -127,7 +127,6 @@ public class fragment_viaje extends Fragment {
         inicio = v.findViewById(R.id.buttonInicio);
         anular = v.findViewById(R.id.buttonAnular);
 
-        datos_viaje = v.findViewById(R.id.datos_viaje);
         sin_elementos = v.findViewById(R.id.sin_elementos);
 
         SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getContext());

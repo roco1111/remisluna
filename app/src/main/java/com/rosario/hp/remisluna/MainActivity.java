@@ -70,6 +70,8 @@ public class MainActivity extends AppCompatActivity {
     boolean mBound = false;
     private static OutputStream outputStream;
     byte FONT_TYPE;
+    private static final long MIN_TIEMPO_ENTRE_UPDATES = 1000 * 12;
+    private static final long MIN_CAMBIO_DISTANCIA_PARA_UPDATES = 0;
 
     @Override
     public void onStart() {
@@ -386,11 +388,28 @@ public class MainActivity extends AppCompatActivity {
             switch (mensaje) {
                 case "1":
                     JSONArray mensaje1 = response.getJSONArray("viaje");
+                    JSONObject object = mensaje1.getJSONObject(0);
+
+                    ls_vehiculo = object.getString("id_movil");
                     if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
                         ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION,}, 1000);
                     } else {
                         locationStart();
                     }
+                    SharedPreferences settings1 = PreferenceManager.getDefaultSharedPreferences(context);
+
+                    SharedPreferences.Editor editor = settings1.edit();
+
+                    String ls_viaje;
+
+
+
+                    ls_viaje = object.getString("id");
+
+                    editor.putString("id_viaje",ls_viaje);
+                    editor.apply();
+
+                    editor.commit();
                     Intent intent2 = new Intent(getApplicationContext(), MainViaje.class);
                     intent2.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK );
                     getApplicationContext().startActivity(intent2);

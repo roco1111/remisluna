@@ -210,19 +210,25 @@
                     android:textSize="@dimen/tamanio_texto" />
             </RelativeLayout>
         </LinearLayout>
+        <LinearLayout
+            android:id="@+id/id_importe_inicial"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/margin_top_item_grande"
+            android:layout_below="@id/id_destino"
+            android:orientation="horizontal">
 
         <LinearLayout
             android:id="@+id/id_importe"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/margin_top_item_grande"
-            android:layout_below="@id/id_destino"
+            android:layout_weight="1"
             android:orientation="vertical">
             <TextView
                 android:id="@+id/importe"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/importe"
+                android:text="@string/subtotal"
                 android:textAlignment="center"
                 android:textColor="@color/black"
                 android:textSize="@dimen/tamanio_texto"
@@ -237,13 +243,103 @@
                 android:text="@string/nro_viaje"
                 android:textSize="@dimen/tamanio_texto" />
         </LinearLayout>
+            <LinearLayout
+            android:id="@+id/id_espera"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical">
+            <TextView
+                android:id="@+id/espera"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/espera"
+                android:textAlignment="center"
+                android:textColor="@color/black"
+                android:textSize="@dimen/tamanio_texto"
+                android:textStyle="bold"/>
+
+            <TextView
+                android:id="@+id/dato_espera"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAlignment="center"
+                android:textColor="@color/black"
+                android:text="@string/nro_viaje"
+                android:textSize="@dimen/tamanio_texto" />
+        </LinearLayout>
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/id_importe_final"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/margin_top_item_grande"
+            android:layout_below="@id/id_importe_inicial"
+            android:orientation="horizontal">
+
+             <LinearLayout
+            android:id="@+id/id_descuento"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+                 android:layout_weight="1"
+            android:layout_marginTop="@dimen/margin_top_item_grande"
+
+            android:orientation="vertical">
+            <TextView
+                android:id="@+id/descuento"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/descuento"
+                android:textAlignment="center"
+                android:textColor="@color/black"
+                android:textSize="@dimen/tamanio_texto"
+                android:textStyle="bold"/>
+
+            <TextView
+                android:id="@+id/dato_descuento"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAlignment="center"
+                android:textColor="@color/black"
+                android:text="@string/nro_viaje"
+                android:textSize="@dimen/tamanio_texto" />
+        </LinearLayout>
+            <LinearLayout
+                android:id="@+id/id_total"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+               android:layout_weight="1"
+                android:layout_marginTop="@dimen/margin_top_item_grande"
+                android:orientation="vertical">
+                <TextView
+                    android:id="@+id/total"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/total"
+                    android:textAlignment="center"
+                    android:textColor="@color/black"
+                    android:textSize="@dimen/tamanio_texto"
+                    android:textStyle="bold"/>
+
+                <TextView
+                    android:id="@+id/dato_total"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textAlignment="center"
+                    android:textColor="@color/black"
+                    android:text="@string/nro_viaje"
+                    android:textSize="@dimen/tamanio_texto" />
+            </LinearLayout>
+        </LinearLayout>
+
 
         <LinearLayout
             android:id="@+id/id_suspension"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/margin_top_item_grande"
-            android:layout_below="@id/id_importe"
+            android:layout_below="@id/id_importe_final"
             android:orientation="vertical">
 
         <TextView

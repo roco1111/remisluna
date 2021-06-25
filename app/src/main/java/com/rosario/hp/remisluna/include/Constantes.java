@@ -44,5 +44,7 @@ public class Constantes {
     public static final String GET_AYUDAS = "https://" + IP + PUERTO_HOST + "/obtener_ayudas.php";
     public static final String GET_ID_AYUDA = "https://" + IP + PUERTO_HOST + "/obtener_ayuda.php";
 
+    public static final String GET_ID_PARAMETRO = "https://" + IP + PUERTO_HOST + "/obtener_parametro.php";
+
 
 }

@@ -45,8 +45,12 @@ import org.json.JSONObject;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
+
+import java.util.Locale;
 import java.util.Map;
 
 import static com.rosario.hp.remisluna.include.Utils.stringABytes;
@@ -55,17 +59,22 @@ public class fragment_principal extends Fragment {
 
     private static final String TAG = fragment_principal.class.getSimpleName();
     private JsonObjectRequest myRequest;
-    private ImageButton viaje;
-    private ImageButton historial;
-    private ImageButton turno;
-    private ImageButton impresora;
-    private ImageButton ic_recaudacion;
-    private ImageButton ic_perfil;
+    private ImageButton boton_cero;
+    private ImageButton boton_uno;
+    private ImageButton boton_dos;
+    private ImageButton boton_tres;
+    private ImageButton boton_cuatro;
+    private ImageButton boton_cinco;
+    private ImageButton boton_seis;
+    private ImageButton boton_siete;
+    private ImageButton boton_ocho;
+    private ImageButton boton_nueve;
     private String ls_id_turno;
     private String recaudacion;
     private String kms;
     private String fecha;
     private String hora_inicio;
+    private String estado;
     private ArrayList<viaje> viajes = new ArrayList<>();
     private static OutputStream outputStream;
     byte FONT_TYPE;
@@ -117,51 +126,82 @@ public class fragment_principal extends Fragment {
                              final Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.activity_principal, container, false);
 
-        this.viaje = v.findViewById(R.id.imageButtonViaje);
-        this.historial = v.findViewById(R.id.imageButtonHistorial);
-        this.turno = v.findViewById(R.id.imageButtonTurno);
-        this.impresora = v.findViewById(R.id.imageButtonImpresora);
-        this.txtLabel = v.findViewById(R.id.referencia);
-        this.ic_recaudacion = v.findViewById(R.id.imageButtonRecaudacion);
-        this.ic_perfil = v.findViewById(R.id.imageButtonPerfil);
+
+        this.boton_cero = v.findViewById(R.id.imageButtonCero);
+        this.boton_uno = v.findViewById(R.id.imageButtonUno);
+        this.boton_dos = v.findViewById(R.id.imageButtonDos);
+        this.boton_tres = v.findViewById(R.id.imageButtonTres);
+        this.boton_cuatro = v.findViewById(R.id.imageButtonCuatro);
+        this.boton_cinco = v.findViewById(R.id.imageButtonCinco);
+        this.boton_seis = v.findViewById(R.id.imageButtonSeis);
+        this.boton_siete = v.findViewById(R.id.imageButtonSiete);
+        this.boton_ocho = v.findViewById(R.id.imageButtonOcho);
+        this.boton_nueve = v.findViewById(R.id.imageButtonNueve);
+        this.boton_seis = v.findViewById(R.id.imageButtonSeis);
         datos = new ArrayList<>();
         impresion = new Impresion();
         SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getContext());
         ls_id_conductor     = settings.getString("id","");
+        ls_id_turno     = settings.getString("id_turno_chofer","");
 
-
-        this.viaje.setOnClickListener(new View.OnClickListener() {
+        this.boton_cero.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent2 = new Intent(getContext(), MainViaje.class);
-                getContext().startActivity(intent2);
+                if(mBound) {
+                    impresion_cero();
+                }else{
+                    Toast.makeText(
+                            getContext(),
+                            R.string.no_impresora,
+                            Toast.LENGTH_LONG).show();
+                }
+
             }
         });
 
-        this.historial.setOnClickListener(new View.OnClickListener() {
+        this.boton_uno.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent2 = new Intent(getContext(), turnos_activity.class);
-                getContext().startActivity(intent2);
+                if (mBound) {
+                    datos_turno(getContext());
+                }else{
+                    Toast.makeText(
+                            getContext(),
+                            R.string.no_impresora,
+                            Toast.LENGTH_LONG).show();
+                }
             }
         });
 
-        this.ic_perfil.setOnClickListener(new View.OnClickListener() {
+        this.boton_dos.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent2 = new Intent(getContext(), activity_preferencias.class);
-                getContext().startActivity(intent2);
+                if(mBound) {
+                    cerrar_turno();
+                }else {
+                    Toast.makeText(
+                            getContext(),
+                            R.string.no_impresora,
+                            Toast.LENGTH_LONG).show();
+                }
             }
         });
 
-        this.turno.setOnClickListener(new View.OnClickListener() {
+        this.boton_tres.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                cerrar_turno();
+                if(mBound) {
+                    cargarDatos();
+                }else{
+                    Toast.makeText(
+                            getContext(),
+                            R.string.no_impresora,
+                            Toast.LENGTH_LONG).show();
+                }
             }
         });
 
-        this.impresora.setOnClickListener(new View.OnClickListener() {
+        this.boton_cinco.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getContext());
@@ -172,14 +212,45 @@ public class fragment_principal extends Fragment {
             }
         });
 
-        this.ic_recaudacion.setOnClickListener(new View.OnClickListener() {
+
+        this.boton_seis.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
-                cargarDatos();
-
+                if(mBound) {
+                    cargarDatos();
+                }else{
+                    Toast.makeText(
+                            getContext(),
+                            R.string.no_impresora,
+                            Toast.LENGTH_LONG).show();
+                }
             }
         });
+
+        this.boton_siete.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent2 = new Intent(getContext(), activity_preferencias.class);
+                getContext().startActivity(intent2);
+            }
+        });
+
+        this.boton_ocho.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent2 = new Intent(getContext(), turnos_activity.class);
+                getContext().startActivity(intent2);
+            }
+        });
+
+        this.boton_nueve.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent2 = new Intent(getContext(), MainViaje.class);
+                getContext().startActivity(intent2);
+            }
+        });
+
 
         return v;
     }
@@ -240,6 +311,7 @@ public class fragment_principal extends Fragment {
                         kms =object.getString("distancia");}
                     if(!object.getString("recaudacion").equals("null")){
                         recaudacion = object.getString("recaudacion");}
+                    estado = object.getString("estado");
                     datos_viajes_turno(context);
                 case "2":
                     Toast.makeText(
@@ -329,10 +401,12 @@ public class fragment_principal extends Fragment {
 
             }
             if (mBound) {
-                ticket_turno(viajes);
-            }else{
-                Intent intent2 = new Intent(getContext(), MainActivity.class);
-                getContext().startActivity(intent2);
+                if(estado.equals("1")){
+                    ticket_turno_parcial();
+                }else{
+                    ticket_turno(viajes);
+
+                }
             }
         } catch (JSONException e) {
             e.printStackTrace();
@@ -340,10 +414,58 @@ public class fragment_principal extends Fragment {
 
     }
 
-    private void cerrar_turno(){
+    protected void ticket_turno_parcial( ) {
 
-        SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getContext());
-        ls_id_turno     = settings.getString("id_turno_chofer","");
+        outputStream = impresion.getOutputStream();
+
+        //print command
+        try {
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+
+            byte[] printformat = {0x1B, 0 * 21, FONT_TYPE};
+            //outputStream.write(printformat);
+
+            //print title
+            printUnicode();
+            //print normal text
+            printCustom(getResources().getString(R.string.empresa), 2, 1);
+            printNewLine();
+            printCustom(getResources().getString(R.string.parcial_turno), 1, 0); // total 32 char in a single line
+
+            printNewLine();
+            printText(fecha);
+            printText(" - ");
+            printText(hora_inicio);//fecha
+            printNewLine();
+
+            printNewLine();
+            printText("K.TOTAL:  ");
+            printText(kms);
+            printNewLine();
+            printNewLine();
+            printText("RECAUDACION: ");
+            printText(recaudacion);
+            printNewLine();
+            printNewLine();
+            //resetPrint(); //reset printer
+            printUnicode();
+            printNewLine();
+            printNewLine();
+
+            outputStream.flush();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+
+    }
+
+    private void cerrar_turno(){
 
         String newURL = Constantes.FIN_TURNO + "?id=" + ls_id_turno;
         Log.d(TAG,newURL);
@@ -407,6 +529,146 @@ public class fragment_principal extends Fragment {
         } catch (JSONException e) {
             e.printStackTrace();
         }
+    }
+
+    private void iniciar_turno(){
+
+        String newURL = Constantes.ALTA_TURNO + "?id_conductor=" + ls_id_conductor;
+        Log.d(TAG,newURL);
+
+        // Actualizar datos en el servidor
+        VolleySingleton.getInstance(getActivity()).addToRequestQueue(
+                new JsonObjectRequest(
+                        Request.Method.POST,
+                        newURL,
+                        null,
+                        new Response.Listener<JSONObject>() {
+                            @Override
+                            public void onResponse(JSONObject response) {
+                                procesarRespuestaActualizar(response);
+                            }
+                        },
+                        new Response.ErrorListener() {
+                            @Override
+                            public void onErrorResponse(VolleyError error) {
+                                Log.d(TAG, "Error turno: " + error.getMessage());
+
+                            }
+                        }
+
+                ) {
+                    @Override
+                    public Map<String, String> getHeaders() {
+                        Map<String, String> headers = new HashMap<>();
+                        headers.put("Content-Type", "application/json; charset=utf-8");
+                        return headers;
+                    }
+
+                    @Override
+                    public String getBodyContentType() {
+                        return "application/json; charset=utf-8" + getParamsEncoding();
+                    }
+                }
+        );
+    }
+    private void procesarRespuestaActualizar(JSONObject response) {
+
+        try {
+            // Obtener estado
+            String estado = response.getString("estado");
+            // Obtener mensaje
+            String mensaje = response.getString("mensaje");
+
+            switch (estado) {
+                case "1":
+                    cargarTurno(getContext());
+                    break;
+                case "2":
+                    // Mostrar mensaje
+                    Toast.makeText(
+                            getContext(),
+                            mensaje,
+                            Toast.LENGTH_LONG).show();
+                    // Enviar código de falla
+                    break;
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void cargarTurno(final Context context) {
+
+        // Añadir parámetro a la URL del web service
+        String newURL = Constantes.GET_TURNO + "?conductor=" + ls_id_conductor;
+        Log.d(TAG,newURL);
+
+        // Realizar petición GET_BY_ID
+        VolleySingleton.getInstance(context).addToRequestQueue(
+                myRequest = new JsonObjectRequest(
+                        Request.Method.POST,
+                        newURL,
+                        null,
+                        new Response.Listener<JSONObject>() {
+
+                            @Override
+                            public void onResponse(JSONObject response) {
+                                // Procesar respuesta Json
+                                procesarRespuestaTurno(response, context);
+                            }
+                        },
+                        new Response.ErrorListener() {
+                            @Override
+                            public void onErrorResponse(VolleyError error) {
+                                Log.d(TAG, "Error Volley viaje: " + error.getMessage());
+
+                            }
+                        }
+                )
+        );
+        myRequest.setRetryPolicy(new DefaultRetryPolicy(
+                50000,
+                5,//DefaultRetryPolicy.DEFAULT_MAX_RETRIES
+                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+
+    }
+
+    private void procesarRespuestaTurno(JSONObject response, Context context) {
+
+        try {
+            // Obtener atributo "mensaje"
+            String mensaje = response.getString("estado");
+            Fragment fragment = null;
+            switch (mensaje) {
+                case "1":
+                    JSONArray mensaje1 = response.getJSONArray("conductor");
+                    JSONObject object = mensaje1.getJSONObject(0);
+
+                    SharedPreferences settings1 = PreferenceManager.getDefaultSharedPreferences(context);
+
+                    SharedPreferences.Editor editor = settings1.edit();
+
+                    ls_id_turno = object.getString("id");
+
+                    editor.putString("id_turno_chofer",ls_id_turno);
+                    editor.apply();
+
+                    editor.commit();
+
+                    //datos_turno(context);
+
+                    break;
+
+                case "2":
+                    break;
+
+            }
+
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
     }
 
     public void cargarDatos() {
@@ -617,6 +879,71 @@ public class fragment_principal extends Fragment {
             printNewLine();
             printText("RECAUDACION: ");
             printText(recaudacion);
+            printNewLine();
+            printNewLine();
+            //resetPrint(); //reset printer
+            printUnicode();
+            printNewLine();
+            printNewLine();
+
+            outputStream.flush();
+            iniciar_turno();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    protected void impresion_cero() {
+
+        outputStream = impresion.getOutputStream();
+
+        //print command
+        try {
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+
+            byte[] printformat = {0x1B, 0 * 21, FONT_TYPE};
+            //outputStream.write(printformat);
+
+            //print title
+            printUnicode();
+            //print normal text
+            printCustom(getResources().getString(R.string.empresa), 2, 1);
+            printNewLine();
+
+            String fecha_hoy = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(new Date());
+            printCustom(fecha_hoy, 0, 1);
+            printNewLine();
+            printUnicode();
+            printText(getResources().getString(R.string.menu_reportes)); // total 32 char in a single line
+
+            printNewLine();
+            printUnicode();
+            printNewLine();
+
+            printCustom(getResources().getString(R.string.reporte_ayuda),0,0);
+            printNewLine();
+            printText(getResources().getString(R.string.reporte_parcial));
+            printNewLine();
+            printText(getResources().getString(R.string.reporte_turno));
+            printNewLine();
+            printText(stringABytes(getResources().getString(R.string.reporte_ultimos)));
+            printNewLine();
+            printText(getResources().getString(R.string.reporte_resumen));
+            printNewLine();
+            printText(getResources().getString(R.string.reporte_impresora));
+            printNewLine();
+            printText(stringABytes(getResources().getString(R.string.reporte_ticket)));
+            printNewLine();
+            printText(getResources().getString(R.string.reporte_perfil));
+            printNewLine();
+            printText(getResources().getString(R.string.reporte_viajes));
+            printNewLine();
+            printText(getResources().getString(R.string.reporte_viaje));
+
             printNewLine();
             printNewLine();
             //resetPrint(); //reset printer

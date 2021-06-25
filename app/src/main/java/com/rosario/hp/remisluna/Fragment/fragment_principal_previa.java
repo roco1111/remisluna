@@ -120,7 +120,6 @@ public class fragment_principal_previa extends Fragment {
 
         turno = v.findViewById(R.id.imageButtonTurno);
         this.impresora = v.findViewById(R.id.imageButtonImpresora);
-        this.txtLabel = v.findViewById(R.id.referencia);
         this.turno = v.findViewById(R.id.imageButtonTurno);
         this.historial = v.findViewById(R.id.imageButtonHistorial);
         this.ic_recaudacion = v.findViewById(R.id.imageButtonRecaudacion);
