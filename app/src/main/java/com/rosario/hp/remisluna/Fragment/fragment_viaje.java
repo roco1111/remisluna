@@ -7,6 +7,8 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
@@ -19,6 +21,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -30,36 +33,67 @@ import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.error.VolleyError;
 import com.android.volley.request.JsonObjectRequest;
+import com.rosario.hp.remisluna.Entidades.turno;
+import com.rosario.hp.remisluna.Entidades.viaje;
 import com.rosario.hp.remisluna.Impresion;
 import com.rosario.hp.remisluna.MainActivity;
 import com.rosario.hp.remisluna.MainViaje;
 import com.rosario.hp.remisluna.R;
 import com.rosario.hp.remisluna.ServicioGeolocalizacion;
+import com.rosario.hp.remisluna.activity_preferencias;
 import com.rosario.hp.remisluna.include.Constantes;
+import com.rosario.hp.remisluna.include.PrinterCommands;
+import com.rosario.hp.remisluna.include.Utils;
 import com.rosario.hp.remisluna.include.VolleySingleton;
+import com.rosario.hp.remisluna.turnos_activity;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 
 import io.socket.SocketIO;
+
+import static com.rosario.hp.remisluna.include.Utils.stringABytes;
 
 public class fragment_viaje extends Fragment {
     private JsonObjectRequest myRequest;
     private static final String TAG = login.class.getSimpleName();
     private String ls_id_conductor;
-    private TextView id_viaje;
     private TextView solicitante;
-    private TextView documento;
     private TextView dato_salida;
     private TextView destino;
+    private String id_viaje;
+
+    private ImageButton boton_cero;
+    private ImageButton boton_dos;
+    private ImageButton boton_tres;
+    private ImageButton boton_cuatro;
+    private ImageButton boton_cinco;
+    private ImageButton boton_seis;
+    private ImageButton boton_siete;
+    private ImageButton boton_ocho;
+    private ImageButton boton_nueve;
+
+    private String recaudacion;
+    private String kms;
+    private String fecha;
+    private String hora_inicio;
+    private String estado;
+    private String ls_id_turno;
+
+    private ArrayList<viaje> viajes = new ArrayList<>();
+    private ArrayList<turno> datos;
 
     private String latitud_salida;
     private String longitud_salida;
@@ -70,11 +104,12 @@ public class fragment_viaje extends Fragment {
     private String destino_coordenada;
     private Button inicio;
     private Button anular;
-    private RelativeLayout datos_viaje;
-    private RelativeLayout sin_elementos;
     private LocationManager mLocationManager;
     boolean mBound = false;
     private Impresion impresion;
+    private static OutputStream outputStream;
+    byte FONT_TYPE;
+    private TextView impresora;
 
     @Override
     public void onStart() {
@@ -119,18 +154,36 @@ public class fragment_viaje extends Fragment {
 
         mLocationManager = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
 
-        id_viaje = v.findViewById(R.id.dato_viaje);
         solicitante = v.findViewById(R.id.dato_solicitante);
-        documento = v.findViewById(R.id.dato_documento);
         dato_salida = v.findViewById(R.id.dato_salida);
         destino = v.findViewById(R.id.dato_destino);
         inicio = v.findViewById(R.id.buttonInicio);
         anular = v.findViewById(R.id.buttonAnular);
 
-        sin_elementos = v.findViewById(R.id.sin_elementos);
+        this.boton_cero = v.findViewById(R.id.imageButtonCero);
+        ImageButton boton_uno = v.findViewById(R.id.imageButtonUno);
+        this.boton_dos = v.findViewById(R.id.imageButtonDos);
+        this.boton_tres = v.findViewById(R.id.imageButtonTres);
+        this.boton_cuatro = v.findViewById(R.id.imageButtonCuatro);
+        this.boton_cinco = v.findViewById(R.id.imageButtonCinco);
+        this.boton_seis = v.findViewById(R.id.imageButtonSeis);
+        this.boton_siete = v.findViewById(R.id.imageButtonSiete);
+        this.boton_ocho = v.findViewById(R.id.imageButtonOcho);
+        this.boton_nueve = v.findViewById(R.id.imageButtonNueve);
+
+        datos = new ArrayList<>();
+
+        this.impresora = v.findViewById(R.id.impresora);
+        if(mBound) {
+            impresora.setTextColor(getResources().getColor(R.color.colorPrimary));
+        }else{
+            impresora.setTextColor(getResources().getColor(R.color.alarma));
+        }
+
 
         SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getContext());
         ls_id_conductor     = settings.getString("id","");
+        ls_id_turno     = settings.getString("id_turno_chofer","");
 
         this.inicio.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -154,9 +207,419 @@ public class fragment_viaje extends Fragment {
             }
         });
 
+        this.boton_cero.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(mBound) {
+                    impresion_cero();
+                }else{
+                    Toast.makeText(
+                            getContext(),
+                            R.string.no_impresora,
+                            Toast.LENGTH_LONG).show();
+                }
+
+            }
+        });
+
+        boton_uno.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (mBound) {
+                    datos_turno(getContext());
+                }else{
+                    Toast.makeText(
+                            getContext(),
+                            R.string.no_impresora,
+                            Toast.LENGTH_LONG).show();
+                }
+            }
+        });
+
+        this.boton_dos.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(mBound) {
+                    cerrar_turno();
+                }else {
+                    Toast.makeText(
+                            getContext(),
+                            R.string.no_impresora,
+                            Toast.LENGTH_LONG).show();
+                }
+            }
+        });
+
+        this.boton_tres.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(mBound) {
+                    cargarDatosRecaudacion();
+                }else{
+                    Toast.makeText(
+                            getContext(),
+                            R.string.no_impresora,
+                            Toast.LENGTH_LONG).show();
+                }
+            }
+        });
+
+        this.boton_cuatro.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(mBound) {
+                    datos_ultimos_viajes(getContext());
+                }else{
+                    Toast.makeText(
+                            getContext(),
+                            R.string.no_impresora,
+                            Toast.LENGTH_LONG).show();
+                }
+            }
+        });
+
+        this.boton_cinco.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getContext());
+                SharedPreferences.Editor editor = settings.edit();
+                editor.putString("tipo_ventana","main");
+                editor.commit();
+                getActivity().startService(new Intent(getActivity(), Impresion.class));
+            }
+        });
+
+
+        this.boton_seis.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(mBound) {
+                    cargarDatosRecaudacion();
+                }else{
+                    Toast.makeText(
+                            getContext(),
+                            R.string.no_impresora,
+                            Toast.LENGTH_LONG).show();
+                }
+            }
+        });
+
+        this.boton_siete.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent2 = new Intent(getContext(), activity_preferencias.class);
+                getContext().startActivity(intent2);
+            }
+        });
+
+        this.boton_ocho.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent2 = new Intent(getContext(), turnos_activity.class);
+                getContext().startActivity(intent2);
+            }
+        });
+
+        this.boton_nueve.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent2 = new Intent(getContext(), MainViaje.class);
+                getContext().startActivity(intent2);
+            }
+        });
+
         cargarDatos(getContext());
 
         return v;
+    }
+
+    public void cargarDatosRecaudacion() {
+
+        // Añadir parámetro a la URL del web service
+        String newURL = Constantes.GET_TURNOS + "?conductor=" + ls_id_conductor;
+        Log.d(TAG,newURL);
+
+        // Realizar petición GET_BY_ID
+        VolleySingleton.getInstance(getContext()).addToRequestQueue(
+                myRequest = new JsonObjectRequest(
+                        Request.Method.POST,
+                        newURL,
+                        null,
+                        new Response.Listener<JSONObject>() {
+
+                            @Override
+                            public void onResponse(JSONObject response) {
+                                // Procesar respuesta Json
+                                procesarRespuestaRecaudacion(response);
+                            }
+                        },
+                        new Response.ErrorListener() {
+                            @Override
+                            public void onErrorResponse(VolleyError error) {
+                                Log.d(TAG, "Error Volley viaje: " + error.getMessage());
+
+                            }
+                        }
+                )
+        );
+        myRequest.setRetryPolicy(new DefaultRetryPolicy(
+                50000,
+                5,//DefaultRetryPolicy.DEFAULT_MAX_RETRIES
+                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+
+    }
+
+    private void procesarRespuestaRecaudacion(JSONObject response) {
+        try {
+            // Obtener atributo "estado"
+            String estado = response.getString("estado");
+
+            switch (estado) {
+                case "1": // EXITO
+
+                    JSONArray mensaje = response.getJSONArray("turno");
+
+                    datos.clear();
+
+                    for(int i = 0; i < mensaje.length(); i++)
+                    {JSONObject object = mensaje.getJSONObject(i);
+                        com.rosario.hp.remisluna.Entidades.turno tur = new turno();
+
+                        String id = object.getString("ID");
+
+                        tur.setId(id);
+
+                        String fecha = object.getString("FECHA");
+
+                        tur.setFecha(fecha);
+
+                        String hora_inicio = object.getString("HORA_INICIO");
+
+                        tur.setHora_inicio(hora_inicio);
+
+                        String hora_fin = object.getString("HORA_FIN");
+
+                        tur.setHora_fin(hora_fin);
+
+                        String recaudacion = object.getString("RECAUDACION");
+
+                        tur.setRecaudacion(recaudacion);
+
+
+
+                        datos.add(tur);
+
+                    }
+                    if (mBound) {
+                        ticket_recaudacion(datos);
+                    }
+                    break;
+
+            }
+
+        } catch (JSONException e) {
+            Log.d(TAG, e.getMessage());
+        }
+
+    }
+
+    protected void ticket_recaudacion( ArrayList<turno> turnos) {
+        outputStream = impresion.getOutputStream();
+
+        //print command
+        try {
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+
+            byte[] printformat = {0x1B, 0 * 21, FONT_TYPE};
+            //outputStream.write(printformat);
+
+            //print title
+            printUnicode();
+            //print normal text
+            printCustom(getResources().getString(R.string.empresa), 2, 1);
+            printNewLine();
+            printPhoto(R.drawable.remisluna_logo_impresion);
+            printCustom(getResources().getString(R.string.telefono), 1, 1);
+
+            printNewLine();
+            printText(stringABytes(getResources().getString(R.string.ticket_recaudacion))); // total 32 char in a single line
+
+            printNewLine();
+
+            String id;
+            String fecha;
+            String hora_inicio;
+            String hora_fin;
+            String importe;
+
+            for (turno Turno : turnos) {
+                printNewLine();
+                id = Turno.getId();
+                fecha = Turno.getFecha();
+                hora_inicio = Turno.getHora_inicio();
+                hora_fin = Turno.getHora_fin();
+                printCustom("TURNO " + id, 1, 0);
+                printCustom("Fecha " + fecha, 1, 0);
+                printCustom("Hora Inicio " + hora_inicio, 1, 0);
+                if(!hora_fin.equals("null")) {
+                    printCustom("Hora Fin " + hora_fin, 1, 0);
+                }
+                importe = Turno.getRecaudacion();
+                printText("TOTAL:  " + importe);
+                printNewLine();
+            }
+
+            printNewLine();
+            printNewLine();
+            //resetPrint(); //reset printer
+            printUnicode();
+            printNewLine();
+            printNewLine();
+
+            outputStream.flush();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    private void cerrar_turno(){
+
+        String newURL = Constantes.FIN_TURNO + "?id=" + ls_id_turno;
+        Log.d(TAG,newURL);
+
+        // Actualizar datos en el servidor
+        VolleySingleton.getInstance(getActivity()).addToRequestQueue(
+                new JsonObjectRequest(
+                        Request.Method.POST,
+                        newURL,
+                        null,
+                        new Response.Listener<JSONObject>() {
+                            @Override
+                            public void onResponse(JSONObject response) {
+                                procesarRespuestaCerrarTurno(response);
+                            }
+                        },
+                        new Response.ErrorListener() {
+                            @Override
+                            public void onErrorResponse(VolleyError error) {
+                                Log.d(TAG, "Error turno: " + error.getMessage());
+
+                            }
+                        }
+
+                ) {
+                    @Override
+                    public Map<String, String> getHeaders() {
+                        Map<String, String> headers = new HashMap<>();
+                        headers.put("Content-Type", "application/json; charset=utf-8");
+                        return headers;
+                    }
+
+                    @Override
+                    public String getBodyContentType() {
+                        return "application/json; charset=utf-8" + getParamsEncoding();
+                    }
+                }
+        );
+    }
+    private void procesarRespuestaCerrarTurno(JSONObject response) {
+
+        try {
+            // Obtener estado
+            String estado = response.getString("estado");
+            // Obtener mensaje
+            String mensaje = response.getString("mensaje");
+
+            switch (estado) {
+                case "1":
+                    datos_turno(getContext());
+                    break;
+                case "2":
+                    // Mostrar mensaje
+                    Toast.makeText(
+                            getContext(),
+                            mensaje,
+                            Toast.LENGTH_LONG).show();
+                    // Enviar código de falla
+                    break;
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+
+    protected void impresion_cero() {
+
+        outputStream = impresion.getOutputStream();
+
+        //print command
+        try {
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+
+            byte[] printformat = {0x1B, 0 * 21, FONT_TYPE};
+            //outputStream.write(printformat);
+
+            //print title
+            printUnicode();
+            //print normal text
+            printCustom(getResources().getString(R.string.empresa), 2, 1);
+            printNewLine();
+
+            String fecha_hoy = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(new Date());
+            printCustom(fecha_hoy, 0, 1);
+            printNewLine();
+            printUnicode();
+            printText(getResources().getString(R.string.menu_reportes)); // total 32 char in a single line
+
+            printNewLine();
+            printUnicode();
+            printNewLine();
+
+            printCustom(getResources().getString(R.string.reporte_ayuda),0,0);
+            printNewLine();
+            printText(getResources().getString(R.string.reporte_parcial));
+            printNewLine();
+            printText(getResources().getString(R.string.reporte_turno));
+            printNewLine();
+            printText(stringABytes(getResources().getString(R.string.reporte_ultimos)));
+            printNewLine();
+            printText(getResources().getString(R.string.reporte_resumen));
+            printNewLine();
+            printText(getResources().getString(R.string.reporte_impresora));
+            printNewLine();
+            printText(stringABytes(getResources().getString(R.string.reporte_ticket)));
+            printNewLine();
+            printText(getResources().getString(R.string.reporte_perfil));
+            printNewLine();
+            printText(getResources().getString(R.string.reporte_viajes));
+            printNewLine();
+            printText(getResources().getString(R.string.reporte_viaje));
+
+            printNewLine();
+            printNewLine();
+            //resetPrint(); //reset printer
+            printUnicode();
+            printNewLine();
+            printNewLine();
+
+            outputStream.flush();
+            Intent intent2 = new Intent(getContext(), MainActivity.class);
+            getContext().startActivity(intent2);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+
     }
 
     public void showDialogGPS(String title, String message) {
@@ -231,24 +694,433 @@ public class fragment_viaje extends Fragment {
 
                     JSONObject object = mensaje1.getJSONObject(0);
                     //Parsear objeto
-
-                    id_viaje.setText(object.getString("id"));
+                    id_viaje = object.getString("id");
                     solicitante.setText(object.getString("solicitante"));
-                    documento.setText(object.getString("nro_documento"));
                     dato_salida.setText(object.getString("salida"));
                     destino.setText(object.getString("destino"));
                     salida_coordenada = object.getString("salida_coordenadas");
                     destino_coordenada = object.getString("destino_coordenadas");
-                    sin_elementos.setVisibility(View.GONE);
-                    datos_viaje.setVisibility(View.VISIBLE);
                     actualizar_coordenadas();
 
                     break;
 
                 case "2":
-                    sin_elementos.setVisibility(View.VISIBLE);
-                    datos_viaje.setVisibility(View.GONE);
 
+                    break;
+
+            }
+
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    public void datos_turno(final Context context) {
+
+        // Añadir parámetro a la URL del web service
+        String newURL = Constantes.GET_TURNO_BY_ID + "?id=" + ls_id_turno;
+        Log.d(TAG,newURL);
+
+        // Realizar petición GET_BY_ID
+        VolleySingleton.getInstance(context).addToRequestQueue(
+                myRequest = new JsonObjectRequest(
+                        Request.Method.POST,
+                        newURL,
+                        null,
+                        new Response.Listener<JSONObject>() {
+
+                            @Override
+                            public void onResponse(JSONObject response) {
+                                // Procesar respuesta Json
+                                procesarRespuestaTurno(response, context);
+                            }
+                        },
+                        new Response.ErrorListener() {
+                            @Override
+                            public void onErrorResponse(VolleyError error) {
+                                Log.d(TAG, "Error Volley turno: " + error.getMessage());
+
+                            }
+                        }
+                )
+        );
+        myRequest.setRetryPolicy(new DefaultRetryPolicy(
+                50000,
+                5,//DefaultRetryPolicy.DEFAULT_MAX_RETRIES
+                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+
+    }
+
+    private void procesarRespuestaTurno(JSONObject response, Context context) {
+
+        try {
+            // Obtener atributo "mensaje"
+            String mensaje = response.getString("estado");
+            switch (mensaje) {
+                case "1":
+                    // Obtener objeto "cliente"
+                    JSONArray mensaje1 = response.getJSONArray("turno");
+
+                    JSONObject object = mensaje1.getJSONObject(0);
+                    //Parsear objeto
+
+                    fecha = object.getString("fecha");
+                    hora_inicio = object.getString("hora_inicio");
+                    if(!object.getString("distancia").equals("null")){
+                        kms =object.getString("distancia");}
+                    if(!object.getString("recaudacion").equals("null")){
+                        recaudacion = object.getString("recaudacion");}
+                    estado = object.getString("estado");
+                    datos_viajes_turno(context);
+                case "2":
+                    Toast.makeText(
+                            getContext(),
+                            mensaje,
+                            Toast.LENGTH_LONG).show();
+
+                    break;
+
+            }
+
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    public void datos_viajes_turno(final Context context) {
+
+        // Añadir parámetro a la URL del web service
+        String newURL = Constantes.GET_VIAJES_TURNO + "?turno=" + ls_id_turno;
+        Log.d(TAG,newURL);
+
+        // Realizar petición GET_BY_ID
+        VolleySingleton.getInstance(context).addToRequestQueue(
+                myRequest = new JsonObjectRequest(
+                        Request.Method.POST,
+                        newURL,
+                        null,
+                        new Response.Listener<JSONObject>() {
+
+                            @Override
+                            public void onResponse(JSONObject response) {
+                                // Procesar respuesta Json
+                                procesarRespuestaViajes(response, context);
+                            }
+                        },
+                        new Response.ErrorListener() {
+                            @Override
+                            public void onErrorResponse(VolleyError error) {
+                                Log.d(TAG, "Error Volley turno: " + error.getMessage());
+
+                            }
+                        }
+                )
+        );
+        myRequest.setRetryPolicy(new DefaultRetryPolicy(
+                50000,
+                5,//DefaultRetryPolicy.DEFAULT_MAX_RETRIES
+                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+
+    }
+
+    private void procesarRespuestaViajes(JSONObject response, Context context) {
+
+        try {
+            // Obtener atributo "mensaje"
+            String mensaje = response.getString("estado");
+            viajes.clear();
+            switch (mensaje) {
+                case "1":
+                    // Obtener objeto "cliente"
+                    JSONArray mensaje1 = response.getJSONArray("viajes");
+
+
+
+                    for(int i = 0; i < mensaje1.length(); i++) {
+                        JSONObject object = mensaje1.getJSONObject(i);
+
+                        viaje via = new viaje();
+
+                        via.setId(String.valueOf(i));
+
+                        String hora = object.getString("hora_inicio");
+
+                        via.setHora_inicio(hora);
+
+                        String importe = object.getString("importe");
+
+                        via.setImporte(importe);
+
+                        viajes.add(via);
+                    }
+
+                    break;
+
+            }
+            if (mBound) {
+                if(estado.equals("1")){
+                    ticket_turno_parcial();
+                }else{
+                    ticket_turno(viajes);
+
+                }
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    protected void ticket_turno_parcial( ) {
+
+        outputStream = impresion.getOutputStream();
+
+        //print command
+        try {
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+
+            byte[] printformat = {0x1B, 0 * 21, FONT_TYPE};
+            //outputStream.write(printformat);
+
+            //print title
+            printUnicode();
+            //print normal text
+            printCustom(getResources().getString(R.string.empresa), 2, 1);
+            printNewLine();
+            printCustom(getResources().getString(R.string.parcial_turno), 1, 0); // total 32 char in a single line
+
+            printNewLine();
+            printText(fecha);
+            printText(" - ");
+            printText(hora_inicio);//fecha
+            printNewLine();
+
+            printNewLine();
+            printText("K.TOTAL:  ");
+            printText(kms);
+            printNewLine();
+            printNewLine();
+            printText("RECAUDACION: ");
+            printText(recaudacion);
+            printNewLine();
+            printNewLine();
+            //resetPrint(); //reset printer
+            printUnicode();
+            printNewLine();
+            printNewLine();
+
+            outputStream.flush();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+
+    }
+
+    protected void ticket_turno( ArrayList<viaje> viajes) {
+
+        outputStream = impresion.getOutputStream();
+
+        //print command
+        try {
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+
+            byte[] printformat = {0x1B, 0 * 21, FONT_TYPE};
+            //outputStream.write(printformat);
+
+            //print title
+            printUnicode();
+            //print normal text
+            printCustom(getResources().getString(R.string.empresa), 2, 1);
+            printNewLine();
+            printPhoto(R.drawable.remisluna_logo_impresion);
+            printCustom(getResources().getString(R.string.telefono), 1, 1);
+
+            printNewLine();
+            printUnicode();
+            printNewLine();
+            printText(getResources().getString(R.string.ticket_turno)); // total 32 char in a single line
+
+            printNewLine();
+            printText(fecha);//fecha
+            printText(" - ");
+            printText(hora_inicio);//fecha
+            printNewLine();
+
+            String id;
+            String importe;
+
+            for (viaje Viaje : viajes) {
+                id = Viaje.getId();
+                printCustom("VIAJE " + id, 1, 0);
+
+                importe = Viaje.getImporte();
+                printText("TOTAL:  " + importe);
+                printNewLine();
+            }
+            printNewLine();
+            printText("K.TOTAL:  ");
+            printText(kms);
+            printNewLine();
+            printNewLine();
+            printText("RECAUDACION: ");
+            printText(recaudacion);
+            printNewLine();
+            printNewLine();
+            //resetPrint(); //reset printer
+            printUnicode();
+            printNewLine();
+            printNewLine();
+
+            outputStream.flush();
+            iniciar_turno();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void iniciar_turno(){
+
+        String newURL = Constantes.ALTA_TURNO + "?id_conductor=" + ls_id_conductor;
+        Log.d(TAG,newURL);
+
+        // Actualizar datos en el servidor
+        VolleySingleton.getInstance(getActivity()).addToRequestQueue(
+                new JsonObjectRequest(
+                        Request.Method.POST,
+                        newURL,
+                        null,
+                        new Response.Listener<JSONObject>() {
+                            @Override
+                            public void onResponse(JSONObject response) {
+                                procesarRespuestaActualizarAlta(response);
+                            }
+                        },
+                        new Response.ErrorListener() {
+                            @Override
+                            public void onErrorResponse(VolleyError error) {
+                                Log.d(TAG, "Error turno: " + error.getMessage());
+
+                            }
+                        }
+
+                ) {
+                    @Override
+                    public Map<String, String> getHeaders() {
+                        Map<String, String> headers = new HashMap<>();
+                        headers.put("Content-Type", "application/json; charset=utf-8");
+                        return headers;
+                    }
+
+                    @Override
+                    public String getBodyContentType() {
+                        return "application/json; charset=utf-8" + getParamsEncoding();
+                    }
+                }
+        );
+    }
+    private void procesarRespuestaActualizarAlta(JSONObject response) {
+
+        try {
+            // Obtener estado
+            String estado = response.getString("estado");
+            // Obtener mensaje
+            String mensaje = response.getString("mensaje");
+
+            switch (estado) {
+                case "1":
+                    cargarTurno(getContext());
+                    break;
+                case "2":
+                    // Mostrar mensaje
+                    Toast.makeText(
+                            getContext(),
+                            mensaje,
+                            Toast.LENGTH_LONG).show();
+                    // Enviar código de falla
+                    break;
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void cargarTurno(final Context context) {
+
+        // Añadir parámetro a la URL del web service
+        String newURL = Constantes.GET_TURNO + "?conductor=" + ls_id_conductor;
+        Log.d(TAG,newURL);
+
+        // Realizar petición GET_BY_ID
+        VolleySingleton.getInstance(context).addToRequestQueue(
+                myRequest = new JsonObjectRequest(
+                        Request.Method.POST,
+                        newURL,
+                        null,
+                        new Response.Listener<JSONObject>() {
+
+                            @Override
+                            public void onResponse(JSONObject response) {
+                                // Procesar respuesta Json
+                                procesarRespuestaCargaTurno(response, context);
+                            }
+                        },
+                        new Response.ErrorListener() {
+                            @Override
+                            public void onErrorResponse(VolleyError error) {
+                                Log.d(TAG, "Error Volley viaje: " + error.getMessage());
+
+                            }
+                        }
+                )
+        );
+        myRequest.setRetryPolicy(new DefaultRetryPolicy(
+                50000,
+                5,//DefaultRetryPolicy.DEFAULT_MAX_RETRIES
+                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+
+    }
+
+    private void procesarRespuestaCargaTurno(JSONObject response, Context context) {
+
+        try {
+            // Obtener atributo "mensaje"
+            String mensaje = response.getString("estado");
+            Fragment fragment = null;
+            switch (mensaje) {
+                case "1":
+                    JSONArray mensaje1 = response.getJSONArray("conductor");
+                    JSONObject object = mensaje1.getJSONObject(0);
+
+                    SharedPreferences settings1 = PreferenceManager.getDefaultSharedPreferences(context);
+
+                    SharedPreferences.Editor editor = settings1.edit();
+
+                    ls_id_turno = object.getString("id");
+
+                    editor.putString("id_turno_chofer",ls_id_turno);
+                    editor.apply();
+
+                    editor.commit();
+
+                    //datos_turno(context);
+
+                    break;
+
+                case "2":
                     break;
 
             }
@@ -305,11 +1177,10 @@ public class fragment_viaje extends Fragment {
         double distance = location_salida.distanceTo(location_destino) / 100;
         distancia = String.valueOf(distance);
 
-        String ls_viaje = id_viaje.getText().toString();
 
         HashMap<String, String> map = new HashMap<>();// Mapeo previo
 
-        map.put("id", ls_viaje);
+        map.put("id", id_viaje);
         map.put("distancia", distancia);
         map.put("latitud_salida", latitud_salida);
         map.put("longitud_salida", longitud_salida);
@@ -406,9 +1277,7 @@ public class fragment_viaje extends Fragment {
 
     private void anular_viaje(){
 
-        String ls_viaje = id_viaje.getText().toString();
-
-        String newURL = Constantes.ANULAR_VIAJE + "?id=" + ls_viaje;
+        String newURL = Constantes.ANULAR_VIAJE + "?id=" + id_viaje;
 
         Log.d(TAG,newURL);
 
@@ -471,6 +1340,272 @@ public class fragment_viaje extends Fragment {
             }
         } catch (JSONException e) {
             e.printStackTrace();
+        }
+    }
+
+    public void datos_ultimos_viajes(final Context context) {
+
+        // Añadir parámetro a la URL del web service
+        String newURL = Constantes.GET_ULTIMOS_VIAJES + "?chofer=" + ls_id_conductor;
+        Log.d(TAG,newURL);
+
+        // Realizar petición GET_BY_ID
+        VolleySingleton.getInstance(context).addToRequestQueue(
+                myRequest = new JsonObjectRequest(
+                        Request.Method.POST,
+                        newURL,
+                        null,
+                        new Response.Listener<JSONObject>() {
+
+                            @Override
+                            public void onResponse(JSONObject response) {
+                                // Procesar respuesta Json
+                                procesarRespuestaUltimosViajes(response, context);
+                            }
+                        },
+                        new Response.ErrorListener() {
+                            @Override
+                            public void onErrorResponse(VolleyError error) {
+                                Log.d(TAG, "Error Volley turno: " + error.getMessage());
+
+                            }
+                        }
+                )
+        );
+        myRequest.setRetryPolicy(new DefaultRetryPolicy(
+                50000,
+                5,//DefaultRetryPolicy.DEFAULT_MAX_RETRIES
+                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+
+    }
+
+    private void procesarRespuestaUltimosViajes(JSONObject response, Context context) {
+
+        try {
+            // Obtener atributo "mensaje"
+            String mensaje = response.getString("estado");
+            viajes.clear();
+            switch (mensaje) {
+                case "1":
+                    // Obtener objeto "cliente"
+                    JSONArray mensaje1 = response.getJSONArray("viajes");
+
+
+
+                    for(int i = 0; i < mensaje1.length(); i++) {
+                        JSONObject object = mensaje1.getJSONObject(i);
+
+                        viaje via = new viaje();
+
+                        via.setId(String.valueOf(i));
+
+                        String hora = object.getString("hora_inicio");
+
+                        via.setHora_inicio(hora);
+
+                        String importe = object.getString("importe");
+
+                        via.setImporte(importe);
+
+                        String fecha = object.getString("fecha");
+
+                        via.setFecha(fecha);
+
+                        String destino = object.getString("destino");
+
+                        via.setDestino(destino);
+
+                        viajes.add(via);
+                    }
+
+                    break;
+
+            }
+
+
+            ticket_ultimos_viajes(viajes);
+
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    protected void ticket_ultimos_viajes( ArrayList<viaje> viajes) {
+
+        outputStream = impresion.getOutputStream();
+
+        //print command
+        try {
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+
+            byte[] printformat = {0x1B, 0 * 21, FONT_TYPE};
+            //outputStream.write(printformat);
+
+            //print title
+            printUnicode();
+            //print normal text
+            printCustom(getResources().getString(R.string.empresa), 2, 1);
+            printNewLine();
+            printPhoto(R.drawable.remisluna_logo_impresion);
+            printCustom(getResources().getString(R.string.telefono), 1, 1);
+
+            printNewLine();
+            printUnicode();
+            printNewLine();
+            printText(getResources().getString(R.string.ticket_ultimos_viajes)); // total 32 char in a single line
+            printNewLine();
+
+            String id;
+            String importe;
+            String fecha;
+            String hora;
+            Double l_total = 0.00;
+
+            for (viaje Viaje : viajes) {
+                id = Viaje.getId();
+                printCustom("VIAJE " + id, 1, 0);
+
+                fecha = Viaje.getFecha();
+                printText("Fecha:  " + fecha);
+
+                hora = Viaje.getHora_inicio();
+                printNewLine();
+                printText("Hora Inicio:  " + hora);
+
+                importe = Viaje.getImporte();
+                printNewLine();
+                printText("Importe:  " + importe);
+                l_total = l_total + Double.parseDouble(importe);
+                printNewLine();
+                printNewLine();
+            }
+            printNewLine();
+            printText("TOTAL: ");
+            printText(String.valueOf(l_total));
+            printNewLine();
+            printNewLine();
+            printUnicode();
+            //resetPrint(); //reset printer
+
+            outputStream.flush();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    //print custom
+    private void printCustom(String msg, int size, int align) {
+        //Print config "mode"
+        byte[] cc = new byte[]{0x1B,0x21,0x03};  // 0- normal size text
+        //byte[] cc1 = new byte[]{0x1B,0x21,0x00};  // 0- normal size text
+        byte[] bb = new byte[]{0x1B,0x21,0x08};  // 1- only bold text
+        byte[] bb2 = new byte[]{0x1B,0x21,0x20}; // 2- bold with medium text
+        byte[] bb3 = new byte[]{0x1B,0x21,0x10}; // 3- bold with large text
+        try {
+            switch (size){
+                case 0:
+                    outputStream.write(cc);
+                    break;
+                case 1:
+                    outputStream.write(bb);
+                    break;
+                case 2:
+                    outputStream.write(bb2);
+                    break;
+                case 3:
+                    outputStream.write(bb3);
+                    break;
+            }
+
+            switch (align){
+                case 0:
+                    //left align
+                    outputStream.write(PrinterCommands.ESC_ALIGN_LEFT);
+                    break;
+                case 1:
+                    //center align
+                    outputStream.write(PrinterCommands.ESC_ALIGN_CENTER);
+                    break;
+                case 2:
+                    //right align
+                    outputStream.write(PrinterCommands.ESC_ALIGN_RIGHT);
+                    break;
+            }
+            outputStream.write(msg.getBytes());
+            outputStream.write(PrinterCommands.LF);
+            //outputStream.write(cc);
+            //printNewLine();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    //print unicode
+    public void printUnicode(){
+        try {
+            outputStream.write(PrinterCommands.ESC_ALIGN_CENTER);
+            printText(Utils.UNICODE_TEXT);
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    //print new line
+    private void printNewLine() {
+        try {
+            outputStream.write(PrinterCommands.FEED_LINE);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    //print text
+    private void printText(String msg) {
+        try {
+            // Print normal text
+            outputStream.write(msg.getBytes());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    //print byte[]
+    private void printText(byte[] msg) {
+        try {
+            // Print normal text
+            outputStream.write(msg);
+            printNewLine();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    //print photo
+    public void printPhoto(int img) {
+        try {
+            Bitmap bmp = BitmapFactory.decodeResource(getResources(),
+                    img);
+            if(bmp!=null){
+                byte[] command = Utils.decodeBitmap(bmp);
+                outputStream.write(PrinterCommands.ESC_ALIGN_CENTER);
+                printText(command);
+            }else{
+                Log.e("Print Photo error", "the file isn't exists");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            Log.e("PrintTools", "the file isn't exists");
         }
     }
 }

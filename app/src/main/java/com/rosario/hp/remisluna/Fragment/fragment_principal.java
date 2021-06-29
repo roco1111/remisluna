@@ -78,7 +78,7 @@ public class fragment_principal extends Fragment {
     private ArrayList<viaje> viajes = new ArrayList<>();
     private static OutputStream outputStream;
     byte FONT_TYPE;
-    private TextView txtLabel;
+    private TextView impresora;
     private Impresion impresion;
     private ArrayList<turno> datos;
     boolean mBound = false;
@@ -109,6 +109,7 @@ public class fragment_principal extends Fragment {
             Impresion.LocalBinder binder = (Impresion.LocalBinder) service;
             impresion = binder.getService();
             if(impresion.getbluetoothSocket() != null){
+                impresora.setTextColor(getResources().getColor(R.color.colorPrimary));
                 mBound = true;
             }
         }
@@ -137,7 +138,12 @@ public class fragment_principal extends Fragment {
         this.boton_siete = v.findViewById(R.id.imageButtonSiete);
         this.boton_ocho = v.findViewById(R.id.imageButtonOcho);
         this.boton_nueve = v.findViewById(R.id.imageButtonNueve);
-        this.boton_seis = v.findViewById(R.id.imageButtonSeis);
+        this.impresora = v.findViewById(R.id.impresora);
+        if(mBound) {
+            impresora.setTextColor(getResources().getColor(R.color.colorPrimary));
+        }else{
+            impresora.setTextColor(getResources().getColor(R.color.alarma));
+        }
         datos = new ArrayList<>();
         impresion = new Impresion();
         SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getContext());
@@ -192,6 +198,20 @@ public class fragment_principal extends Fragment {
             public void onClick(View v) {
                 if(mBound) {
                     cargarDatos();
+                }else{
+                    Toast.makeText(
+                            getContext(),
+                            R.string.no_impresora,
+                            Toast.LENGTH_LONG).show();
+                }
+            }
+        });
+
+        this.boton_cuatro.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(mBound) {
+                    datos_ultimos_viajes(getContext());
                 }else{
                     Toast.makeText(
                             getContext(),
@@ -1067,6 +1087,162 @@ public class fragment_principal extends Fragment {
         } catch (Exception e) {
             e.printStackTrace();
             Log.e("PrintTools", "the file isn't exists");
+        }
+    }
+
+    public void datos_ultimos_viajes(final Context context) {
+
+        // Añadir parámetro a la URL del web service
+        String newURL = Constantes.GET_ULTIMOS_VIAJES + "?chofer=" + ls_id_conductor;
+        Log.d(TAG,newURL);
+
+        // Realizar petición GET_BY_ID
+        VolleySingleton.getInstance(context).addToRequestQueue(
+                myRequest = new JsonObjectRequest(
+                        Request.Method.POST,
+                        newURL,
+                        null,
+                        new Response.Listener<JSONObject>() {
+
+                            @Override
+                            public void onResponse(JSONObject response) {
+                                // Procesar respuesta Json
+                                procesarRespuestaUltimosViajes(response, context);
+                            }
+                        },
+                        new Response.ErrorListener() {
+                            @Override
+                            public void onErrorResponse(VolleyError error) {
+                                Log.d(TAG, "Error Volley turno: " + error.getMessage());
+
+                            }
+                        }
+                )
+        );
+        myRequest.setRetryPolicy(new DefaultRetryPolicy(
+                50000,
+                5,//DefaultRetryPolicy.DEFAULT_MAX_RETRIES
+                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+
+    }
+
+    private void procesarRespuestaUltimosViajes(JSONObject response, Context context) {
+
+        try {
+            // Obtener atributo "mensaje"
+            String mensaje = response.getString("estado");
+            viajes.clear();
+            switch (mensaje) {
+                case "1":
+                    // Obtener objeto "cliente"
+                    JSONArray mensaje1 = response.getJSONArray("viajes");
+
+
+
+                    for(int i = 0; i < mensaje1.length(); i++) {
+                        JSONObject object = mensaje1.getJSONObject(i);
+
+                        viaje via = new viaje();
+
+                        via.setId(String.valueOf(i));
+
+                        String hora = object.getString("hora_inicio");
+
+                        via.setHora_inicio(hora);
+
+                        String importe = object.getString("importe");
+
+                        via.setImporte(importe);
+
+                        String fecha = object.getString("fecha");
+
+                        via.setFecha(fecha);
+
+                        String destino = object.getString("destino");
+
+                        via.setDestino(destino);
+
+                        viajes.add(via);
+                    }
+
+                    break;
+
+            }
+
+
+            ticket_ultimos_viajes(viajes);
+
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    protected void ticket_ultimos_viajes( ArrayList<viaje> viajes) {
+
+        outputStream = impresion.getOutputStream();
+
+        //print command
+        try {
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+
+            byte[] printformat = {0x1B, 0 * 21, FONT_TYPE};
+            //outputStream.write(printformat);
+
+            //print title
+            printUnicode();
+            //print normal text
+            printCustom(getResources().getString(R.string.empresa), 2, 1);
+            printNewLine();
+            printPhoto(R.drawable.remisluna_logo_impresion);
+            printCustom(getResources().getString(R.string.telefono), 1, 1);
+
+            printNewLine();
+            printUnicode();
+            printNewLine();
+            printText(getResources().getString(R.string.ticket_ultimos_viajes)); // total 32 char in a single line
+            printNewLine();
+
+            String id;
+            String importe;
+            String fecha;
+            String hora;
+            Double l_total = 0.00;
+
+            for (viaje Viaje : viajes) {
+                id = Viaje.getId();
+                printCustom("VIAJE " + id, 1, 0);
+
+                fecha = Viaje.getFecha();
+                printText("Fecha:  " + fecha);
+
+                hora = Viaje.getHora_inicio();
+                printNewLine();
+                printText("Hora Inicio:  " + hora);
+
+                importe = Viaje.getImporte();
+                printNewLine();
+                printText("Importe:  " + importe);
+                l_total = l_total + Double.parseDouble(importe);
+                printNewLine();
+                printNewLine();
+            }
+            printNewLine();
+            printText("TOTAL: ");
+            printText(String.valueOf(l_total));
+            printNewLine();
+            printNewLine();
+            printUnicode();
+            //resetPrint(); //reset printer
+
+            outputStream.flush();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 

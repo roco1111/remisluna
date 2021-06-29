@@ -5,6 +5,7 @@
     <string name="recibo">Ticket para el Pasajero</string>
     <string name="servicio">Servicio Público VGG</string>
     <string name="ticket_turno">Totales Turno</string>
+    <string name="ticket_ultimos_viajes">Viaje x Viaje</string>
     <string name="parcial_turno">Parcial Turno</string>
     <string name="ticket_recaudacion">Recaudación Últimos 10 Turnos</string>
     <string name="title_activity_notifications">Notificaciones</string>
@@ -41,6 +42,7 @@
     <string name="gps">GPS</string>
     <string name="tarifa">Tarifa</string>
     <string name="libre">Libre</string>
+    <string name="impresora_lista">IMP</string>
     <string name="cero_pesos">0.00</string>
     <string name="nombre_usuario">Nombre y Apellido</string>
     <string name="nombre">Nombre y Apellido</string>
