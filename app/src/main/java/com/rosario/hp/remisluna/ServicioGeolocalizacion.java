@@ -13,6 +13,7 @@ import android.location.Geocoder;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.location.LocationProvider;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -67,10 +68,16 @@ public class ServicioGeolocalizacion extends Service implements Runnable {
     private Long l_final;
     private Long l_diferencia = 0L;
     private Long tiempo_acumulado = 0L;
+    private Long tiempo_tolerancia = 0L;
+    private boolean lb_torerancia = true;
+    private Integer minutos;
+    private Integer segundos;
+    private Integer resto;
+    private String l_tiempo;
 
     @Override
     public void onCreate() {
-        Toast.makeText(this, "Servicio creado", Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, "Taxímetro iniciado", Toast.LENGTH_SHORT).show();
         super.onCreate();
         SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
         ls_id_conductor     = settings.getString("id","");
@@ -179,7 +186,7 @@ public class ServicioGeolocalizacion extends Service implements Runnable {
             if (mLocationListener != null)
                 mLocationManager.removeUpdates(mLocationListener);
 
-        Toast.makeText(this, "Servicio detenido ", Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, "Taxímetro detenido ", Toast.LENGTH_SHORT).show();
         super.onDestroy();
 
     }
@@ -232,7 +239,7 @@ public class ServicioGeolocalizacion extends Service implements Runnable {
             distancia_acumulada = Double.valueOf(getTwoDecimals(distancia_acumulada));
 
             if (distancia_acumulada >= 1) {
-                distancia_acumulada = 0;
+                distancia_acumulada = distancia_acumulada - 1;
                 tiempo_acumulado = 0L;
 
                 getApplicationContext().sendBroadcast(
@@ -250,17 +257,49 @@ public class ServicioGeolocalizacion extends Service implements Runnable {
                     Log.d("diferencia negativa", "ok");
                 }
                 l_inicio = l_final;
-                tiempo_acumulado += l_diferencia;
-                Log.d("tiempo",String.valueOf(tiempo_acumulado));
-                if(tiempo_acumulado >= 300000){
-                    Log.d("tiempo_acumulado","ok");
+                if(lb_torerancia){
+                    tiempo_tolerancia += l_diferencia;
+                    Log.d("tiempo_tolerancia",String.valueOf(tiempo_tolerancia));
+
+                    if(tiempo_tolerancia / 60000 >= 1){
+                        minutos = Integer.parseInt(String.valueOf(tiempo_tolerancia)) / 60000;
+                        if(tiempo_tolerancia % 60000 > 0){
+                            resto = Integer.parseInt(String.valueOf(tiempo_tolerancia)) % 60000;
+                            segundos = resto / 1000;
+                        }
+                    }else{
+                        minutos = 0;
+                        segundos = Integer.parseInt(String.valueOf(tiempo_tolerancia)) / 1000;
+                    }
+                    String min="", seg="";
+                    if (minutos < 10) min = "0" + minutos.toString();
+                    else min = minutos.toString();
+                    if (segundos < 10) seg = "0" + segundos.toString();
+                    else seg = segundos.toString();
+
+                    l_tiempo = min + ":" + seg;
+
                     distancia_acumulada = 0;
                     tiempo_acumulado = 0L;
+                    if(tiempo_tolerancia >= 300000){
+                        lb_torerancia = false;
+                    }
                     getApplicationContext().sendBroadcast(
                             new Intent("key").putExtra("coordenadas", latitud + ";"
-                                    + longitud + ";" + 2 + ""));
-                }
+                                    + longitud + ";" + 3 + ";"+ l_tiempo));
 
+                }else {
+                    tiempo_acumulado += l_diferencia;
+                    Log.d("tiempo_acumulado","ok");
+                    if(tiempo_acumulado >= 60000){
+
+                        distancia_acumulada = 0;
+                        tiempo_acumulado = 0L;
+                        getApplicationContext().sendBroadcast(
+                                new Intent("key").putExtra("coordenadas", latitud + ";"
+                                        + longitud + ";" + 2 + ""));
+                    }
+                }
 
             }
 
@@ -289,7 +328,8 @@ public class ServicioGeolocalizacion extends Service implements Runnable {
                 // for ActivityCompat#requestPermissions for more details.
                 return;
             }
-            mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 3000, 0, mLocationListener);
+            mLocationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, mLocationListener);
+            mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000, 0, mLocationListener);
             Looper.loop();
             Looper.myLooper().quit();
         } else {
@@ -301,8 +341,6 @@ public class ServicioGeolocalizacion extends Service implements Runnable {
             });
         }
     }
-
-
 
 
     /**
@@ -326,7 +364,7 @@ public class ServicioGeolocalizacion extends Service implements Runnable {
     private class MyLocationListener implements LocationListener {
 
         public void onLocationChanged(Location loc) {
-            //Log.d("finura",loc.getAccuracy()+"");
+            Log.d("Cambio",loc.getAccuracy()+"");
             if (loc != null) {
                 setCurrentLocation(loc);
                 handler.sendEmptyMessage(0);
@@ -341,16 +379,29 @@ public class ServicioGeolocalizacion extends Service implements Runnable {
                 @Override
                 public void run() {
                     Toast.makeText(getApplicationContext(), "GPS apagado inesperadamente", Toast.LENGTH_LONG).show();
+                    Log.d("gps", "gps apagado");
                 }
             });
         }
 
         // @Override
         public void onProviderEnabled(String provider) {
+            Log.d("gps", "gps prendido");
         }
 
         // @Override
         public void onStatusChanged(String provider, int status, Bundle extras) {
+            switch (status) {
+                case LocationProvider.AVAILABLE:
+                    Log.d("status", "LocationProvider.AVAILABLE");
+                    break;
+                case LocationProvider.OUT_OF_SERVICE:
+                    Log.d("status", "LocationProvider.OUT_OF_SERVICE");
+                    break;
+                case LocationProvider.TEMPORARILY_UNAVAILABLE:
+                    Log.d("status", "LocationProvider.TEMPORARILY_UNAVAILABLE");
+                    break;
+            }
         }
     }
 

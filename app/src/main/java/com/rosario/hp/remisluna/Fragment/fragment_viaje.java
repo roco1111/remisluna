@@ -57,6 +57,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Locale;
@@ -73,9 +74,11 @@ public class fragment_viaje extends Fragment {
     private TextView solicitante;
     private TextView dato_salida;
     private TextView destino;
+    private TextView texto_tarifa;
     private String id_viaje;
 
     private ImageButton boton_cero;
+    private ImageButton boton_uno;
     private ImageButton boton_dos;
     private ImageButton boton_tres;
     private ImageButton boton_cuatro;
@@ -92,6 +95,20 @@ public class fragment_viaje extends Fragment {
     private String estado;
     private String ls_id_turno;
 
+
+    private String fecha_ultimo;
+    private String salida_ultimo;
+    private String destino_ultimo;
+    private String hora_salida_ultimo;
+    private String hora_destino_ultimo;
+    private String importe_ultimo;
+    private String espera_ultimo;
+    private String total_ultimo;
+    private String chofer_ultimo ;
+    private String distancia_ultimo ;
+    private String fecha_tarifa_ultimo ;
+    private String movil_ultimo ;
+
     private ArrayList<viaje> viajes = new ArrayList<>();
     private ArrayList<turno> datos;
 
@@ -102,6 +119,13 @@ public class fragment_viaje extends Fragment {
     private String distancia;
     private String salida_coordenada;
     private String destino_coordenada;
+
+    private String l_hora_desde;
+    private String l_hora_hasta;
+    private String l_hoy;
+    private String l_nocturno;
+    private Calendar c;
+
     private Button inicio;
     private Button anular;
     private LocationManager mLocationManager;
@@ -137,6 +161,7 @@ public class fragment_viaje extends Fragment {
             impresion = binder.getService();
             if(impresion.getbluetoothSocket() != null){
                 mBound = true;
+                impresora.setTextColor(getResources().getColor(R.color.colorPrimary));
             }
         }
 
@@ -159,9 +184,10 @@ public class fragment_viaje extends Fragment {
         destino = v.findViewById(R.id.dato_destino);
         inicio = v.findViewById(R.id.buttonInicio);
         anular = v.findViewById(R.id.buttonAnular);
+        texto_tarifa = v.findViewById(R.id.tarifa);
 
         this.boton_cero = v.findViewById(R.id.imageButtonCero);
-        ImageButton boton_uno = v.findViewById(R.id.imageButtonUno);
+        this.boton_uno = v.findViewById(R.id.imageButtonUno);
         this.boton_dos = v.findViewById(R.id.imageButtonDos);
         this.boton_tres = v.findViewById(R.id.imageButtonTres);
         this.boton_cuatro = v.findViewById(R.id.imageButtonCuatro);
@@ -180,7 +206,6 @@ public class fragment_viaje extends Fragment {
             impresora.setTextColor(getResources().getColor(R.color.alarma));
         }
 
-
         SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getContext());
         ls_id_conductor     = settings.getString("id","");
         ls_id_turno     = settings.getString("id_turno_chofer","");
@@ -192,7 +217,11 @@ public class fragment_viaje extends Fragment {
                 if (!mLocationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
                     showDialogGPS("GPS apagado", "Deseas activarlo?");
                 }else{
-                    iniciar_viaje();
+                    if(mBound) {
+                        iniciar_viaje();
+                    }else{
+                        showDialogImpresora("Sin Impresora","Deseas activar la impresora?");
+                    }
                 }
 
             }
@@ -222,7 +251,7 @@ public class fragment_viaje extends Fragment {
             }
         });
 
-        boton_uno.setOnClickListener(new View.OnClickListener() {
+        this.boton_uno.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if (mBound) {
@@ -294,7 +323,7 @@ public class fragment_viaje extends Fragment {
             @Override
             public void onClick(View v) {
                 if(mBound) {
-                    cargarDatosRecaudacion();
+                    repetirTicket(getContext());
                 }else{
                     Toast.makeText(
                             getContext(),
@@ -327,10 +356,173 @@ public class fragment_viaje extends Fragment {
                 getContext().startActivity(intent2);
             }
         });
-
-        cargarDatos(getContext());
+        cargarParametroTarifaDesde(getContext());
 
         return v;
+    }
+
+    public void cargarParametroTarifaDesde(final Context context) {
+
+        // Añadir parámetro a la URL del web service
+        String newURL = Constantes.GET_ID_PARAMETRO + "?parametro=11";
+        Log.d(TAG,newURL);
+
+        // Realizar petición GET_BY_ID
+        VolleySingleton.getInstance(context).addToRequestQueue(
+                myRequest = new JsonObjectRequest(
+                        Request.Method.POST,
+                        newURL,
+                        null,
+                        new Response.Listener<JSONObject>() {
+
+                            @Override
+                            public void onResponse(JSONObject response) {
+                                // Procesar respuesta Json
+                                procesarRespuestaParametroDesde(response, context);
+                            }
+                        },
+                        new Response.ErrorListener() {
+                            @Override
+                            public void onErrorResponse(VolleyError error) {
+                                Log.d(TAG, "Error Volley viaje: " + error.getMessage());
+
+                            }
+                        }
+                )
+        );
+        myRequest.setRetryPolicy(new DefaultRetryPolicy(
+                50000,
+                5,//DefaultRetryPolicy.DEFAULT_MAX_RETRIES
+                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+
+    }
+
+    private void procesarRespuestaParametroDesde(JSONObject response, Context context) {
+
+        try {
+            // Obtener atributo "mensaje"
+            String mensaje = response.getString("estado");
+
+            switch (mensaje) {
+                case "1":
+                    JSONArray datos_parametro = response.getJSONArray("parametro");
+
+                    for(int i = 0; i < datos_parametro.length(); i++)
+                    {JSONObject object = datos_parametro.getJSONObject(i);
+
+                        l_hora_desde = object.getString("valor");
+
+                        cargarParametroTarifaHasta(context);
+
+                    }
+
+                    break;
+
+            }
+
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    public void cargarParametroTarifaHasta(final Context context) {
+
+        // Añadir parámetro a la URL del web service
+        String newURL = Constantes.GET_ID_PARAMETRO + "?parametro=12";
+        Log.d(TAG,newURL);
+
+        // Realizar petición GET_BY_ID
+        VolleySingleton.getInstance(context).addToRequestQueue(
+                myRequest = new JsonObjectRequest(
+                        Request.Method.POST,
+                        newURL,
+                        null,
+                        new Response.Listener<JSONObject>() {
+
+                            @Override
+                            public void onResponse(JSONObject response) {
+                                // Procesar respuesta Json
+                                procesarRespuestaParametroHasta(response, context);
+                            }
+                        },
+                        new Response.ErrorListener() {
+                            @Override
+                            public void onErrorResponse(VolleyError error) {
+                                Log.d(TAG, "Error Volley viaje: " + error.getMessage());
+
+                            }
+                        }
+                )
+        );
+        myRequest.setRetryPolicy(new DefaultRetryPolicy(
+                50000,
+                5,//DefaultRetryPolicy.DEFAULT_MAX_RETRIES
+                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+
+    }
+
+    private void procesarRespuestaParametroHasta(JSONObject response, Context context) {
+
+        try {
+            // Obtener atributo "mensaje"
+            String mensaje = response.getString("estado");
+
+            switch (mensaje) {
+                case "1":
+                    JSONArray datos_parametro = response.getJSONArray("parametro");
+
+                    for(int i = 0; i < datos_parametro.length(); i++)
+                    {JSONObject object = datos_parametro.getJSONObject(i);
+
+                        l_hora_hasta = object.getString("valor");
+
+                        c = Calendar.getInstance();
+                        SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy HH:mm");
+                        String getCurrentDateTime = sdf.format(c.getTime());
+                        SimpleDateFormat shoy = new SimpleDateFormat("MM/dd/yyyy");
+                        l_hoy = shoy.format(c.getTime());
+                        String getMyTime = l_hoy + ' ' + l_hora_desde;
+
+                        if (getCurrentDateTime.compareTo(getMyTime) > 0)
+                        { l_nocturno = "1"; } else
+                        {
+                            getMyTime = l_hoy + ' ' + l_hora_hasta;
+                            if (getCurrentDateTime.compareTo(getMyTime) < 0)
+                            {
+                                l_nocturno = "1";
+                            }else{
+                                l_nocturno = "0";
+                            }
+
+                        }
+
+                        if(l_nocturno.equals("0")){
+                            texto_tarifa.setText(R.string.diurno);
+                        }else{
+                            texto_tarifa.setText(R.string.nocturno);
+                        }
+
+                        SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getContext());
+                        SharedPreferences.Editor editor = settings.edit();
+                        editor.putString("nocturno",l_nocturno);
+                        editor.commit();
+
+
+                        cargarDatos(context);
+
+                    }
+
+                    break;
+
+            }
+
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
     }
 
     public void cargarDatosRecaudacion() {
@@ -620,6 +812,33 @@ public class fragment_viaje extends Fragment {
         }
 
 
+    }
+    public void showDialogImpresora(String title, String message) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+        builder.setTitle(title);
+        builder.setMessage(message);
+        builder.setPositiveButton("Si", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getContext());
+                SharedPreferences.Editor editor = settings.edit();
+                editor.putString("tipo_ventana","main");
+                editor.commit();
+                getActivity().startService(new Intent(getActivity(), Impresion.class));
+                iniciar_viaje();
+            }
+        });
+        builder.setNegativeButton("No", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+
+                dialog.cancel();
+                iniciar_viaje();
+            }
+        });
+
+        AlertDialog dialog = builder.create();
+        dialog.show();
+        dialog.setCancelable(false);
+        dialog.setCanceledOnTouchOutside(false);
     }
 
     public void showDialogGPS(String title, String message) {
@@ -1162,9 +1381,7 @@ public class fragment_viaje extends Fragment {
             e.printStackTrace();
         }
 
-
     }
-
 
     private void iniciar_viaje(){
 
@@ -1390,8 +1607,6 @@ public class fragment_viaje extends Fragment {
                     // Obtener objeto "cliente"
                     JSONArray mensaje1 = response.getJSONArray("viajes");
 
-
-
                     for(int i = 0; i < mensaje1.length(); i++) {
                         JSONObject object = mensaje1.getJSONObject(i);
 
@@ -1494,6 +1709,169 @@ public class fragment_viaje extends Fragment {
             //resetPrint(); //reset printer
 
             outputStream.flush();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void repetirTicket(final Context context) {
+
+        // Añadir parámetro a la URL del web service
+        String newURL = Constantes.GET_ULTIMO_VIAJE + "?conductor=" + ls_id_conductor;
+        Log.d(TAG,newURL);
+
+        // Realizar petición GET_BY_ID
+        VolleySingleton.getInstance(context).addToRequestQueue(
+                myRequest = new JsonObjectRequest(
+                        Request.Method.POST,
+                        newURL,
+                        null,
+                        new Response.Listener<JSONObject>() {
+
+                            @Override
+                            public void onResponse(JSONObject response) {
+                                // Procesar respuesta Json
+                                procesarRespuestaRepetir(response, context);
+                            }
+                        },
+                        new Response.ErrorListener() {
+                            @Override
+                            public void onErrorResponse(VolleyError error) {
+                                Log.d(TAG, "Error Volley turno: " + error.getMessage());
+
+                            }
+                        }
+                )
+        );
+        myRequest.setRetryPolicy(new DefaultRetryPolicy(
+                50000,
+                5,//DefaultRetryPolicy.DEFAULT_MAX_RETRIES
+                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+
+    }
+
+    private void procesarRespuestaRepetir(JSONObject response, Context context) {
+
+        try {
+            // Obtener atributo "mensaje"
+            String mensaje = response.getString("estado");
+            switch (mensaje) {
+                case "1":
+                    // Obtener objeto "cliente"
+                    JSONArray mensaje1 = response.getJSONArray("viaje");
+
+                    JSONObject object = mensaje1.getJSONObject(0);
+                    //Parsear objeto
+
+                    fecha_ultimo =object.getString("fecha");
+                    salida_ultimo = object.getString("salida");
+                    destino_ultimo = object.getString("destino");
+                    hora_salida_ultimo = object.getString("hora_inicio");
+                    hora_destino_ultimo =  object.getString("hora_fin");
+                    String ls_importe;
+                    ls_importe = object.getString("importe");
+                    if(ls_importe.equals("null"))
+                    {
+                        ls_importe = "0,00";
+                    }
+                    importe_ultimo = ls_importe;
+
+
+                    ls_importe = object.getString("importe_espera");
+                    if(ls_importe.equals("null"))
+                    {
+                        ls_importe = "0,00";
+                    }
+                    espera_ultimo = ls_importe;
+
+
+                    ls_importe = object.getString("total");
+                    if(ls_importe.equals("null"))
+                    {
+                        ls_importe = "0,00";
+                    }
+                    total_ultimo = ls_importe;
+
+                    chofer_ultimo = object.getString("chofer");
+                    distancia_ultimo = object.getString("distancia");
+                    fecha_tarifa_ultimo = object.getString("fecha_tarifa");
+                    movil_ultimo = object.getString("movil");
+
+                    repetirTicket();
+
+                case "2":
+                    Toast.makeText(
+                            getContext(),
+                            mensaje,
+                            Toast.LENGTH_LONG).show();
+
+                    break;
+
+            }
+
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+
+    protected void repetirTicket() {
+
+        outputStream = impresion.getOutputStream();
+
+        //print command
+        try {
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+
+            byte[] printformat = { 0x1B,0x21,0x08 };
+            outputStream.write(printformat);
+
+            //print title
+            printUnicode();
+            //print normal text
+            printCustom (getResources().getString(R.string.empresa),2,1);
+            printNewLine();
+            printPhoto(R.drawable.remisluna_logo_impresion);
+            printCustom (getResources().getString(R.string.telefono),1,1);
+            printNewLine();
+            printText(getResources().getString(R.string.recibo)); // total 32 char in a single line
+            printNewLine();
+            printText(stringABytes(getResources().getString(R.string.servicio)));
+            printNewLine();
+            printText(fecha_ultimo);//fecha
+            printNewLine();
+            printCustom ("Chofer: " + chofer_ultimo,1,0);
+            printCustom ("Nro Remis: " + movil_ultimo,1,0);
+            printNewLine();
+            printText("SALIDA  " + hora_salida_ultimo);
+            printNewLine();
+            printText("DESDE  " + salida_ultimo);
+            printNewLine();
+            printText("HASTA  " + destino_ultimo);
+            printNewLine();
+            printText("LLEGADA  " + hora_destino_ultimo);
+            printNewLine();
+            printText("RECORRIDO  " + String.format(Locale.GERMANY,"%.2f",Double.parseDouble(distancia_ultimo)) + " Kms.");
+            printNewLine();
+            printNewLine();
+            printText("TARIFA AL  " + fecha_tarifa_ultimo);
+            printNewLine();
+            printText("VIAJE  " + '$' + String.format(Locale.GERMANY,"%.2f",Double.parseDouble(importe_ultimo)));
+            printNewLine();
+            printText("ESPERA  "+ '$' + String.format(Locale.GERMANY,"%.2f",Double.parseDouble(espera_ultimo)));
+            printNewLine();
+            printNewLine();
+            printCustom ("TOTAL:  " + '$' + String.format(Locale.GERMANY,"%.2f",Double.parseDouble(total_ultimo)),2,0);
+            printNewLine();
+            printNewLine();
+            outputStream.flush();
+
         } catch (IOException e) {
             e.printStackTrace();
         }

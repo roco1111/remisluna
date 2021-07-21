@@ -105,5 +105,8 @@
     <string name="reporte_viajes">8: Historial</string>
     <string name="reporte_viaje">9:Viaje Asignado</string>
 
+    <string name="diurno">Tarifa Diurna</string>
+    <string name="nocturno">Tarifa Nocturna</string>
+
 
 </resources>

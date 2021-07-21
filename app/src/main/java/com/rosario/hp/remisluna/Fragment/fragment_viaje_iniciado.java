@@ -12,7 +12,9 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.location.LocationManager;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.IBinder;
+import android.os.Looper;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -61,11 +63,12 @@ public class fragment_viaje_iniciado extends Fragment {
     private String ls_id_conductor;
     private TextView id_viaje;
     private TextView solicitante;
-    private TextView documento;
     private TextView dato_salida;
     private TextView destino;
     private TextView kms;
     private TextView importe;
+    private TextView texto_tarifa;
+    private TextView tiempo_viaje;
     private String hora_inicio;
     private String hora_fin;
     private String fecha_tarifa;
@@ -75,6 +78,7 @@ public class fragment_viaje_iniciado extends Fragment {
     private String ls_precio = "0.00";
     private String ls_ficha = "0.00";
     private String ls_espera = "0.00";
+    private String ls_bajada = "0.00";
     private String id_vehiculo;
     private String id_turno;
     private String movil;
@@ -101,6 +105,11 @@ public class fragment_viaje_iniciado extends Fragment {
     private LocationManager mLocationManager;
     boolean lb_ticket;
     private Double l_porcentaje;
+    boolean cronometroActivo;
+    boolean lb_espera = false;
+    private Handler escribirenUI;
+
+
 
     @Override
     public void onPause() {
@@ -159,7 +168,6 @@ public class fragment_viaje_iniciado extends Fragment {
 
         id_viaje = v.findViewById(R.id.dato_viaje);
         solicitante = v.findViewById(R.id.dato_solicitante);
-        documento = v.findViewById(R.id.dato_documento);
         dato_salida = v.findViewById(R.id.dato_salida);
         destino = v.findViewById(R.id.dato_destino);
         sin_ticket = v.findViewById(R.id.buttonSinTicket);
@@ -168,6 +176,8 @@ public class fragment_viaje_iniciado extends Fragment {
         alarma = v.findViewById(R.id.buttonAlarma);
         kms = v.findViewById(R.id.kms);
         importe = v.findViewById(R.id.precio);
+        texto_tarifa = v.findViewById(R.id.tarifa);
+        tiempo_viaje = v.findViewById(R.id.tiempo);
 
         SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getContext());
         ls_id_conductor     = settings.getString("id","");
@@ -222,29 +232,43 @@ public class fragment_viaje_iniciado extends Fragment {
 
             String datos = i.getStringExtra("coordenadas");//obtenemos las coordenadas envidas del servicioGeolocalizaci—n
             String[] tokens = datos.split(";");//separamos por token
-            cuadras++;
-            kms.setText( String.valueOf(cuadras));
 
-            Double valor_ficha ;
 
-            if(tokens[2].equals("1")){
-                ficha++;
-                valor_ficha = Double.parseDouble(importe_ficha);
-                precio_ficha = precio_ficha + valor_ficha ;
-            }else{
-                espera++;
-                valor_ficha = Double.parseDouble(importe_espera);
-                precio_espera = precio_espera + valor_ficha ;
+            Double valor_ficha = 0.00 ;
+
+            switch (tokens[2]) {
+                case "1":
+                    ficha++;
+                    valor_ficha = Double.parseDouble(importe_ficha);
+                    precio_ficha = precio_ficha + valor_ficha ;
+                    cuadras++;
+                    kms.setText( String.valueOf(cuadras));
+                    break;
+                case "2":
+                     espera++;
+                    valor_ficha = Double.parseDouble(importe_espera);
+                    precio_espera = precio_espera + valor_ficha ;
+                    cuadras++;
+                    kms.setText( String.valueOf(cuadras));
+                    break;
+
+                case "3":
+                    String ls_tiempo = "";
+                    ls_tiempo = tokens[3];
+                    tiempo_viaje.setText( ls_tiempo);
+                    valor_ficha = 0.00;
+                    break;
             }
 
+            if(valor_ficha > 0.00){
+                precio_total = precio_total + valor_ficha ;
 
-            precio_total = precio_total + valor_ficha ;
+                precio_total = Double.parseDouble(getTwoDecimals(precio_total));
 
-            precio_total = Double.parseDouble(getTwoDecimals(precio_total));
+                importe.setText(String.valueOf(precio_total));
 
-            importe.setText("$ " + String.format(Locale.GERMANY,"%.2f",precio_total));
-
-            ls_precio = String.format(Locale.GERMANY,"%.2f",precio_total);
+                ls_precio = String.format(Locale.GERMANY,"%.2f",precio_total);
+            }
 
             String latitud;
             String longitud;
@@ -409,7 +433,10 @@ public class fragment_viaje_iniciado extends Fragment {
 
                     break;
 
+
             }
+            cronometroActivo = true;
+           // run_espera();
 
 
         } catch (JSONException e) {
@@ -471,16 +498,29 @@ public class fragment_viaje_iniciado extends Fragment {
 
                     id_viaje.setText(object.getString("id"));
                     solicitante.setText(object.getString("solicitante"));
-                    documento.setText(object.getString("nro_documento"));
                     dato_salida.setText(object.getString("salida"));
                     destino.setText(object.getString("destino"));
                     id_vehiculo = object.getString("id_movil");
-                    importe_bajada = object.getString("importe_bajada");
-                    importe_ficha = object.getString("importe_ficha");
-                    importe_espera = object.getString("importe_espera");
+                    SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getContext());
+                    String l_nocturno;
+                    l_nocturno     = settings.getString("nocturno","");
+                    if(l_nocturno.equals("0")) {
+                        importe_bajada = object.getString("importe_bajada");
+                        importe_ficha = object.getString("importe_ficha");
+                        importe_espera = object.getString("importe_espera");
+                        texto_tarifa.setText(R.string.diurno);
+                    }else{
+                        importe_bajada = object.getString("importe_bajada_nocturno");
+                        importe_ficha = object.getString("importe_ficha_nocturno");
+                        importe_espera = object.getString("importe_espera_nocturno");
+                        texto_tarifa.setText(R.string.nocturno);
+                    }
                     movil = object.getString("movil");
+                    ls_bajada = importe_bajada;
 
                     precio_total = Double.parseDouble(importe_bajada);
+
+                    importe.setText(String.valueOf(precio_total));
 
                     cargarParametro(context);
 
@@ -694,6 +734,7 @@ public class fragment_viaje_iniciado extends Fragment {
         map.put("espera", ls_espera);
         map.put("descuento", String.format(Locale.GERMANY,"%.2f",descuento));
         map.put("total", String.format(Locale.GERMANY,"%.2f",total));
+        map.put("bajada", ls_bajada);
 
 
         JSONObject jobject = new JSONObject(map);

@@ -9,51 +9,19 @@
     android:paddingBottom="@dimen/activity_vertical_margin"
     android:background="@color/black"
     android:orientation="vertical">
-    <RelativeLayout
-        android:id="@+id/sin_elementos"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:visibility="gone">
-
-        <ImageView
-            android:id="@+id/ImEmpty"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_alignParentTop="true"
-            android:layout_marginLeft="5dp"
-            android:layout_marginTop="19dp"
-            android:layout_marginRight="10dp"
-            android:foregroundGravity="center"
-            android:paddingStart="30dp"
-            android:src="@drawable/no_elementos" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/TwEmpty"
-            android:text="@string/sin_viaje"
-            android:textAlignment="center"
-            android:textSize="@dimen/tamanio_subtitulo"
-            android:layout_marginLeft="30dp"
-            android:layout_marginRight="30dp"
-            android:layout_alignParentBottom="true"
-            android:layout_centerHorizontal="true"
-            android:layout_marginBottom="90dp"
-            android:textStyle="bold"/>
-    </RelativeLayout>
 
     <RelativeLayout
         android:id="@+id/id_numeros"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/margin_top"
+        android:layout_marginTop="@dimen/margin_boton"
         android:orientation="vertical">
 
         <RelativeLayout
             android:id="@+id/id_datos_superior"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/margin_top"
+            android:layout_marginTop="@dimen/margin_boton"
 
             android:orientation="horizontal">
 
@@ -83,7 +51,7 @@
             android:id="@+id/id_datos_libre"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/margin_top"
+            android:layout_marginTop="@dimen/margin_boton"
             android:layout_below="@id/id_datos_superior"
             android:orientation="horizontal">
 
@@ -113,44 +81,47 @@
             android:layout_centerHorizontal="true"
             android:textColor="@color/colorPrimary"
             android:textStyle="bold"
+            android:fontFamily="@font/digital"
             android:textSize="@dimen/tamanio_numero" />
 
         <RelativeLayout
             android:id="@+id/id_datos_inferior"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/margin_top"
+            android:layout_marginTop="@dimen/margin_boton"
             android:layout_below="@id/precio"
             android:orientation="horizontal">
 
             <TextView
                 android:id="@+id/tiempo"
                 android:layout_width="wrap_content"
-                android:layout_height="@dimen/icono_chico"
-                android:text="@string/cero_distancia"
+                android:layout_height="@dimen/tamanio_titulo_grande"
+                android:text="@string/cero_tiempo"
+                android:fontFamily="@font/digital"
                 android:textAlignment="center"
                 android:layout_alignParentStart="true"
                 android:textColor="@color/colorPrimary"
                 android:textStyle="bold"
-                android:textSize="@dimen/tamanio_parrafo" />
+                android:textSize="@dimen/tamanio_titulo_grande" />
 
             <TextView
                 android:id="@+id/kms"
                 android:layout_width="wrap_content"
-                android:layout_height="@dimen/icono_chico"
+                android:layout_height="@dimen/tamanio_titulo_grande"
                 android:text="@string/cero_distancia"
+                android:fontFamily="@font/digital"
                 android:textAlignment="center"
                 android:layout_alignParentEnd="true"
                 android:textColor="@color/colorPrimary"
                 android:textStyle="bold"
-                android:textSize="@dimen/tamanio_parrafo" />
+                android:textSize="@dimen/tamanio_titulo_grande" />
         </RelativeLayout>
 
         <LinearLayout
             android:id="@+id/id_datos_viaje"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/margin_top"
+            android:layout_marginTop="@dimen/margin_boton"
             android:layout_below="@id/id_datos_inferior"
             android:orientation="vertical">
             <LinearLayout
@@ -174,6 +145,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/nro_viaje"
+                    android:layout_marginStart="@dimen/margin_start"
                     android:textAlignment="center"
                     android:textColor="@color/colorPrimary"
                     android:textSize="@dimen/tamanio_texto" />
@@ -200,6 +172,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/nro_viaje"
+                    android:layout_marginStart="@dimen/margin_start"
                     android:textAlignment="center"
                     android:textColor="@color/colorPrimary"
                     android:textSize="@dimen/tamanio_texto" />
@@ -224,6 +197,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/nro_viaje"
+                    android:layout_marginStart="@dimen/margin_start"
                     android:textAlignment="center"
                     android:textColor="@color/colorPrimary"
                     android:textSize="@dimen/tamanio_texto" />
@@ -239,23 +213,22 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_below="@id/id_numeros"
-            android:layout_marginTop="@dimen/margin_top"
-            android:orientation="vertical">
+            android:layout_marginTop="@dimen/margin_boton"
+            android:orientation="horizontal">
         <Button
             android:id="@+id/buttonInicio"
-            android:layout_width="@dimen/campos_width_medio"
+            android:layout_width="@dimen/ancho_boton_grande"
             android:layout_height="@dimen/alto_boton"
-            android:layout_centerHorizontal="true"
+            android:layout_alignParentStart="true"
             android:background="@android:color/transparent"
             android:drawableTop="@drawable/iniciar_viaje"
             tools:ignore="RtlHardcoded" />
 
             <Button
                 android:id="@+id/buttonAnular"
-                android:layout_width="@dimen/campos_width_medio"
+                android:layout_width="@dimen/ancho_boton_grande"
                 android:layout_height="@dimen/alto_boton"
-                android:layout_centerHorizontal="true"
-                android:layout_below="@id/buttonInicio"
+                android:layout_alignParentEnd="true"
                 android:background="@android:color/transparent"
                 android:drawableTop="@drawable/anular_viaje"
                 tools:ignore="RtlHardcoded" />
@@ -274,28 +247,28 @@
             android:id="@+id/imageButtonUno"
             android:layout_width="@dimen/ancho_boton"
             android:layout_height="@dimen/ancho_boton"
-            android:background="@color/black"
+            android:background="@drawable/selector_uno"
             android:scaleType="fitXY"
-            app:srcCompat="@drawable/uno" />
+             />
         <ImageButton
             android:id="@+id/imageButtonDos"
             android:layout_width="@dimen/ancho_boton"
             android:layout_height="@dimen/ancho_boton"
-            android:background="@color/black"
+            android:background="@drawable/selector_dos"
             android:layout_toEndOf = "@id/imageButtonUno"
             android:scaleType="fitXY"
             android:layout_marginStart="@dimen/campos_height"
-            app:srcCompat="@drawable/dos" />
+             />
 
         <ImageButton
             android:id="@+id/imageButtonTres"
             android:layout_width="@dimen/ancho_boton"
             android:layout_height="@dimen/ancho_boton"
-            android:background="@color/black"
+            android:background="@drawable/selector_tres"
             android:layout_marginStart="@dimen/campos_height"
             android:layout_toEndOf = "@id/imageButtonDos"
             android:scaleType="fitXY"
-            app:srcCompat="@drawable/tres" />
+            />
 
     </RelativeLayout>
     <RelativeLayout
@@ -311,28 +284,27 @@
             android:id="@+id/imageButtonCuatro"
             android:layout_width="@dimen/ancho_boton"
             android:layout_height="@dimen/ancho_boton"
-            android:background="@color/black"
+            android:background="@drawable/selector_cuatro"
             android:scaleType="fitXY"
-            app:srcCompat="@drawable/cuatro" />
+             />
         <ImageButton
             android:id="@+id/imageButtonCinco"
             android:layout_width="@dimen/ancho_boton"
             android:layout_height="@dimen/ancho_boton"
-            android:background="@color/black"
+            android:background="@drawable/selector_cinco"
             android:layout_toEndOf = "@id/imageButtonCuatro"
             android:scaleType="fitXY"
-            android:layout_marginStart="@dimen/campos_height"
-            app:srcCompat="@drawable/cinco" />
+            android:layout_marginStart="@dimen/campos_height" />
 
         <ImageButton
             android:id="@+id/imageButtonSeis"
             android:layout_width="@dimen/ancho_boton"
             android:layout_height="@dimen/ancho_boton"
-            android:background="@color/black"
+            android:background="@drawable/selector_seis"
             android:layout_marginStart="@dimen/campos_height"
             android:layout_toEndOf = "@id/imageButtonCinco"
             android:scaleType="fitXY"
-            app:srcCompat="@drawable/seis" />
+             />
 
     </RelativeLayout>
 
@@ -349,28 +321,28 @@
             android:id="@+id/imageButtonSiete"
             android:layout_width="@dimen/ancho_boton"
             android:layout_height="@dimen/ancho_boton"
-            android:background="@color/black"
+            android:background="@drawable/selector_siete"
             android:scaleType="fitXY"
-            app:srcCompat="@drawable/siete" />
+            />
         <ImageButton
             android:id="@+id/imageButtonOcho"
             android:layout_width="@dimen/ancho_boton"
             android:layout_height="@dimen/ancho_boton"
-            android:background="@color/black"
+            android:background="@drawable/selector_ocho"
             android:layout_toEndOf = "@id/imageButtonSiete"
             android:scaleType="fitXY"
             android:layout_marginStart="@dimen/campos_height"
-            app:srcCompat="@drawable/ocho" />
+             />
 
         <ImageButton
             android:id="@+id/imageButtonNueve"
             android:layout_width="@dimen/ancho_boton"
             android:layout_height="@dimen/ancho_boton"
-            android:background="@color/black"
+            android:background="@drawable/selector_nueve"
             android:layout_marginStart="@dimen/campos_height"
             android:layout_toEndOf = "@id/imageButtonOcho"
             android:scaleType="fitXY"
-            app:srcCompat="@drawable/nueve" />
+            />
 
 
 
@@ -390,11 +362,11 @@
             android:id="@+id/imageButtonCero"
             android:layout_width="@dimen/ancho_boton"
             android:layout_height="@dimen/ancho_boton"
-            android:background="@color/black"
+            android:background="@drawable/selector_cero"
             android:layout_marginStart="@dimen/campos_height"
             android:layout_centerHorizontal="true"
             android:scaleType="fitXY"
-            app:srcCompat="@drawable/cero" />
+             />
     </RelativeLayout>
 
 </RelativeLayout>

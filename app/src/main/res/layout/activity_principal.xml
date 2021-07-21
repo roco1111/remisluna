@@ -89,6 +89,7 @@
             android:layout_marginTop="@dimen/margin_start"
             android:layout_centerHorizontal="true"
             android:textColor="@color/colorPrimary"
+            android:fontFamily="@font/digital"
             android:textStyle="bold"
             android:textSize="@dimen/tamanio_numero" />
 
@@ -103,24 +104,26 @@
             <TextView
                 android:id="@+id/tiempo"
                 android:layout_width="wrap_content"
-                android:layout_height="@dimen/icono_chico"
+                android:layout_height="@dimen/tamanio_titulo_grande"
                 android:text="@string/cero_tiempo"
                 android:textAlignment="center"
                 android:layout_alignParentStart="true"
+                android:fontFamily="@font/digital"
                 android:textColor="@color/colorPrimary"
                 android:textStyle="bold"
-                android:textSize="@dimen/tamanio_parrafo" />
+                android:textSize="@dimen/tamanio_titulo_grande" />
 
             <TextView
                 android:id="@+id/kms"
                 android:layout_width="wrap_content"
-                android:layout_height="@dimen/icono_chico"
+                android:layout_height="@dimen/tamanio_titulo_grande"
                 android:text="@string/cero_distancia"
                 android:textAlignment="center"
+                android:fontFamily="@font/digital"
                 android:layout_alignParentEnd="true"
                 android:textColor="@color/colorPrimary"
                 android:textStyle="bold"
-                android:textSize="@dimen/tamanio_parrafo" />
+                android:textSize="@dimen/tamanio_titulo_grande" />
         </RelativeLayout>
 
 
@@ -139,28 +142,25 @@
         android:id="@+id/imageButtonUno"
         android:layout_width="@dimen/ancho_boton"
         android:layout_height="@dimen/ancho_boton"
-        android:background="@color/black"
-        android:scaleType="fitXY"
-        app:srcCompat="@drawable/uno" />
+        android:background="@drawable/selector_uno"
+        android:scaleType="fitXY" />
     <ImageButton
         android:id="@+id/imageButtonDos"
         android:layout_width="@dimen/ancho_boton"
         android:layout_height="@dimen/ancho_boton"
-        android:background="@color/black"
+        android:background="@drawable/selector_dos"
         android:layout_toEndOf = "@id/imageButtonUno"
         android:scaleType="fitXY"
-        android:layout_marginStart="@dimen/campos_height"
-        app:srcCompat="@drawable/dos" />
+        android:layout_marginStart="@dimen/campos_height" />
 
     <ImageButton
         android:id="@+id/imageButtonTres"
         android:layout_width="@dimen/ancho_boton"
         android:layout_height="@dimen/ancho_boton"
-        android:background="@color/black"
+        android:background="@drawable/selector_tres"
         android:layout_marginStart="@dimen/campos_height"
         android:layout_toEndOf = "@id/imageButtonDos"
-        android:scaleType="fitXY"
-        app:srcCompat="@drawable/tres" />
+        android:scaleType="fitXY" />
 
 </RelativeLayout>
     <RelativeLayout
@@ -176,28 +176,26 @@
             android:id="@+id/imageButtonCuatro"
             android:layout_width="@dimen/ancho_boton"
             android:layout_height="@dimen/ancho_boton"
-            android:background="@color/black"
-            android:scaleType="fitXY"
-            app:srcCompat="@drawable/cuatro" />
+            android:background="@drawable/selector_cuatro"
+            android:scaleType="fitXY" />
         <ImageButton
             android:id="@+id/imageButtonCinco"
             android:layout_width="@dimen/ancho_boton"
             android:layout_height="@dimen/ancho_boton"
-            android:background="@color/black"
+            android:background="@drawable/selector_cinco"
             android:layout_toEndOf = "@id/imageButtonCuatro"
             android:scaleType="fitXY"
             android:layout_marginStart="@dimen/campos_height"
-            app:srcCompat="@drawable/cinco" />
+             />
 
         <ImageButton
             android:id="@+id/imageButtonSeis"
             android:layout_width="@dimen/ancho_boton"
             android:layout_height="@dimen/ancho_boton"
-            android:background="@color/black"
+            android:background="@drawable/selector_seis"
             android:layout_marginStart="@dimen/campos_height"
             android:layout_toEndOf = "@id/imageButtonCinco"
-            android:scaleType="fitXY"
-            app:srcCompat="@drawable/seis" />
+            android:scaleType="fitXY" />
 
     </RelativeLayout>
 
@@ -214,28 +212,28 @@
             android:id="@+id/imageButtonSiete"
             android:layout_width="@dimen/ancho_boton"
             android:layout_height="@dimen/ancho_boton"
-            android:background="@color/black"
+            android:background="@drawable/selector_siete"
             android:scaleType="fitXY"
-            app:srcCompat="@drawable/siete" />
+             />
         <ImageButton
             android:id="@+id/imageButtonOcho"
             android:layout_width="@dimen/ancho_boton"
             android:layout_height="@dimen/ancho_boton"
-            android:background="@color/black"
+            android:background="@drawable/selector_ocho"
             android:layout_toEndOf = "@id/imageButtonSiete"
             android:scaleType="fitXY"
             android:layout_marginStart="@dimen/campos_height"
-            app:srcCompat="@drawable/ocho" />
+             />
 
         <ImageButton
             android:id="@+id/imageButtonNueve"
             android:layout_width="@dimen/ancho_boton"
             android:layout_height="@dimen/ancho_boton"
-            android:background="@color/black"
+            android:background="@drawable/selector_nueve"
             android:layout_marginStart="@dimen/campos_height"
             android:layout_toEndOf = "@id/imageButtonOcho"
             android:scaleType="fitXY"
-            app:srcCompat="@drawable/nueve" />
+             />
 
 
 
@@ -255,10 +253,10 @@
             android:id="@+id/imageButtonCero"
             android:layout_width="@dimen/ancho_boton"
             android:layout_height="@dimen/ancho_boton"
-            android:background="@color/black"
+            android:background="@drawable/selector_cero"
             android:layout_marginStart="@dimen/campos_height"
             android:layout_centerHorizontal="true"
             android:scaleType="fitXY"
-            app:srcCompat="@drawable/cero" />
+             />
     </RelativeLayout>
 </RelativeLayout>

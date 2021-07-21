@@ -67,6 +67,7 @@ public class MainActivity extends AppCompatActivity {
     String ls_vehiculo;
     private ArrayList<ayuda> ayudas;
     private Impresion impresion;
+    private String ls_viaje;
     boolean mBound = false;
     private static OutputStream outputStream;
     byte FONT_TYPE;
@@ -317,6 +318,7 @@ public class MainActivity extends AppCompatActivity {
 
                     JSONObject object = mensaje1.getJSONObject(0);
                     ls_vehiculo = object.getString("id_movil");
+
                     if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
                         ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION,}, 1000);
                     } else {

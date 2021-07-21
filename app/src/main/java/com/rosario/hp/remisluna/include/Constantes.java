@@ -12,17 +12,15 @@ public class Constantes {
 
     public static final String GET_BY_CLAVE = "https://" + IP + PUERTO_HOST + "/obtener_clave.php";
 
-    public static final String EXTRA_ID = "IDEXTRA";
-
     public static final String GET_VIAJE_SOLICITADOS = "https://" + IP + PUERTO_HOST + "/obtener_viaje_asignado.php";
     public static final String GET_VIAJE_EN_CURSO = "https://" + IP + PUERTO_HOST + "/obtener_viaje_en_curso.php";
     public static final String GET_VIAJE_TERMINADO = "https://" + IP + PUERTO_HOST + "/obtener_viaje_terminado.php";
     public static final String GET_TURNO = "https://" + IP + PUERTO_HOST + "/obtener_turno.php";
     public static final String GET_TURNO_BY_ID = "https://" + IP + PUERTO_HOST + "/obtener_un_turno.php";
     public static final String GET_TURNOS = "https://" + IP + PUERTO_HOST + "/obtener_turnos.php";
-    public static final String GET_TURNOS_RECAUDACION = "https://" + IP + PUERTO_HOST + "/obtener_turnos_recaudacion.php";
     public static final String GET_VIAJES_TURNO = "https://" + IP + PUERTO_HOST + "/obtener_viajes_turno.php";
     public static final String GET_ULTIMOS_VIAJES = "https://" + IP + PUERTO_HOST + "/obtener_ultimos_viajes.php";
+    public static final String GET_ULTIMO_VIAJE = "https://" + IP + PUERTO_HOST + "/obtener_ultimo_viaje.php";
     public static final String GET_VIAJE_BY_ID = "https://" + IP + PUERTO_HOST + "/obtener_un_viaje.php";
 
     public static final String INICIAR_VIAJE = "https://" + IP + PUERTO_HOST + "/iniciar_viaje.php";
