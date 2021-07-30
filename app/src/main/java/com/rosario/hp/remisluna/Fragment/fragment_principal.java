@@ -322,7 +322,7 @@ public class fragment_principal extends Fragment {
                         new Response.ErrorListener() {
                             @Override
                             public void onErrorResponse(VolleyError error) {
-                                Log.d(TAG, "Error Volley viaje: " + error.getMessage());
+                                Log.d(TAG, "Error Volley parametro: " + error.getMessage());
 
                             }
                         }
@@ -389,7 +389,7 @@ public class fragment_principal extends Fragment {
                         new Response.ErrorListener() {
                             @Override
                             public void onErrorResponse(VolleyError error) {
-                                Log.d(TAG, "Error Volley viaje: " + error.getMessage());
+                                Log.d(TAG, "Error Volley parametro: " + error.getMessage());
 
                             }
                         }
@@ -825,7 +825,7 @@ public class fragment_principal extends Fragment {
                         new Response.ErrorListener() {
                             @Override
                             public void onErrorResponse(VolleyError error) {
-                                Log.d(TAG, "Error Volley viaje: " + error.getMessage());
+                                Log.d(TAG, "Error Volley turno: " + error.getMessage());
 
                             }
                         }
@@ -899,7 +899,7 @@ public class fragment_principal extends Fragment {
                         new Response.ErrorListener() {
                             @Override
                             public void onErrorResponse(VolleyError error) {
-                                Log.d(TAG, "Error Volley viaje: " + error.getMessage());
+                                Log.d(TAG, "Error Volley turnos: " + error.getMessage());
 
                             }
                         }

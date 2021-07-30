@@ -215,7 +215,7 @@ public class MainActivity extends AppCompatActivity {
                         new Response.ErrorListener() {
                             @Override
                             public void onErrorResponse(VolleyError error) {
-                                Log.d(TAG, "Error Volley viaje: " + error.getMessage());
+                                Log.d(TAG, "Error Volley turno: " + error.getMessage());
 
                             }
                         }
@@ -293,7 +293,7 @@ public class MainActivity extends AppCompatActivity {
                         new Response.ErrorListener() {
                             @Override
                             public void onErrorResponse(VolleyError error) {
-                                Log.d(TAG, "Error Volley viaje: " + error.getMessage());
+                                Log.d(TAG, "Error Volley viaje curso: " + error.getMessage());
 
                             }
                         }
@@ -368,7 +368,7 @@ public class MainActivity extends AppCompatActivity {
                         new Response.ErrorListener() {
                             @Override
                             public void onErrorResponse(VolleyError error) {
-                                Log.d(TAG, "Error Volley viaje: " + error.getMessage());
+                                Log.d(TAG, "Error Volley viaje solicitado: " + error.getMessage());
 
                             }
                         }
@@ -459,7 +459,7 @@ public class MainActivity extends AppCompatActivity {
                         new Response.ErrorListener() {
                             @Override
                             public void onErrorResponse(VolleyError error) {
-                                Log.d(TAG, "Error Volley viaje: " + error.getMessage());
+                                Log.d(TAG, "Error Volley vehiculo: " + error.getMessage());
 
                             }
                         }
@@ -713,7 +713,7 @@ public class MainActivity extends AppCompatActivity {
                         new Response.ErrorListener() {
                             @Override
                             public void onErrorResponse(VolleyError error) {
-                                Log.d(TAG, "Error Volley viaje: " + error.getMessage());
+                                Log.d(TAG, "Error Volley ayuda: " + error.getMessage());
 
                             }
                         }
@@ -792,7 +792,7 @@ public class MainActivity extends AppCompatActivity {
                         new Response.ErrorListener() {
                             @Override
                             public void onErrorResponse(VolleyError error) {
-                                Log.d(TAG, "Error Volley viaje: " + error.getMessage());
+                                Log.d(TAG, "Error Volley ayudas: " + error.getMessage());
 
                             }
                         }

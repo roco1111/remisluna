@@ -37,7 +37,7 @@
     <string name="mensaje_contrasenia">Ingrese la dirección de correo electrónico que utilizó para registrarse.
     Le enviaremos un mail con instrucciones para definir una nueva contraseña</string>
     <string name="dialog_aceptar">Aceptar</string>
-    <string name="cero_distancia">0.00 km</string>
+    <string name="cero_distancia">0</string>
     <string name="cero_tiempo">00:00</string>
     <string name="gps">GPS</string>
     <string name="tarifa">Tarifa</string>

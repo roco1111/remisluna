@@ -4,6 +4,8 @@
     <dimen name="tamanio_parrafo">18sp</dimen>
     <dimen name="tamanio_campo_numero">122sp</dimen>
     <dimen name="tamanio_numero">120sp</dimen>
+    <dimen name="tamanio_campo_numero_chico">82sp</dimen>
+    <dimen name="tamanio_numero_chico">80sp</dimen>
     <dimen name="tamanio_texto">15sp</dimen>
     <dimen name="tamanio_titulo">25sp</dimen>
     <dimen name="tamanio_titulo_grande">35sp</dimen>

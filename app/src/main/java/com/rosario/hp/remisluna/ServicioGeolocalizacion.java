@@ -74,11 +74,16 @@ public class ServicioGeolocalizacion extends Service implements Runnable {
     private Integer segundos;
     private Integer resto;
     private String l_tiempo;
+    private Integer l_acumulo = 0;
+    private Integer l_contador = 0;
+    private Integer l_tipo;
+    
 
     @Override
     public void onCreate() {
         Toast.makeText(this, "Taxímetro iniciado", Toast.LENGTH_SHORT).show();
         super.onCreate();
+        distancia_acumulada = 0;
         SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
         ls_id_conductor     = settings.getString("id","");
         cargarDatos(getApplicationContext());
@@ -238,19 +243,36 @@ public class ServicioGeolocalizacion extends Service implements Runnable {
             distancia_acumulada += distance;
             distancia_acumulada = Double.valueOf(getTwoDecimals(distancia_acumulada));
 
-            if (distancia_acumulada >= 1) {
-                distancia_acumulada = distancia_acumulada - 1;
-                tiempo_acumulado = 0L;
+            l_contador ++;
 
-                getApplicationContext().sendBroadcast(
-                        new Intent("key").putExtra("coordenadas", latitud + ";"
-                                + longitud + ";" + 1 + ""));
+            if(distance > 0.85) {
+                l_acumulo++;
             }
-            if(distance > 0.30) {
+            l_tipo = 0;
 
-                tiempo_acumulado = 0L;
+            if(l_contador == 5){
+                l_contador = 0;
+                if(l_acumulo >= 3){
+                    l_tipo = 1;//ficha
+                }else{
+                    l_tipo = 2;//espera
+                }
+                l_acumulo = 0;
+            }
 
-            }else{
+            if(l_tipo == 1) {
+                if (distancia_acumulada >= 1) {
+                    distancia_acumulada = distancia_acumulada - 1;
+                    tiempo_acumulado = 0L;
+
+                    getApplicationContext().sendBroadcast(
+                            new Intent("key").putExtra("coordenadas", latitud + ";"
+                                    + longitud + ";" + 1 + ""));
+                }
+                Log.d("diferencia", String.valueOf(distance));
+
+            }else if (l_tipo == 2){
+
                 l_final = System.currentTimeMillis();
                 l_diferencia = l_final - l_inicio;
                 if(l_diferencia < 0) {
@@ -279,7 +301,6 @@ public class ServicioGeolocalizacion extends Service implements Runnable {
 
                     l_tiempo = min + ":" + seg;
 
-                    distancia_acumulada = 0;
                     tiempo_acumulado = 0L;
                     if(tiempo_tolerancia >= 300000){
                         lb_torerancia = false;
@@ -293,7 +314,6 @@ public class ServicioGeolocalizacion extends Service implements Runnable {
                     Log.d("tiempo_acumulado","ok");
                     if(tiempo_acumulado >= 60000){
 
-                        distancia_acumulada = 0;
                         tiempo_acumulado = 0L;
                         getApplicationContext().sendBroadcast(
                                 new Intent("key").putExtra("coordenadas", latitud + ";"
@@ -329,7 +349,7 @@ public class ServicioGeolocalizacion extends Service implements Runnable {
                 return;
             }
             mLocationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, mLocationListener);
-            mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000, 0, mLocationListener);
+            mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, mLocationListener);
             Looper.loop();
             Looper.myLooper().quit();
         } else {

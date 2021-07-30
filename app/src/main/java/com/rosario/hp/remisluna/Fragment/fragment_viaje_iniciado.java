@@ -274,7 +274,7 @@ public class fragment_viaje_iniciado extends Fragment {
             String longitud;
 
             latitud = tokens[0];
-            longitud = tokens[0];
+            longitud = tokens[1];
 
             guardar_trayectoria(latitud,longitud);
 
@@ -721,8 +721,8 @@ public class fragment_viaje_iniciado extends Fragment {
         Double descuento;
         Double total;
 
-        descuento = Double.parseDouble(ls_precio) * (l_porcentaje / 100);
-        total = Double.parseDouble(ls_precio) - descuento;
+        descuento = precio_total * (l_porcentaje / 100);
+        total = precio_total - descuento;
 
         HashMap<String, String> map = new HashMap<>();// Mapeo previo
 

@@ -504,7 +504,7 @@ public class fragment_viaje extends Fragment {
                             texto_tarifa.setText(R.string.nocturno);
                         }
 
-                        SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getContext());
+                        SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(context);
                         SharedPreferences.Editor editor = settings.edit();
                         editor.putString("nocturno",l_nocturno);
                         editor.commit();

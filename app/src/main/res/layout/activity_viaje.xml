@@ -73,7 +73,7 @@
         <TextView
             android:id="@+id/precio"
             android:layout_width="wrap_content"
-            android:layout_height="@dimen/tamanio_campo_numero"
+            android:layout_height="@dimen/tamanio_campo_numero_chico"
             android:text="@string/cero_pesos"
             android:layout_below="@id/id_datos_superior"
             android:textAlignment="center"
@@ -82,7 +82,7 @@
             android:textColor="@color/colorPrimary"
             android:textStyle="bold"
             android:fontFamily="@font/digital"
-            android:textSize="@dimen/tamanio_numero" />
+            android:textSize="@dimen/tamanio_numero_chico" />
 
         <RelativeLayout
             android:id="@+id/id_datos_inferior"
