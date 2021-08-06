@@ -50,7 +50,7 @@
             android:id="@+id/id_datos_libre"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/margin_top"
+            android:layout_marginTop="@dimen/margin_start"
             android:layout_below="@id/id_datos_superior"
             android:orientation="horizontal">
 
@@ -86,7 +86,7 @@
             android:text="@string/cero_pesos"
             android:layout_below="@id/id_datos_libre"
             android:textAlignment="center"
-            android:layout_marginTop="@dimen/margin_start"
+
             android:layout_centerHorizontal="true"
             android:textColor="@color/colorPrimary"
             android:fontFamily="@font/digital"
@@ -97,7 +97,7 @@
             android:id="@+id/id_datos_inferior"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/margin_top"
+
             android:layout_below="@id/precio"
             android:orientation="horizontal">
 
@@ -134,7 +134,7 @@
     android:layout_height="wrap_content"
     android:layout_centerHorizontal="true"
    android:layout_below="@id/id_numeros"
-    android:layout_marginTop="@dimen/margin_top_menu2"
+    android:layout_marginTop="@dimen/margin_top"
     android:id="@+id/id_teclado_sup"
     android:orientation="horizontal">
 

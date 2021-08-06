@@ -27,6 +27,7 @@ public class Constantes {
     public static final String TERMINAR_VIAJE = "https://" + IP + PUERTO_HOST + "/terminar_viaje.php";
     public static final String SUSPENDER_VIAJE = "https://" + IP + PUERTO_HOST + "/suspender_viaje.php";
     public static final String ANULAR_VIAJE = "https://" + IP + PUERTO_HOST + "/anular_viaje.php";
+    public static final String ACTUALIZAR_VIAJE = "https://" + IP + PUERTO_HOST + "/actualizar_viaje.php";
     public static final String ALARMA_VIAJE = "https://" + IP + PUERTO_HOST + "/alarma_viaje.php";
     public static final String INSERTAR_TRAYECTORIA = "https://" + IP + PUERTO_HOST + "/agregar_trayectoria.php";
 
@@ -45,5 +46,5 @@ public class Constantes {
 
     public static final String GET_ID_PARAMETRO = "https://" + IP + PUERTO_HOST + "/obtener_parametro.php";
 
-
+    public static final String GET_TARIFAS = "https://" + IP + PUERTO_HOST + "/obtener_ultima_tarifa.php";
 }

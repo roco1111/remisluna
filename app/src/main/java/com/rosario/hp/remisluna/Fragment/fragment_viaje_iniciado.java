@@ -51,6 +51,8 @@ import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -69,6 +71,7 @@ public class fragment_viaje_iniciado extends Fragment {
     private TextView importe;
     private TextView texto_tarifa;
     private TextView tiempo_viaje;
+    private TextView ficha_espera;
     private String hora_inicio;
     private String hora_fin;
     private String fecha_tarifa;
@@ -108,8 +111,12 @@ public class fragment_viaje_iniciado extends Fragment {
     boolean cronometroActivo;
     boolean lb_espera = false;
     private Handler escribirenUI;
-
-
+    private Calendar c;
+    private String l_hora_desde;
+    private String getMyTime_desde;
+    private String getMyTime_hasta;
+    private Long tiempo_acumulado = 0L;
+    private Long tiempo_tolerancia = 0L;
 
     @Override
     public void onPause() {
@@ -163,7 +170,7 @@ public class fragment_viaje_iniciado extends Fragment {
                              final Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.activity_viaje_iniciado, container, false);
 
-
+        getActivity().startService(new Intent(getActivity(),ServicioGeolocalizacion.class));
         mLocationManager = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
 
         id_viaje = v.findViewById(R.id.dato_viaje);
@@ -178,6 +185,7 @@ public class fragment_viaje_iniciado extends Fragment {
         importe = v.findViewById(R.id.precio);
         texto_tarifa = v.findViewById(R.id.tarifa);
         tiempo_viaje = v.findViewById(R.id.tiempo);
+        ficha_espera = v.findViewById(R.id.ficha_espera);
 
         SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getContext());
         ls_id_conductor     = settings.getString("id","");
@@ -187,6 +195,7 @@ public class fragment_viaje_iniciado extends Fragment {
             @Override
             public void onClick(View v) {
             lb_ticket = true;
+            getActivity().unregisterReceiver(onBroadcast);
             getActivity().stopService(new Intent(getActivity(), ServicioGeolocalizacion.class));
             cargarDatosVehiculo(getContext()); }
 
@@ -196,6 +205,7 @@ public class fragment_viaje_iniciado extends Fragment {
             @Override
             public void onClick(View v) {
                 lb_ticket = false;
+                getActivity().unregisterReceiver(onBroadcast);
                 getActivity().stopService(new Intent(getActivity(), ServicioGeolocalizacion.class));
                 cargarDatosVehiculo(getContext()); }
 
@@ -225,66 +235,170 @@ public class fragment_viaje_iniciado extends Fragment {
         @Override
         public void onReceive(Context ctxt, Intent i) {
 
-            //blanqueamos el texto de las coordenadas si esta el texto default
-            if (kms.getText().equals(getString(R.string.esperando))) {
-                kms.setText("");
-            }
-
             String datos = i.getStringExtra("coordenadas");//obtenemos las coordenadas envidas del servicioGeolocalizaci—n
             String[] tokens = datos.split(";");//separamos por token
 
+            cargarTarifa(ctxt, tokens);
 
-            Double valor_ficha = 0.00 ;
-
-            switch (tokens[2]) {
-                case "1":
-                    ficha++;
-                    valor_ficha = Double.parseDouble(importe_ficha);
-                    precio_ficha = precio_ficha + valor_ficha ;
-                    cuadras++;
-                    kms.setText( String.valueOf(cuadras));
-                    break;
-                case "2":
-                     espera++;
-                    valor_ficha = Double.parseDouble(importe_espera);
-                    precio_espera = precio_espera + valor_ficha ;
-                    cuadras++;
-                    kms.setText( String.valueOf(cuadras));
-                    break;
-
-                case "3":
-                    String ls_tiempo = "";
-                    ls_tiempo = tokens[3];
-                    tiempo_viaje.setText( ls_tiempo);
-                    valor_ficha = 0.00;
-                    break;
-            }
-
-            if(valor_ficha > 0.00){
-                precio_total = precio_total + valor_ficha ;
-
-                precio_total = Double.parseDouble(getTwoDecimals(precio_total));
-
-                importe.setText(String.valueOf(precio_total));
-
-                ls_precio = String.format(Locale.GERMANY,"%.2f",precio_total);
-            }
-
-            String latitud;
-            String longitud;
-
-            latitud = tokens[0];
-            longitud = tokens[1];
-
-            guardar_trayectoria(latitud,longitud);
-
-            //kms.append("\n");//agregamos salto de linea
         }
     };
 
     private static String getTwoDecimals(double value){
         DecimalFormat df = new DecimalFormat("0.00");
         return df.format(value);
+    }
+
+    public void cargarTarifa(final Context context, final String[] tokens) {
+
+        // Añadir parámetro a la URL del web service
+        String newURL = Constantes.GET_TARIFAS;
+        Log.d(TAG,newURL);
+
+        // Realizar petición GET_BY_ID
+        VolleySingleton.getInstance(context).addToRequestQueue(
+                myRequest = new JsonObjectRequest(
+                        Request.Method.POST,
+                        newURL,
+                        null,
+                        new Response.Listener<JSONObject>() {
+
+                            @Override
+                            public void onResponse(JSONObject response) {
+                                // Procesar respuesta Json
+                                procesarRespuestaTarifa(response, context, tokens);
+                            }
+                        },
+                        new Response.ErrorListener() {
+                            @Override
+                            public void onErrorResponse(VolleyError error) {
+                                Log.d(TAG, "Error Volley viaje: " + error.getMessage());
+
+                            }
+                        }
+                )
+        );
+        myRequest.setRetryPolicy(new DefaultRetryPolicy(
+                50000,
+                5,//DefaultRetryPolicy.DEFAULT_MAX_RETRIES
+                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+
+    }
+
+    private void procesarRespuestaTarifa(JSONObject response, Context context, String[] tokens) {
+
+        try {
+            // Obtener atributo "mensaje"
+            String mensaje = response.getString("estado");
+
+            switch (mensaje) {
+                case "1":
+                    JSONArray mensaje1 = response.getJSONArray("tarifa");
+
+                    JSONObject object = mensaje1.getJSONObject(0);
+                    //Parsear objeto
+
+                    String l_nocturno;
+
+                    SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy HH:mm");
+                    String getCurrentDateTime = sdf.format(c.getTime());
+
+                    if (getCurrentDateTime.compareTo(getMyTime_desde) > 0)
+                    { l_nocturno = "1"; } else
+                    {
+                        if (getCurrentDateTime.compareTo(getMyTime_hasta) < 0)
+                        {
+                            l_nocturno = "1";
+                        }else{
+                            l_nocturno = "0";
+                        }
+                    }
+
+                    if(l_nocturno.equals("0")){
+                        texto_tarifa.setText(R.string.diurno);
+                    }else{
+                        texto_tarifa.setText(R.string.nocturno);
+                    }
+
+                    SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getContext());
+                    SharedPreferences.Editor editor = settings.edit();
+                    editor.putString("nocturno",l_nocturno);
+                    editor.commit();
+                    if(l_nocturno.equals("0")) {
+                        importe_bajada = object.getString("importe_bajada");
+                        importe_ficha = object.getString("importe_ficha");
+                        importe_espera = object.getString("importe_espera");
+                        texto_tarifa.setText(R.string.diurno);
+                    }else{
+                        importe_bajada = object.getString("importe_bajada_nocturno");
+                        importe_ficha = object.getString("importe_ficha_nocturno");
+                        importe_espera = object.getString("importe_espera_nocturno");
+                        texto_tarifa.setText(R.string.nocturno);
+                    }
+
+                    Double valor_ficha = 0.00 ;
+                    String ls_tiempo, ls_milisegundos;
+
+                    switch (tokens[2]) {
+                        case "1"://ficha
+                            ficha++;
+                            valor_ficha = Double.parseDouble(importe_ficha);
+                            precio_ficha = precio_ficha + valor_ficha ;
+                            cuadras++;
+                            kms.setText( String.valueOf(cuadras));
+                            break;
+                        case "2"://espera
+                            espera++;
+                            valor_ficha = Double.parseDouble(importe_espera);
+                            precio_espera = precio_espera + valor_ficha ;
+                            ficha_espera.setText( String.valueOf(espera));
+                            break;
+
+                        case "3"://reloj en tolerancia
+
+                            ls_tiempo = tokens[3];
+                            tiempo_tolerancia = Long.parseLong(tokens[4]);
+                            tiempo_viaje.setText( ls_tiempo);
+                            tiempo_viaje.setTextColor(getResources().getColor(R.color.suspender));
+                            valor_ficha = 0.00;
+                            break;
+                        case "4"://reloj en espera
+
+                            ls_tiempo = tokens[3];
+                            tiempo_acumulado = Long.parseLong(tokens[4]);
+                            tiempo_viaje.setText( ls_tiempo);
+                            valor_ficha = 0.00;
+                            tiempo_viaje.setTextColor(getResources().getColor(R.color.colorPrimary));
+                            break;
+                    }
+
+                    if(valor_ficha > 0.00){
+                        precio_total = precio_total + valor_ficha ;
+
+                        precio_total = Double.parseDouble(getTwoDecimals(precio_total));
+
+                        importe.setText(String.valueOf(precio_total));
+
+                        ls_precio = String.format(Locale.GERMANY,"%.2f",precio_total);
+                    }
+
+                    String latitud;
+                    String longitud;
+
+                    latitud = tokens[0];
+                    longitud = tokens[1];
+
+                    guardar_trayectoria(latitud,longitud);
+
+                    break;
+
+            }
+
+
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
     }
 
 
@@ -364,6 +478,109 @@ public class fragment_viaje_iniciado extends Fragment {
             String mensaje = response.getString("mensaje");
 
             switch (estado) {
+                case "1":
+                    actualizar_viaje();
+
+                    break;
+                case "2":
+                    // Mostrar mensaje
+                    Toast.makeText(
+                            getContext(),
+                            mensaje,
+                            Toast.LENGTH_LONG).show();
+                    // Enviar código de falla
+                    break;
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void actualizar_viaje(){
+
+        String ls_viaje = id_viaje.getText().toString();
+
+        HashMap<String, String> map = new HashMap<>();// Mapeo previo
+
+        map.put("id", ls_viaje);
+        map.put("tiempo", tiempo_viaje.getText().toString());
+        map.put("fichas", String.valueOf(ficha));
+        map.put("fichas_espera", String.valueOf(espera));
+        map.put("importe_espera", precio_espera.toString());
+        map.put("total", String.format(Locale.GERMANY,"%.2f",precio_total));
+        map.put("tiempo_tolerancia", String.valueOf(tiempo_tolerancia));
+        map.put("tiempo_acumulado", String.valueOf(tiempo_acumulado));
+
+
+        JSONObject jobject = new JSONObject(map);
+
+        // Depurando objeto Json...
+        Log.d(TAG, jobject.toString());
+
+        StringBuilder encodedParams = new StringBuilder();
+        try {
+            for (Map.Entry<String, String> entry : map.entrySet()) {
+                encodedParams.append(URLEncoder.encode(entry.getKey(), "utf-8"));
+                encodedParams.append('=');
+                encodedParams.append(URLEncoder.encode(entry.getValue(), "utf-8")).toString();
+                encodedParams.append('&');
+            }
+        } catch (UnsupportedEncodingException uee) {
+            throw new RuntimeException("Encoding not supported: " + "utf-8", uee);
+        }
+
+        encodedParams.setLength(Math.max(encodedParams.length() - 1, 0));
+
+
+        String newURL = Constantes.ACTUALIZAR_VIAJE + "?" + encodedParams;
+
+        Log.d("act viaje",newURL);
+
+        // Actualizar datos en el servidor
+        VolleySingleton.getInstance(getActivity()).addToRequestQueue(
+                new JsonObjectRequest(
+                        Request.Method.POST,
+                        newURL,
+                        null,
+                        new Response.Listener<JSONObject>() {
+                            @Override
+                            public void onResponse(JSONObject response) {
+                                procesarRespuestaActualizarViaje(response);
+                            }
+                        },
+                        new Response.ErrorListener() {
+                            @Override
+                            public void onErrorResponse(VolleyError error) {
+                                Log.d(TAG, "Error act viaje: " + error.getMessage());
+
+                            }
+                        }
+
+                ) {
+                    @Override
+                    public Map<String, String> getHeaders() {
+                        Map<String, String> headers = new HashMap<>();
+                        headers.put("Content-Type", "application/json; charset=utf-8");
+                        return headers;
+                    }
+
+                    @Override
+                    public String getBodyContentType() {
+                        return "application/json; charset=utf-8" + getParamsEncoding();
+                    }
+                }
+        );
+    }
+    private void procesarRespuestaActualizarViaje(JSONObject response) {
+
+        try {
+            // Obtener estado
+            String estado = response.getString("estado");
+            // Obtener mensaje
+            String mensaje = response.getString("mensaje");
+
+            switch (estado) {
+
                 case "2":
                     // Mostrar mensaje
                     Toast.makeText(
@@ -430,6 +647,7 @@ public class fragment_viaje_iniciado extends Fragment {
                         l_porcentaje = Double.parseDouble(object.getString("valor"));
 
                     }
+                    cargarParametroTarifaDesde(context);
 
                     break;
 
@@ -437,6 +655,142 @@ public class fragment_viaje_iniciado extends Fragment {
             }
             cronometroActivo = true;
            // run_espera();
+
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    public void cargarParametroTarifaDesde(final Context context) {
+
+        // Añadir parámetro a la URL del web service
+        String newURL = Constantes.GET_ID_PARAMETRO + "?parametro=11";
+        Log.d(TAG,newURL);
+
+        // Realizar petición GET_BY_ID
+        VolleySingleton.getInstance(context).addToRequestQueue(
+                myRequest = new JsonObjectRequest(
+                        Request.Method.POST,
+                        newURL,
+                        null,
+                        new Response.Listener<JSONObject>() {
+
+                            @Override
+                            public void onResponse(JSONObject response) {
+                                // Procesar respuesta Json
+                                procesarRespuestaParametroDesde(response, context);
+                            }
+                        },
+                        new Response.ErrorListener() {
+                            @Override
+                            public void onErrorResponse(VolleyError error) {
+                                Log.d(TAG, "Error Volley parametro: " + error.getMessage());
+
+                            }
+                        }
+                )
+        );
+        myRequest.setRetryPolicy(new DefaultRetryPolicy(
+                50000,
+                5,//DefaultRetryPolicy.DEFAULT_MAX_RETRIES
+                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+
+    }
+
+    private void procesarRespuestaParametroDesde(JSONObject response, Context context) {
+
+        try {
+            // Obtener atributo "mensaje"
+            String mensaje = response.getString("estado");
+
+            switch (mensaje) {
+                case "1":
+                    JSONArray datos_parametro = response.getJSONArray("parametro");
+
+                    for(int i = 0; i < datos_parametro.length(); i++)
+                    {JSONObject object = datos_parametro.getJSONObject(i);
+
+                        l_hora_desde = object.getString("valor");
+                        cargarParametroTarifaHasta(context);
+
+                    }
+
+                    break;
+
+            }
+
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    public void cargarParametroTarifaHasta(final Context context) {
+
+        // Añadir parámetro a la URL del web service
+        String newURL = Constantes.GET_ID_PARAMETRO + "?parametro=12";
+        Log.d(TAG,newURL);
+
+        // Realizar petición GET_BY_ID
+        VolleySingleton.getInstance(context).addToRequestQueue(
+                myRequest = new JsonObjectRequest(
+                        Request.Method.POST,
+                        newURL,
+                        null,
+                        new Response.Listener<JSONObject>() {
+
+                            @Override
+                            public void onResponse(JSONObject response) {
+                                // Procesar respuesta Json
+                                procesarRespuestaParametroHasta(response, context);
+                            }
+                        },
+                        new Response.ErrorListener() {
+                            @Override
+                            public void onErrorResponse(VolleyError error) {
+                                Log.d(TAG, "Error Volley parametro: " + error.getMessage());
+
+                            }
+                        }
+                )
+        );
+        myRequest.setRetryPolicy(new DefaultRetryPolicy(
+                50000,
+                5,//DefaultRetryPolicy.DEFAULT_MAX_RETRIES
+                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+
+    }
+
+    private void procesarRespuestaParametroHasta(JSONObject response, Context context) {
+
+        try {
+            // Obtener atributo "mensaje"
+            String mensaje = response.getString("estado");
+
+            switch (mensaje) {
+                case "1":
+                    JSONArray datos_parametro = response.getJSONArray("parametro");
+
+                    for(int i = 0; i < datos_parametro.length(); i++)
+                    {JSONObject object = datos_parametro.getJSONObject(i);
+                        String l_hora_hasta, l_hoy;
+
+                        l_hora_hasta = object.getString("valor");
+
+                        c = Calendar.getInstance();
+                        SimpleDateFormat shoy = new SimpleDateFormat("MM/dd/yyyy");
+                        l_hoy = shoy.format(c.getTime());
+                        getMyTime_desde = l_hoy + ' ' + l_hora_desde;
+                        getMyTime_hasta = l_hoy + ' ' + l_hora_hasta;
+
+                    }
+
+                    break;
+
+            }
 
 
         } catch (JSONException e) {
@@ -505,21 +859,37 @@ public class fragment_viaje_iniciado extends Fragment {
                     String l_nocturno;
                     l_nocturno     = settings.getString("nocturno","");
                     if(l_nocturno.equals("0")) {
-                        importe_bajada = object.getString("importe_bajada");
+                        if(object.getString("bajada").equals("null")) {
+                            importe_bajada = object.getString("importe_bajada");
+                        }else{
+                            importe_bajada =object.getString("id_movil");
+                        }
                         importe_ficha = object.getString("importe_ficha");
                         importe_espera = object.getString("importe_espera");
                         texto_tarifa.setText(R.string.diurno);
                     }else{
-                        importe_bajada = object.getString("importe_bajada_nocturno");
+                        if(object.getString("bajada").equals("null")) {
+                            importe_bajada = object.getString("importe_bajada_nocturno");
+                        }else{
+                            importe_bajada =object.getString("id_movil");
+                        }
                         importe_ficha = object.getString("importe_ficha_nocturno");
                         importe_espera = object.getString("importe_espera_nocturno");
                         texto_tarifa.setText(R.string.nocturno);
                     }
                     movil = object.getString("movil");
                     ls_bajada = importe_bajada;
+                    if(object.getString("bajada").equals("null")) {
+                        precio_total = Double.parseDouble(importe_bajada);
 
-                    precio_total = Double.parseDouble(importe_bajada);
+                    }else{
+                        precio_total = Double.parseDouble(object.getString("total"));
+                        tiempo_viaje.setText(object.getString("tiempo"));
+                        kms.setText(object.getString("fichas"));
+                        ficha_espera.setText(object.getString("fichas_espera"));
 
+
+                    }
                     importe.setText(String.valueOf(precio_total));
 
                     cargarParametro(context);
@@ -731,7 +1101,7 @@ public class fragment_viaje_iniciado extends Fragment {
         map.put("longitud", l_longitud_destino);
         map.put("distancia", distancia);
         map.put("precio", ls_precio);
-        map.put("espera", ls_espera);
+        map.put("importe_espera", ls_espera);
         map.put("descuento", String.format(Locale.GERMANY,"%.2f",descuento));
         map.put("total", String.format(Locale.GERMANY,"%.2f",total));
         map.put("bajada", ls_bajada);

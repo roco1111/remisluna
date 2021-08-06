@@ -11,6 +11,11 @@ public class viaje {
     String total;
     String descuento;
     String espera;
+    String importe_espera;
+    String bajada;
+    String fichas;
+    String tiempo;
+    String fichas_espera;
 
     public String getId() {
         return id;
@@ -38,6 +43,46 @@ public class viaje {
 
     public void setEspera(String espera) {
         this.espera = espera;
+    }
+
+    public String getImporte_espera() {
+        return importe_espera;
+    }
+
+    public void setImporte_espera(String importe_espera) {
+        this.importe_espera = importe_espera;
+    }
+
+    public String getBajada() {
+        return bajada;
+    }
+
+    public void setBajada(String bajada) {
+        this.bajada = bajada;
+    }
+
+    public String getFichas() {
+        return fichas;
+    }
+
+    public void setFichas(String fichas) {
+        this.fichas = fichas;
+    }
+
+    public String getTiempo() {
+        return tiempo;
+    }
+
+    public void setTiempo(String tiempo) {
+        this.tiempo = tiempo;
+    }
+
+    public String getFichas_espera() {
+        return fichas_espera;
+    }
+
+    public void setFichas_espera(String fichas_espera) {
+        this.fichas_espera = fichas_espera;
     }
 
     public String getDescuento() {

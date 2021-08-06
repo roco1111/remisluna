@@ -1474,7 +1474,7 @@ public class fragment_viaje extends Fragment {
             switch (estado) {
                 case "1":
 
-                    getActivity().startService(new Intent(getActivity(),ServicioGeolocalizacion.class));
+
                     Intent intent2 = new Intent(getContext(), MainViaje.class);
                     getContext().startActivity(intent2);
                     break;

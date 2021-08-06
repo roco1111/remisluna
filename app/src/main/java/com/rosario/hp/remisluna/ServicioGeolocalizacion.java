@@ -73,9 +73,7 @@ public class ServicioGeolocalizacion extends Service implements Runnable {
     private Integer minutos;
     private Integer segundos;
     private Integer resto;
-    private String l_tiempo;
-    private Integer l_acumulo = 0;
-    private Integer l_contador = 0;
+    private String l_tiempo, l_tiempo_inicial;
     private Integer l_tipo;
     
 
@@ -143,6 +141,18 @@ public class ServicioGeolocalizacion extends Service implements Runnable {
                     //Parsear objeto
 
                     salida_coordenada = object.getString("salida_coordenadas");
+
+                    if(!object.getString("tiempo_tolerancia").equals("null")) {
+
+                        tiempo_tolerancia = Long.parseLong(object.getString("tiempo_tolerancia"));
+
+                    }
+
+                    if(!object.getString("tiempo_acumulado").equals("null")) {
+
+                        tiempo_acumulado = Long.parseLong(object.getString("tiempo_acumulado"));
+
+                    }
 
                     actualizar_coordenadas();
 
@@ -224,8 +234,6 @@ public class ServicioGeolocalizacion extends Service implements Runnable {
             double latitud = Double.parseDouble(currentLocation.getLatitude() + "");
             double longitud = Double.parseDouble(currentLocation.getLongitude() + "");
 
-            Log.d("gps","Lat:" + String.valueOf(latitud) + " -Long:" + String.valueOf(longitud));
-
             Location locationA = new Location("punto A");
             locationA.setLatitude(latitud_inicial);
             locationA.setLongitude(longitud_inicial);
@@ -234,42 +242,34 @@ public class ServicioGeolocalizacion extends Service implements Runnable {
             locationB.setLatitude(latitud);
             locationB.setLongitude(longitud);
 
-            float distance = locationA.distanceTo(locationB) / 100;
+            float distance = locationA.distanceTo(locationB) ;
 
             latitud_inicial = latitud;
             longitud_inicial = longitud;
 
 
-            distancia_acumulada += distance;
-            distancia_acumulada = Double.valueOf(getTwoDecimals(distancia_acumulada));
 
-            l_contador ++;
-
-            if(distance > 0.85) {
-                l_acumulo++;
+            if(distance > 6) {
+                l_tipo = 1;
+            }else{
+                l_tipo = 2;
             }
-            l_tipo = 0;
 
-            if(l_contador == 5){
-                l_contador = 0;
-                if(l_acumulo >= 3){
-                    l_tipo = 1;//ficha
-                }else{
-                    l_tipo = 2;//espera
-                }
-                l_acumulo = 0;
-            }
+            Log.d("DISTANCIA recorrida",String.valueOf(distance));
+
 
             if(l_tipo == 1) {
-                if (distancia_acumulada >= 1) {
-                    distancia_acumulada = distancia_acumulada - 1;
-                    tiempo_acumulado = 0L;
+                l_inicio = System.currentTimeMillis();
+                tiempo_acumulado = 0L;
+                distancia_acumulada += distance;
+                distancia_acumulada = Double.valueOf(getTwoDecimals(distancia_acumulada));
+                if (distancia_acumulada >= 100) {
+                    distancia_acumulada = distancia_acumulada - 100;
 
                     getApplicationContext().sendBroadcast(
                             new Intent("key").putExtra("coordenadas", latitud + ";"
                                     + longitud + ";" + 1 + ""));
                 }
-                Log.d("diferencia", String.valueOf(distance));
 
             }else if (l_tipo == 2){
 
@@ -307,7 +307,7 @@ public class ServicioGeolocalizacion extends Service implements Runnable {
                     }
                     getApplicationContext().sendBroadcast(
                             new Intent("key").putExtra("coordenadas", latitud + ";"
-                                    + longitud + ";" + 3 + ";"+ l_tiempo));
+                                    + longitud + ";" + 3 + ";"+ l_tiempo + ";"+ String.valueOf(tiempo_tolerancia)));
 
                 }else {
                     tiempo_acumulado += l_diferencia;
@@ -318,6 +318,27 @@ public class ServicioGeolocalizacion extends Service implements Runnable {
                         getApplicationContext().sendBroadcast(
                                 new Intent("key").putExtra("coordenadas", latitud + ";"
                                         + longitud + ";" + 2 + ""));
+                    }else{
+                        if(tiempo_acumulado / 60000 >= 1){
+                            minutos = Integer.parseInt(String.valueOf(tiempo_acumulado)) / 60000;
+                            if(tiempo_acumulado % 60000 > 0){
+                                resto = Integer.parseInt(String.valueOf(tiempo_acumulado)) % 60000;
+                                segundos = resto / 1000;
+                            }
+                        }else{
+                            minutos = 0;
+                            segundos = Integer.parseInt(String.valueOf(tiempo_acumulado)) / 1000;
+                        }
+                        String min="", seg="";
+                        if (minutos < 10) min = "0" + minutos.toString();
+                        else min = minutos.toString();
+                        if (segundos < 10) seg = "0" + segundos.toString();
+                        else seg = segundos.toString();
+
+                        l_tiempo = min + ":" + seg;
+                        getApplicationContext().sendBroadcast(
+                                new Intent("key").putExtra("coordenadas", latitud + ";"
+                                        + longitud + ";" + 4 + ";"+ l_tiempo+ ";" + String.valueOf(tiempo_acumulado)));
                     }
                 }
 
