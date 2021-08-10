@@ -87,20 +87,20 @@
             <TextView
                 android:id="@+id/tiempo"
                 android:layout_width="wrap_content"
-                android:layout_height="@dimen/tamanio_titulo_grande"
+                android:layout_height="@dimen/tamanio_numero_tiempo"
                 android:layout_alignParentStart="true"
                 android:layout_marginBottom="4dp"
                 android:fontFamily="@font/digital"
                 android:text="@string/cero_tiempo"
                 android:textAlignment="center"
                 android:textColor="@color/colorPrimary"
-                android:textSize="@dimen/tamanio_titulo_grande"
+                android:textSize="@dimen/tamanio_numero_tiempo"
                 android:textStyle="bold" />
 
             <TextView
                 android:id="@+id/ficha_espera"
                 android:layout_width="wrap_content"
-                android:layout_height="@dimen/tamanio_titulo_grande"
+                android:layout_height="@dimen/tamanio_numero_tiempo"
 
                 android:layout_marginStart="@dimen/fab_margin"
                 android:layout_marginBottom="4dp"
@@ -109,20 +109,20 @@
                 android:text="@string/cero_distancia"
                 android:textAlignment="center"
                 android:textColor="@color/colorPrimary"
-                android:textSize="@dimen/tamanio_titulo_grande"
+                android:textSize="@dimen/tamanio_numero_tiempo"
                 android:textStyle="bold" />
 
             <TextView
                 android:id="@+id/kms"
                 android:layout_width="wrap_content"
-                android:layout_height="@dimen/tamanio_titulo_grande"
+                android:layout_height="@dimen/tamanio_numero_tiempo"
                 android:layout_alignParentEnd="true"
                 android:layout_marginBottom="4dp"
                 android:fontFamily="@font/digital"
                 android:text="@string/cero_distancia"
                 android:textAlignment="center"
                 android:textColor="@color/colorPrimary"
-                android:textSize="@dimen/tamanio_titulo_grande"
+                android:textSize="@dimen/tamanio_numero_tiempo"
                 android:textStyle="bold" />
         </RelativeLayout>
 

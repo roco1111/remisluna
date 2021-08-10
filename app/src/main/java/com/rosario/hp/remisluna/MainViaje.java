@@ -119,6 +119,13 @@ public class MainViaje extends AppCompatActivity {
         ls_vehiculo         = settings.getString("vehiculo","");
         Objects.requireNonNull(getSupportActionBar()).setTitle("Viaje Asignado");
         i_pasadas = 0;
+        Fragment fragment = new fragment_viaje();
+
+
+        getSupportFragmentManager().beginTransaction()
+                .replace(R.id.main_content, fragment)
+                .commit();
+
         cargarDatos(getApplicationContext());
     }
 

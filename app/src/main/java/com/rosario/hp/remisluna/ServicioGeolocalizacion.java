@@ -69,11 +69,13 @@ public class ServicioGeolocalizacion extends Service implements Runnable {
     private Long l_diferencia = 0L;
     private Long tiempo_acumulado = 0L;
     private Long tiempo_tolerancia = 0L;
+    private Long l_tolerancia_tope, l_tiempo_espera;
     private boolean lb_torerancia = true;
     private Integer minutos;
     private Integer segundos;
     private Integer resto;
-    private String l_tiempo, l_tiempo_inicial;
+    private Integer l_metros_ficha;
+    private String l_tiempo;
     private Integer l_tipo;
     
 
@@ -154,12 +156,212 @@ public class ServicioGeolocalizacion extends Service implements Runnable {
 
                     }
 
-                    actualizar_coordenadas();
+                    if(object.getString("tipo_espera").equals("0")){
+                        lb_torerancia = true;
+                    }else{
+                        lb_torerancia = false;
+                    }
+
+
+                    cargarParametroTolerancia(context);
 
                     break;
 
             }
 
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    public void cargarParametroTolerancia(final Context context) {
+
+        // Añadir parámetro a la URL del web service
+        String newURL = Constantes.GET_ID_PARAMETRO + "?parametro=9";
+        Log.d(TAG,newURL);
+
+        // Realizar petición GET_BY_ID
+        VolleySingleton.getInstance(context).addToRequestQueue(
+                myRequest = new JsonObjectRequest(
+                        Request.Method.POST,
+                        newURL,
+                        null,
+                        new Response.Listener<JSONObject>() {
+
+                            @Override
+                            public void onResponse(JSONObject response) {
+                                // Procesar respuesta Json
+                                procesarRespuestaParametroTolerancia(response, context);
+                            }
+                        },
+                        new Response.ErrorListener() {
+                            @Override
+                            public void onErrorResponse(VolleyError error) {
+                                Log.d(TAG, "Error Volley viaje: " + error.getMessage());
+
+                            }
+                        }
+                )
+        );
+        myRequest.setRetryPolicy(new DefaultRetryPolicy(
+                50000,
+                5,//DefaultRetryPolicy.DEFAULT_MAX_RETRIES
+                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+
+    }
+
+    private void procesarRespuestaParametroTolerancia(JSONObject response, Context context) {
+
+        try {
+            // Obtener atributo "mensaje"
+            String mensaje = response.getString("estado");
+
+            switch (mensaje) {
+                case "1":
+                    JSONArray datos_parametro = response.getJSONArray("parametro");
+
+                    for(int i = 0; i < datos_parametro.length(); i++)
+                    {JSONObject object = datos_parametro.getJSONObject(i);
+
+                        l_tolerancia_tope = Long.parseLong(object.getString("valor")) * 60000;
+
+                    }
+                    cargarParametroEspera(context);
+
+                    break;
+
+            }
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    public void cargarParametroEspera(final Context context) {
+
+        // Añadir parámetro a la URL del web service
+        String newURL = Constantes.GET_ID_PARAMETRO + "?parametro=13";
+        Log.d(TAG,newURL);
+
+        // Realizar petición GET_BY_ID
+        VolleySingleton.getInstance(context).addToRequestQueue(
+                myRequest = new JsonObjectRequest(
+                        Request.Method.POST,
+                        newURL,
+                        null,
+                        new Response.Listener<JSONObject>() {
+
+                            @Override
+                            public void onResponse(JSONObject response) {
+                                // Procesar respuesta Json
+                                procesarRespuestaParametroEspera(response, context);
+                            }
+                        },
+                        new Response.ErrorListener() {
+                            @Override
+                            public void onErrorResponse(VolleyError error) {
+                                Log.d(TAG, "Error Volley viaje: " + error.getMessage());
+
+                            }
+                        }
+                )
+        );
+        myRequest.setRetryPolicy(new DefaultRetryPolicy(
+                50000,
+                5,//DefaultRetryPolicy.DEFAULT_MAX_RETRIES
+                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+
+    }
+
+    private void procesarRespuestaParametroEspera(JSONObject response, Context context) {
+
+        try {
+            // Obtener atributo "mensaje"
+            String mensaje = response.getString("estado");
+
+            switch (mensaje) {
+                case "1":
+                    JSONArray datos_parametro = response.getJSONArray("parametro");
+
+                    for(int i = 0; i < datos_parametro.length(); i++)
+                    {JSONObject object = datos_parametro.getJSONObject(i);
+
+                        l_tiempo_espera = Long.parseLong(object.getString("valor")) * 1000;
+
+                    }
+                    cargarParametroMetrosFicha(context);
+
+                    break;
+
+
+            }
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void cargarParametroMetrosFicha(final Context context) {
+
+        // Añadir parámetro a la URL del web service
+        String newURL = Constantes.GET_ID_PARAMETRO + "?parametro=14";
+        Log.d(TAG,newURL);
+
+        // Realizar petición GET_BY_ID
+        VolleySingleton.getInstance(context).addToRequestQueue(
+                myRequest = new JsonObjectRequest(
+                        Request.Method.POST,
+                        newURL,
+                        null,
+                        new Response.Listener<JSONObject>() {
+
+                            @Override
+                            public void onResponse(JSONObject response) {
+                                // Procesar respuesta Json
+                                procesarRespuestaParametroMetrosFicha(response, context);
+                            }
+                        },
+                        new Response.ErrorListener() {
+                            @Override
+                            public void onErrorResponse(VolleyError error) {
+                                Log.d(TAG, "Error Volley viaje: " + error.getMessage());
+
+                            }
+                        }
+                )
+        );
+        myRequest.setRetryPolicy(new DefaultRetryPolicy(
+                50000,
+                5,//DefaultRetryPolicy.DEFAULT_MAX_RETRIES
+                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+
+    }
+
+    private void procesarRespuestaParametroMetrosFicha(JSONObject response, Context context) {
+
+        try {
+            // Obtener atributo "mensaje"
+            String mensaje = response.getString("estado");
+
+            switch (mensaje) {
+                case "1":
+                    JSONArray datos_parametro = response.getJSONArray("parametro");
+
+                    for(int i = 0; i < datos_parametro.length(); i++)
+                    {JSONObject object = datos_parametro.getJSONObject(i);
+
+                        l_metros_ficha = Integer.parseInt(object.getString("valor")) ;
+
+                    }
+                    actualizar_coordenadas();
+
+                    break;
+
+
+            }
 
         } catch (JSONException e) {
             e.printStackTrace();
@@ -260,11 +462,12 @@ public class ServicioGeolocalizacion extends Service implements Runnable {
 
             if(l_tipo == 1) {
                 l_inicio = System.currentTimeMillis();
-                tiempo_acumulado = 0L;
+
                 distancia_acumulada += distance;
                 distancia_acumulada = Double.valueOf(getTwoDecimals(distancia_acumulada));
-                if (distancia_acumulada >= 100) {
-                    distancia_acumulada = distancia_acumulada - 100;
+                if (distancia_acumulada >= l_metros_ficha) {
+                    tiempo_acumulado = 0L;
+                    distancia_acumulada = distancia_acumulada - l_metros_ficha;
 
                     getApplicationContext().sendBroadcast(
                             new Intent("key").putExtra("coordenadas", latitud + ";"
@@ -302,17 +505,22 @@ public class ServicioGeolocalizacion extends Service implements Runnable {
                     l_tiempo = min + ":" + seg;
 
                     tiempo_acumulado = 0L;
-                    if(tiempo_tolerancia >= 300000){
+                    if(tiempo_tolerancia >= l_tolerancia_tope){
                         lb_torerancia = false;
-                    }
-                    getApplicationContext().sendBroadcast(
-                            new Intent("key").putExtra("coordenadas", latitud + ";"
-                                    + longitud + ";" + 3 + ";"+ l_tiempo + ";"+ String.valueOf(tiempo_tolerancia)));
+                        getApplicationContext().sendBroadcast(
+                                new Intent("key").putExtra("coordenadas", latitud + ";"
+                                        + longitud + ";" + 5));
 
+                    }else {
+
+                        getApplicationContext().sendBroadcast(
+                                new Intent("key").putExtra("coordenadas", latitud + ";"
+                                        + longitud + ";" + 3 + ";"+ l_tiempo + ";"+ String.valueOf(tiempo_tolerancia)));
+                    }
                 }else {
                     tiempo_acumulado += l_diferencia;
                     Log.d("tiempo_acumulado","ok");
-                    if(tiempo_acumulado >= 60000){
+                    if(tiempo_acumulado >= l_tiempo_espera){
 
                         tiempo_acumulado = 0L;
                         getApplicationContext().sendBroadcast(

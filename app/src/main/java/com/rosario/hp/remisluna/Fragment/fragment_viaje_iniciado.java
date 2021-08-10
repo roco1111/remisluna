@@ -1,5 +1,6 @@
 package com.rosario.hp.remisluna.Fragment;
 
+import android.Manifest;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 
@@ -8,6 +9,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.location.LocationManager;
@@ -24,6 +26,7 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.Fragment;
 
 import com.android.volley.DefaultRetryPolicy;
@@ -117,6 +120,8 @@ public class fragment_viaje_iniciado extends Fragment {
     private String getMyTime_hasta;
     private Long tiempo_acumulado = 0L;
     private Long tiempo_tolerancia = 0L;
+    private Integer tipo_espera;
+    private SimpleDateFormat sdf;
 
     @Override
     public void onPause() {
@@ -186,6 +191,7 @@ public class fragment_viaje_iniciado extends Fragment {
         texto_tarifa = v.findViewById(R.id.tarifa);
         tiempo_viaje = v.findViewById(R.id.tiempo);
         ficha_espera = v.findViewById(R.id.ficha_espera);
+        sdf = new SimpleDateFormat("MM/dd/yyyy HH:mm");
 
         SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getContext());
         ls_id_conductor     = settings.getString("id","");
@@ -299,7 +305,6 @@ public class fragment_viaje_iniciado extends Fragment {
 
                     String l_nocturno;
 
-                    SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy HH:mm");
                     String getCurrentDateTime = sdf.format(c.getTime());
 
                     if (getCurrentDateTime.compareTo(getMyTime_desde) > 0)
@@ -345,12 +350,14 @@ public class fragment_viaje_iniciado extends Fragment {
                             precio_ficha = precio_ficha + valor_ficha ;
                             cuadras++;
                             kms.setText( String.valueOf(cuadras));
+                            tiempo_viaje.setText( "00:00");
                             break;
                         case "2"://espera
                             espera++;
                             valor_ficha = Double.parseDouble(importe_espera);
                             precio_espera = precio_espera + valor_ficha ;
                             ficha_espera.setText( String.valueOf(espera));
+                            tiempo_viaje.setText( "00:00");
                             break;
 
                         case "3"://reloj en tolerancia
@@ -367,6 +374,12 @@ public class fragment_viaje_iniciado extends Fragment {
                             tiempo_acumulado = Long.parseLong(tokens[4]);
                             tiempo_viaje.setText( ls_tiempo);
                             valor_ficha = 0.00;
+                            tiempo_viaje.setTextColor(getResources().getColor(R.color.colorPrimary));
+                            break;
+                        case "5"://termino tolerancia
+                            tiempo_viaje.setText( "00:00");
+                            valor_ficha = 0.00;
+                            tipo_espera = 1;
                             tiempo_viaje.setTextColor(getResources().getColor(R.color.colorPrimary));
                             break;
                     }
@@ -450,6 +463,7 @@ public class fragment_viaje_iniciado extends Fragment {
                             @Override
                             public void onErrorResponse(VolleyError error) {
                                 Log.d(TAG, "Error trayectoria: " + error.getMessage());
+                                actualizar_viaje();
 
                             }
                         }
@@ -488,6 +502,7 @@ public class fragment_viaje_iniciado extends Fragment {
                             getContext(),
                             mensaje,
                             Toast.LENGTH_LONG).show();
+                    actualizar_viaje();
                     // Enviar código de falla
                     break;
             }
@@ -507,9 +522,12 @@ public class fragment_viaje_iniciado extends Fragment {
         map.put("fichas", String.valueOf(ficha));
         map.put("fichas_espera", String.valueOf(espera));
         map.put("importe_espera", precio_espera.toString());
-        map.put("total", String.format(Locale.GERMANY,"%.2f",precio_total));
+        map.put("total", String.valueOf(precio_total));
         map.put("tiempo_tolerancia", String.valueOf(tiempo_tolerancia));
         map.put("tiempo_acumulado", String.valueOf(tiempo_acumulado));
+        map.put("bajada", String.valueOf(importe_bajada));
+        map.put("trayectoria", String.valueOf(id_trayecto));
+        map.put("tipo_espera", String.valueOf(tipo_espera));
 
 
         JSONObject jobject = new JSONObject(map);
@@ -881,13 +899,22 @@ public class fragment_viaje_iniciado extends Fragment {
                     ls_bajada = importe_bajada;
                     if(object.getString("bajada").equals("null")) {
                         precio_total = Double.parseDouble(importe_bajada);
+                        id_trayecto = 0;
 
                     }else{
                         precio_total = Double.parseDouble(object.getString("total"));
                         tiempo_viaje.setText(object.getString("tiempo"));
                         kms.setText(object.getString("fichas"));
+                        ficha = Long.parseLong(object.getString("fichas"));
                         ficha_espera.setText(object.getString("fichas_espera"));
-
+                        espera = Long.parseLong(object.getString("fichas_espera"));
+                        id_trayecto = Integer.parseInt(object.getString("trayectoria"));
+                        tipo_espera = Integer.parseInt(object.getString("tipo_espera"));
+                        if(tipo_espera == 0){
+                            tiempo_viaje.setTextColor(getResources().getColor(R.color.suspender));
+                        }else{
+                            tiempo_viaje.setTextColor(getResources().getColor(R.color.colorPrimary));
+                        }
 
                     }
                     importe.setText(String.valueOf(precio_total));
@@ -976,15 +1003,13 @@ public class fragment_viaje_iniciado extends Fragment {
                     if(lb_ticket) {
 
                         if (!mBound) {
-                            Intent intent2 = new Intent(getContext(), MainActivity.class);
-                            getContext().startActivity(intent2);
+                            cargarViaje_solicitado(context);
                         } else {
 
                             printTicket();
                         }
                     }else{
-                        Intent intent2 = new Intent(getContext(), MainActivity.class);
-                        getContext().startActivity(intent2);
+                        cargarViaje_solicitado(context);
                         }
 
                     break;
@@ -1001,6 +1026,86 @@ public class fragment_viaje_iniciado extends Fragment {
             }
 
 
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    public void cargarViaje_solicitado(final Context context) {
+
+        // Añadir parámetro a la URL del web service
+        String newURL = Constantes.GET_VIAJE_SOLICITADOS + "?conductor=" + ls_id_conductor;
+        Log.d(TAG,newURL);
+
+        // Realizar petición GET_BY_ID
+        VolleySingleton.getInstance(context).addToRequestQueue(
+                myRequest = new JsonObjectRequest(
+                        Request.Method.POST,
+                        newURL,
+                        null,
+                        new Response.Listener<JSONObject>() {
+
+                            @Override
+                            public void onResponse(JSONObject response) {
+                                // Procesar respuesta Json
+                                procesarRespuesta_solicitados(response, context);
+                            }
+                        },
+                        new Response.ErrorListener() {
+                            @Override
+                            public void onErrorResponse(VolleyError error) {
+                                Log.d(TAG, "Error Volley viaje solicitado: " + error.getMessage());
+
+                            }
+                        }
+                )
+        );
+        myRequest.setRetryPolicy(new DefaultRetryPolicy(
+                50000,
+                5,//DefaultRetryPolicy.DEFAULT_MAX_RETRIES
+                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+
+    }
+
+    private void procesarRespuesta_solicitados(JSONObject response, Context context) {
+
+        try {
+            // Obtener atributo "mensaje"
+            String mensaje = response.getString("estado");
+            Fragment fragment = null;
+            switch (mensaje) {
+                case "1":
+                    JSONArray mensaje1 = response.getJSONArray("viaje");
+                    JSONObject object = mensaje1.getJSONObject(0);
+
+
+                    SharedPreferences settings1 = PreferenceManager.getDefaultSharedPreferences(context);
+
+                    SharedPreferences.Editor editor = settings1.edit();
+
+                    String ls_viaje;
+
+                    ls_viaje = object.getString("id");
+
+                    editor.putString("id_viaje",ls_viaje);
+                    editor.apply();
+
+                    editor.commit();
+                    Intent intent2 = new Intent(context, MainViaje.class);
+                    intent2.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK );
+                    context.startActivity(intent2);
+
+                    break;
+
+                case "2":
+
+                    Intent intent3 = new Intent(context, MainActivity.class);
+                    intent3.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK );
+                    context.startActivity(intent3);
+                    break;
+
+            }
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -1476,8 +1581,7 @@ public class fragment_viaje_iniciado extends Fragment {
             printNewLine();
             printNewLine();
             outputStream.flush();
-            Intent intent2 = new Intent(getContext(), MainViaje.class);
-            getContext().startActivity(intent2);
+            cargarViaje_solicitado(getContext());
         } catch (IOException e) {
             e.printStackTrace();
         }

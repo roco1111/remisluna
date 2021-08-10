@@ -919,7 +919,7 @@ public class fragment_viaje extends Fragment {
                     destino.setText(object.getString("destino"));
                     salida_coordenada = object.getString("salida_coordenadas");
                     destino_coordenada = object.getString("destino_coordenadas");
-                    actualizar_coordenadas();
+                    actualizar_coordenadas(context);
 
                     break;
 
@@ -1352,9 +1352,9 @@ public class fragment_viaje extends Fragment {
     }
 
 
-    private void actualizar_coordenadas(){
+    private void actualizar_coordenadas(Context context){
 
-        Geocoder coder = new Geocoder(getContext());
+        Geocoder coder = new Geocoder(context);
         try {
             ArrayList<Address> adresses = (ArrayList<Address>) coder.getFromLocationName(salida_coordenada, 50);
             for(Address add : adresses){

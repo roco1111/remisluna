@@ -35,7 +35,6 @@ import com.android.volley.error.VolleyError;
 import com.android.volley.request.JsonObjectRequest;
 import com.rosario.hp.remisluna.Entidades.ayuda;
 import com.rosario.hp.remisluna.Fragment.fragment_principal;
-import com.rosario.hp.remisluna.Fragment.fragment_principal_previa;
 import com.rosario.hp.remisluna.include.Constantes;
 import com.rosario.hp.remisluna.include.PrinterCommands;
 import com.rosario.hp.remisluna.include.Utils;
@@ -118,6 +117,13 @@ public class MainActivity extends AppCompatActivity {
         SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
         ls_id_conductor     = settings.getString("id","");
         getSupportActionBar().setTitle("Remisluna");
+
+        Fragment fragment = new fragment_principal();
+
+        getSupportFragmentManager().beginTransaction()
+                .replace(R.id.main_content, fragment)
+                .commit();
+
         cargarDatos(getApplicationContext());
 
 
@@ -253,13 +259,6 @@ public class MainActivity extends AppCompatActivity {
 
                     break;
 
-                case "2":
-
-                    fragment = new fragment_principal_previa();
-                    getSupportFragmentManager().beginTransaction()
-                            .replace(R.id.main_content, fragment)
-                            .commit();
-                    break;
 
             }
 
@@ -420,12 +419,6 @@ public class MainActivity extends AppCompatActivity {
 
                 case "2":
 
-                    fragment = new fragment_principal();
-
-
-                    getSupportFragmentManager().beginTransaction()
-                            .replace(R.id.main_content, fragment)
-                            .commit();
                     cargarDaIdVehiculo(context);
                     break;
 
