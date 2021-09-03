@@ -20,6 +20,7 @@ import android.os.IBinder;
 import android.os.Looper;
 import android.os.Message;
 import android.preference.PreferenceManager;
+import android.provider.Settings;
 import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
@@ -82,6 +83,7 @@ public class ServicioGeolocalizacion extends Service implements Runnable {
     @Override
     public void onCreate() {
         Toast.makeText(this, "Taxímetro iniciado", Toast.LENGTH_SHORT).show();
+        Log.d("Taxímetro","Taxímetro iniciado");
         super.onCreate();
         distancia_acumulada = 0;
         SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
@@ -402,7 +404,7 @@ public class ServicioGeolocalizacion extends Service implements Runnable {
         if (mLocationManager != null)
             if (mLocationListener != null)
                 mLocationManager.removeUpdates(mLocationListener);
-
+        Log.d("gps","taxímetro detenido");
         Toast.makeText(this, "Taxímetro detenido ", Toast.LENGTH_SHORT).show();
         super.onDestroy();
 
@@ -457,6 +459,10 @@ public class ServicioGeolocalizacion extends Service implements Runnable {
                 l_tipo = 2;
             }
 
+            if(distance > 150){
+                return;
+            }
+
             Log.d("DISTANCIA recorrida",String.valueOf(distance));
 
 
@@ -475,7 +481,7 @@ public class ServicioGeolocalizacion extends Service implements Runnable {
                 }
 
             }else if (l_tipo == 2){
-
+                distancia_acumulada = 0;
                 l_final = System.currentTimeMillis();
                 l_diferencia = l_final - l_inicio;
                 if(l_diferencia < 0) {
@@ -577,14 +583,16 @@ public class ServicioGeolocalizacion extends Service implements Runnable {
                 // for ActivityCompat#requestPermissions for more details.
                 return;
             }
-            mLocationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, mLocationListener);
-            mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, mLocationListener);
+            mLocationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 5000, 0, mLocationListener);
+            mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 5000, 0, mLocationListener);
             Looper.loop();
             Looper.myLooper().quit();
         } else {
             taxiActivity.runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
+                    Intent settingsIntent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+                    startActivity(settingsIntent);
                     Toast.makeText(getApplicationContext(), "GPS apagado inesperadamente", Toast.LENGTH_LONG).show();
                 }
             });

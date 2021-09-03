@@ -338,46 +338,47 @@
             android:id="@+id/id_suspension"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/margin_top_item_grande"
             android:layout_below="@id/id_importe_final"
-            android:orientation="vertical">
-
-        <TextView
-            android:id="@+id/estado"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/suspendido"
-            android:textAlignment="center"
-            android:textColor="@color/suspender"
-            android:layout_marginTop="@dimen/margin_top_menu"
-            android:textSize="@dimen/tamanio_parrafo"
-            android:textStyle="bold"/>
-
-        <LinearLayout
-            android:id="@+id/id_motivo"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/margin_top_item_grande"
             android:orientation="vertical">
-            <TextView
-                android:id="@+id/motivo"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/motivo"
-                android:textAlignment="center"
-                android:textColor="@color/black"
-                android:textSize="@dimen/tamanio_texto"
-                android:textStyle="bold"/>
 
             <TextView
-                android:id="@+id/dato_motivo"
+                android:id="@+id/estado"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/margin_top_menu"
+                android:text="@string/suspendido"
                 android:textAlignment="center"
-                android:textColor="@color/black"
-                android:text="@string/nro_viaje"
-                android:textSize="@dimen/tamanio_texto" />
-        </LinearLayout>
+                android:textColor="@color/suspender"
+                android:textSize="@dimen/tamanio_parrafo"
+                android:textStyle="bold" />
+
+            <LinearLayout
+                android:id="@+id/id_motivo"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/margin_top_item_grande"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/motivo"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/motivo"
+                    android:textAlignment="center"
+                    android:textColor="@color/black"
+                    android:textSize="@dimen/tamanio_texto"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/dato_motivo"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/nro_viaje"
+                    android:textAlignment="center"
+                    android:textColor="@color/black"
+                    android:textSize="@dimen/tamanio_texto" />
+            </LinearLayout>
         </LinearLayout>
 
 

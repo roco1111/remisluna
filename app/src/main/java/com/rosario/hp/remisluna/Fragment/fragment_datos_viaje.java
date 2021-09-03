@@ -133,9 +133,9 @@ public class fragment_datos_viaje extends Fragment{
         impresion = new Impresion();
         imprimir = v.findViewById(R.id.buttonTicket);
         suspension = v.findViewById(R.id.id_suspension);
-        espera = v.findViewById(R.id.espera);
-        total = v.findViewById(R.id.total);
-        descuento = v.findViewById(R.id.descuento);
+        espera = v.findViewById(R.id.dato_espera);
+        total = v.findViewById(R.id.dato_total);
+        descuento = v.findViewById(R.id.dato_descuento);
 
         SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getContext());
         ls_id_viaje     = settings.getString("id_viaje","");
@@ -230,7 +230,7 @@ public class fragment_datos_viaje extends Fragment{
                     importe.setText(ls_importe);
 
 
-                    ls_importe = object.getString("espera");
+                    ls_importe = object.getString("importe_espera");
                     if(ls_importe.equals("null"))
                     {
                         ls_importe = "0,00";

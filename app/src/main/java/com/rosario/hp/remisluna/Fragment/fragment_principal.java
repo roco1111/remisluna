@@ -442,7 +442,7 @@ public class fragment_principal extends Fragment {
                             texto_tarifa.setText(R.string.nocturno);
                         }
 
-                        SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getContext());
+                        SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(context);
                         SharedPreferences.Editor editor = settings.edit();
                         editor.putString("nocturno",l_nocturno);
                         editor.commit();
@@ -520,7 +520,7 @@ public class fragment_principal extends Fragment {
                     datos_viajes_turno(context);
                 case "2":
                     Toast.makeText(
-                            getContext(),
+                            context,
                             mensaje,
                             Toast.LENGTH_LONG).show();
 

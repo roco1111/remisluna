@@ -26,6 +26,7 @@ import android.provider.Settings;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;;
+import android.view.WindowManager;
 import android.widget.Toast;
 
 import com.android.volley.DefaultRetryPolicy;
@@ -72,6 +73,7 @@ public class MainActivity extends AppCompatActivity {
     byte FONT_TYPE;
     private static final long MIN_TIEMPO_ENTRE_UPDATES = 1000 * 12;
     private static final long MIN_CAMBIO_DISTANCIA_PARA_UPDATES = 0;
+    Localizacion Local;
 
     @Override
     public void onStart() {
@@ -112,7 +114,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main_basica);
-
+        getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         ayudas = new ArrayList<>();
         SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
         ls_id_conductor     = settings.getString("id","");
@@ -318,11 +320,16 @@ public class MainActivity extends AppCompatActivity {
                     JSONObject object = mensaje1.getJSONObject(0);
                     ls_vehiculo = object.getString("id_movil");
 
+                    /*
                     if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
                         ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION,}, 1000);
                     } else {
                         locationStart();
                     }
+                    */
+
+                    locationEnd();
+
                     Intent intent2 = new Intent(getApplicationContext(), MainViaje.class);
                     intent2.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK );
                     getApplicationContext().startActivity(intent2);
@@ -392,11 +399,15 @@ public class MainActivity extends AppCompatActivity {
                     JSONObject object = mensaje1.getJSONObject(0);
 
                     ls_vehiculo = object.getString("id_movil");
+
+                    /*
                     if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
                         ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION,}, 1000);
                     } else {
                         locationStart();
                     }
+                     */
+
                     SharedPreferences settings1 = PreferenceManager.getDefaultSharedPreferences(context);
 
                     SharedPreferences.Editor editor = settings1.edit();
@@ -411,6 +422,9 @@ public class MainActivity extends AppCompatActivity {
                     editor.apply();
 
                     editor.commit();
+
+                    locationEnd();
+
                     Intent intent2 = new Intent(getApplicationContext(), MainViaje.class);
                     intent2.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK );
                     getApplicationContext().startActivity(intent2);
@@ -503,9 +517,18 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    public void locationEnd() {
+
+        LocationManager mlocManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+        if(Local != null) {
+            mlocManager.removeUpdates(Local);
+        }
+    }
+
+
     private void locationStart() {
         LocationManager mlocManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-        Localizacion Local = new Localizacion();
+        Local = new Localizacion();
         Local.setMainActivity(this);
         final boolean gpsEnabled = mlocManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
         if (!gpsEnabled) {
@@ -516,6 +539,7 @@ public class MainActivity extends AppCompatActivity {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION,}, 1000);
             return;
         }
+
         mlocManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, (LocationListener) Local);
         mlocManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, (LocationListener) Local);
 

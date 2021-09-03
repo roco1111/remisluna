@@ -1,6 +1,6 @@
 package com.rosario.hp.remisluna.Fragment;
 
-import android.Manifest;
+import android.app.ActivityManager;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 
@@ -16,7 +16,6 @@ import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
-import android.os.Looper;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -26,7 +25,6 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.Fragment;
 
 import com.android.volley.DefaultRetryPolicy;
@@ -34,7 +32,6 @@ import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.error.VolleyError;
 import com.android.volley.request.JsonObjectRequest;
-import com.rosario.hp.remisluna.Entidades.parametro;
 import com.rosario.hp.remisluna.Impresion;
 import com.rosario.hp.remisluna.MainActivity;
 import com.rosario.hp.remisluna.MainViaje;
@@ -122,10 +119,13 @@ public class fragment_viaje_iniciado extends Fragment {
     private Long tiempo_tolerancia = 0L;
     private Integer tipo_espera;
     private SimpleDateFormat sdf;
+    private boolean lb_viaje_terminado = false;
 
     @Override
     public void onPause() {
-        getActivity().unregisterReceiver(onBroadcast);
+        if(isMyServiceRunning(ServicioGeolocalizacion.class)) {
+            getActivity().unregisterReceiver(onBroadcast);
+        }
         super.onPause();
     }
 
@@ -176,8 +176,8 @@ public class fragment_viaje_iniciado extends Fragment {
         View v = inflater.inflate(R.layout.activity_viaje_iniciado, container, false);
 
         getActivity().startService(new Intent(getActivity(),ServicioGeolocalizacion.class));
+        //((MainActivity) getActivity()).locationEnd();
         mLocationManager = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
-
         id_viaje = v.findViewById(R.id.dato_viaje);
         solicitante = v.findViewById(R.id.dato_solicitante);
         dato_salida = v.findViewById(R.id.dato_salida);
@@ -192,6 +192,7 @@ public class fragment_viaje_iniciado extends Fragment {
         tiempo_viaje = v.findViewById(R.id.tiempo);
         ficha_espera = v.findViewById(R.id.ficha_espera);
         sdf = new SimpleDateFormat("MM/dd/yyyy HH:mm");
+        lb_viaje_terminado = false;
 
         SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getContext());
         ls_id_conductor     = settings.getString("id","");
@@ -200,9 +201,15 @@ public class fragment_viaje_iniciado extends Fragment {
         this.con_ticket.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                //ComponentName receiver = new ComponentName(getContext(), ServicioGeolocalizacion.class);
+                //PackageManager pm = getContext().getPackageManager();
+                //pm.setComponentEnabledSetting(receiver, PackageManager.COMPONENT_ENABLED_STATE_DISABLED, PackageManager.DONT_KILL_APP);
             lb_ticket = true;
-            getActivity().unregisterReceiver(onBroadcast);
-            getActivity().stopService(new Intent(getActivity(), ServicioGeolocalizacion.class));
+            if(isMyServiceRunning(ServicioGeolocalizacion.class)) {
+                getActivity().unregisterReceiver(onBroadcast);
+                getActivity().stopService(new Intent(getActivity(), ServicioGeolocalizacion.class));
+            }
+            lb_viaje_terminado = true;
             cargarDatosVehiculo(getContext()); }
 
         });
@@ -211,8 +218,14 @@ public class fragment_viaje_iniciado extends Fragment {
             @Override
             public void onClick(View v) {
                 lb_ticket = false;
-                getActivity().unregisterReceiver(onBroadcast);
-                getActivity().stopService(new Intent(getActivity(), ServicioGeolocalizacion.class));
+                lb_viaje_terminado = true;
+
+                if(isMyServiceRunning(ServicioGeolocalizacion.class)) {
+                    getActivity().unregisterReceiver(onBroadcast);
+                    getActivity().stopService(new Intent(getActivity(), ServicioGeolocalizacion.class));
+                    Log.d("Servicio","Servicio detenido");
+                }
+
                 cargarDatosVehiculo(getContext()); }
 
         });
@@ -236,15 +249,29 @@ public class fragment_viaje_iniciado extends Fragment {
         return v;
     }
 
+    private boolean isMyServiceRunning(Class<?> serviceClass) {
+        ActivityManager manager = (ActivityManager) getActivity().getSystemService(Context.ACTIVITY_SERVICE);
+        for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
+            if (serviceClass.getName().equals(service.service.getClassName())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private BroadcastReceiver onBroadcast = new BroadcastReceiver() {
 
         @Override
         public void onReceive(Context ctxt, Intent i) {
+            if(!lb_viaje_terminado) {
+                String datos = i.getStringExtra("coordenadas");//obtenemos las coordenadas envidas del servicioGeolocalizaci—n
+                String[] tokens = datos.split(";");//separamos por token
 
-            String datos = i.getStringExtra("coordenadas");//obtenemos las coordenadas envidas del servicioGeolocalizaci—n
-            String[] tokens = datos.split(";");//separamos por token
+                cargarTarifa(ctxt, tokens);
+            }else{
+                Log.d("Servicio","Servicio detenido");
+            }
 
-            cargarTarifa(ctxt, tokens);
 
         }
     };
@@ -271,7 +298,9 @@ public class fragment_viaje_iniciado extends Fragment {
                             @Override
                             public void onResponse(JSONObject response) {
                                 // Procesar respuesta Json
-                                procesarRespuestaTarifa(response, context, tokens);
+                                if(!lb_viaje_terminado) {
+                                    procesarRespuestaTarifa(response, context, tokens);
+                                }
                             }
                         },
                         new Response.ErrorListener() {
@@ -348,6 +377,7 @@ public class fragment_viaje_iniciado extends Fragment {
                             ficha++;
                             valor_ficha = Double.parseDouble(importe_ficha);
                             precio_ficha = precio_ficha + valor_ficha ;
+                            precio_ficha = Double.parseDouble(getTwoDecimals(precio_ficha));
                             cuadras++;
                             kms.setText( String.valueOf(cuadras));
                             tiempo_viaje.setText( "00:00");
@@ -356,6 +386,7 @@ public class fragment_viaje_iniciado extends Fragment {
                             espera++;
                             valor_ficha = Double.parseDouble(importe_espera);
                             precio_espera = precio_espera + valor_ficha ;
+                            precio_espera = Double.parseDouble(getTwoDecimals(precio_espera));
                             ficha_espera.setText( String.valueOf(espera));
                             tiempo_viaje.setText( "00:00");
                             break;
@@ -399,8 +430,9 @@ public class fragment_viaje_iniciado extends Fragment {
 
                     latitud = tokens[0];
                     longitud = tokens[1];
-
-                    guardar_trayectoria(latitud,longitud);
+                    if(!lb_viaje_terminado) {
+                        guardar_trayectoria(latitud, longitud);
+                    }
 
                     break;
 
@@ -415,7 +447,7 @@ public class fragment_viaje_iniciado extends Fragment {
     }
 
 
-    private void guardar_trayectoria(String latitud, String longitud){
+    private void guardar_trayectoria(final String latitud, final String longitud){
 
         HashMap<String, String> map = new HashMap<>();// Mapeo previo
         id_trayecto++;
@@ -456,14 +488,16 @@ public class fragment_viaje_iniciado extends Fragment {
                         new Response.Listener<JSONObject>() {
                             @Override
                             public void onResponse(JSONObject response) {
-                                procesarRespuestaActualizarUbicacion(response);
+                                if(!lb_viaje_terminado) {
+                                    procesarRespuestaActualizarUbicacion(response, latitud, longitud);
+                                }
                             }
                         },
                         new Response.ErrorListener() {
                             @Override
                             public void onErrorResponse(VolleyError error) {
                                 Log.d(TAG, "Error trayectoria: " + error.getMessage());
-                                actualizar_viaje();
+                                actualizar_viaje(latitud, longitud);
 
                             }
                         }
@@ -483,7 +517,7 @@ public class fragment_viaje_iniciado extends Fragment {
                 }
         );
     }
-    private void procesarRespuestaActualizarUbicacion(JSONObject response) {
+    private void procesarRespuestaActualizarUbicacion(JSONObject response, String latitud, String longitud) {
 
         try {
             // Obtener estado
@@ -493,7 +527,19 @@ public class fragment_viaje_iniciado extends Fragment {
 
             switch (estado) {
                 case "1":
-                    actualizar_viaje();
+                    if(lb_viaje_terminado) {
+
+
+                        if (isMyServiceRunning(ServicioGeolocalizacion.class)) {
+                            getActivity().unregisterReceiver(onBroadcast);
+                            getActivity().stopService(new Intent(getActivity(), ServicioGeolocalizacion.class));
+                            Log.d("Servicio", "Servicio detenido 2");
+
+                        }
+                        cargarDatosVehiculo(getContext());
+                    }else {
+                        actualizar_viaje(latitud, longitud);
+                    }
 
                     break;
                 case "2":
@@ -502,7 +548,7 @@ public class fragment_viaje_iniciado extends Fragment {
                             getContext(),
                             mensaje,
                             Toast.LENGTH_LONG).show();
-                    actualizar_viaje();
+                    actualizar_viaje(latitud, longitud);
                     // Enviar código de falla
                     break;
             }
@@ -511,7 +557,7 @@ public class fragment_viaje_iniciado extends Fragment {
         }
     }
 
-    private void actualizar_viaje(){
+    private void actualizar_viaje(final String latitud, final String longitud){
 
         String ls_viaje = id_viaje.getText().toString();
 
@@ -521,13 +567,14 @@ public class fragment_viaje_iniciado extends Fragment {
         map.put("tiempo", tiempo_viaje.getText().toString());
         map.put("fichas", String.valueOf(ficha));
         map.put("fichas_espera", String.valueOf(espera));
-        map.put("importe_espera", precio_espera.toString());
+        map.put("importe_espera", String.valueOf(precio_espera));
         map.put("total", String.valueOf(precio_total));
         map.put("tiempo_tolerancia", String.valueOf(tiempo_tolerancia));
         map.put("tiempo_acumulado", String.valueOf(tiempo_acumulado));
         map.put("bajada", String.valueOf(importe_bajada));
         map.put("trayectoria", String.valueOf(id_trayecto));
         map.put("tipo_espera", String.valueOf(tipo_espera));
+        map.put("importe_fichas", String.valueOf(precio_ficha));
 
 
         JSONObject jobject = new JSONObject(map);
@@ -563,7 +610,7 @@ public class fragment_viaje_iniciado extends Fragment {
                         new Response.Listener<JSONObject>() {
                             @Override
                             public void onResponse(JSONObject response) {
-                                procesarRespuestaActualizarViaje(response);
+                                procesarRespuestaActualizarViaje(response, latitud, longitud);
                             }
                         },
                         new Response.ErrorListener() {
@@ -589,7 +636,7 @@ public class fragment_viaje_iniciado extends Fragment {
                 }
         );
     }
-    private void procesarRespuestaActualizarViaje(JSONObject response) {
+    private void procesarRespuestaActualizarViaje(JSONObject response, String latitud, String longitud) {
 
         try {
             // Obtener estado
@@ -598,7 +645,11 @@ public class fragment_viaje_iniciado extends Fragment {
             String mensaje = response.getString("mensaje");
 
             switch (estado) {
-
+                case "1":
+                    String Text = "Lat = "+ latitud + "\n Long = " + longitud;
+                    Log.d("ubicación_iniciado",Text);
+                    guardar_ubicacion(latitud, longitud);
+                    break;
                 case "2":
                     // Mostrar mensaje
                     Toast.makeText(
@@ -608,6 +659,7 @@ public class fragment_viaje_iniciado extends Fragment {
                     // Enviar código de falla
                     break;
             }
+
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -910,6 +962,8 @@ public class fragment_viaje_iniciado extends Fragment {
                         espera = Long.parseLong(object.getString("fichas_espera"));
                         id_trayecto = Integer.parseInt(object.getString("trayectoria"));
                         tipo_espera = Integer.parseInt(object.getString("tipo_espera"));
+                        precio_ficha = Double.parseDouble(object.getString("importe_fichas"));
+                        precio_espera = Double.parseDouble(object.getString("importe_espera_viaje"));
                         if(tipo_espera == 0){
                             tiempo_viaje.setTextColor(getResources().getColor(R.color.suspender));
                         }else{
@@ -1205,11 +1259,17 @@ public class fragment_viaje_iniciado extends Fragment {
         map.put("latitud", l_latitud_destino);
         map.put("longitud", l_longitud_destino);
         map.put("distancia", distancia);
-        map.put("precio", ls_precio);
-        map.put("importe_espera", ls_espera);
-        map.put("descuento", String.format(Locale.GERMANY,"%.2f",descuento));
-        map.put("total", String.format(Locale.GERMANY,"%.2f",total));
-        map.put("bajada", ls_bajada);
+        map.put("precio", String.valueOf(precio_total));
+        map.put("importe_espera", String.valueOf(precio_espera));
+        map.put("descuento", String.valueOf(descuento));
+        map.put("total", String.valueOf(total));
+        map.put("bajada", String.valueOf(importe_bajada));
+        map.put("tiempo_tolerancia", String.valueOf(tiempo_tolerancia));
+        map.put("tiempo_acumulado", String.valueOf(tiempo_acumulado));
+        map.put("tiempo", tiempo_viaje.getText().toString());
+        map.put("fichas", String.valueOf(ficha));
+        map.put("fichas_espera", String.valueOf(espera));
+        map.put("importe_fichas", String.valueOf(precio_ficha));
 
 
         JSONObject jobject = new JSONObject(map);
@@ -1251,7 +1311,7 @@ public class fragment_viaje_iniciado extends Fragment {
                         new Response.ErrorListener() {
                             @Override
                             public void onErrorResponse(VolleyError error) {
-                                Log.d(TAG, "Error inicio: " + error.getMessage());
+                                Log.d(TAG, "Error terminar: " + error.getMessage());
 
                             }
                         }
@@ -1344,7 +1404,7 @@ public class fragment_viaje_iniciado extends Fragment {
                         new Response.ErrorListener() {
                             @Override
                             public void onErrorResponse(VolleyError error) {
-                                Log.d(TAG, "Error inicio: " + error.getMessage());
+                                Log.d(TAG, "Error Turno: " + error.getMessage());
 
                             }
                         }
@@ -1694,6 +1754,96 @@ public class fragment_viaje_iniciado extends Fragment {
         } catch (Exception e) {
             e.printStackTrace();
             Log.e("PrintTools", "the file isn't exists");
+        }
+    }
+
+    private void guardar_ubicacion(String latitud, String longitud){
+
+        HashMap<String, String> map = new HashMap<>();// Mapeo previo
+
+        map.put("latitud", latitud);
+        map.put("longitud", longitud);
+        map.put("id", id_vehiculo);
+
+
+        // Crear nuevo objeto Json basado en el mapa
+        JSONObject jobject = new JSONObject(map);
+
+
+        // Depurando objeto Json...
+        Log.d(TAG, jobject.toString());
+
+        StringBuilder encodedParams = new StringBuilder();
+        try {
+            for (Map.Entry<String, String> entry : map.entrySet()) {
+                encodedParams.append(URLEncoder.encode(entry.getKey(), "utf-8"));
+                encodedParams.append('=');
+                encodedParams.append(URLEncoder.encode(entry.getValue(), "utf-8"));
+                encodedParams.append('&');
+            }
+        } catch (UnsupportedEncodingException uee) {
+            throw new RuntimeException("Encoding not supported: " + "utf-8", uee);
+        }
+
+        encodedParams.setLength(Math.max(encodedParams.length() - 1, 0));
+
+        String newURL = Constantes.UPDATE_UBICACION + "?" + encodedParams;
+
+        // Actualizar datos en el servidor
+        VolleySingleton.getInstance(getContext()).addToRequestQueue(
+                new JsonObjectRequest(
+                        Request.Method.GET,
+                        newURL,
+                        null,
+                        new Response.Listener<JSONObject>() {
+                            @Override
+                            public void onResponse(JSONObject response) {
+                                procesarRespuestaActualizarPosicion(response);
+                            }
+                        },
+                        new Response.ErrorListener() {
+                            @Override
+                            public void onErrorResponse(VolleyError error) {
+                                Log.d(TAG, "Error inicio: " + error.getMessage());
+
+                            }
+                        }
+
+                ) {
+                    @Override
+                    public Map<String, String> getHeaders() {
+                        Map<String, String> headers = new HashMap<>();
+                        headers.put("Content-Type", "application/json; charset=utf-8");
+                        return headers;
+                    }
+
+                    @Override
+                    public String getBodyContentType() {
+                        return "application/json; charset=utf-8" + getParamsEncoding();
+                    }
+                }
+        );
+    }
+    private void procesarRespuestaActualizarPosicion(JSONObject response) {
+
+        try {
+            // Obtener estado
+            String estado = response.getString("estado");
+            // Obtener mensaje
+            String mensaje = response.getString("mensaje");
+
+            switch (estado) {
+                case "2":
+                    // Mostrar mensaje
+                    Toast.makeText(
+                            getContext(),
+                            mensaje,
+                            Toast.LENGTH_LONG).show();
+                    // Enviar código de falla
+                    break;
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
         }
     }
 

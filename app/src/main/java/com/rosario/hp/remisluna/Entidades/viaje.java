@@ -16,6 +16,7 @@ public class viaje {
     String fichas;
     String tiempo;
     String fichas_espera;
+    String importe_fichas;
 
     public String getId() {
         return id;
@@ -63,6 +64,14 @@ public class viaje {
 
     public String getFichas() {
         return fichas;
+    }
+
+    public String getImporte_fichas() {
+        return importe_fichas;
+    }
+
+    public void setImporte_fichas(String importe_fichas) {
+        this.importe_fichas = importe_fichas;
     }
 
     public void setFichas(String fichas) {
