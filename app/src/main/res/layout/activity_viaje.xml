@@ -40,12 +40,12 @@
                 android:id="@+id/tarifa"
                 android:layout_width="wrap_content"
                 android:layout_height="@dimen/icono_chico"
+                android:layout_alignParentEnd="true"
                 android:text="@string/tarifa"
                 android:textAlignment="center"
-                android:layout_alignParentEnd="true"
                 android:textColor="@color/colorPrimary"
-                android:textStyle="bold"
-                android:textSize="@dimen/tamanio_parrafo" />
+                android:textSize="@dimen/tamanio_parrafo"
+                android:textStyle="bold" />
         </RelativeLayout>
         <RelativeLayout
             android:id="@+id/id_datos_libre"
@@ -96,13 +96,13 @@
                 android:id="@+id/tiempo"
                 android:layout_width="wrap_content"
                 android:layout_height="@dimen/tamanio_titulo_grande"
-                android:text="@string/cero_tiempo"
-                android:fontFamily="@font/digital"
-                android:textAlignment="center"
                 android:layout_alignParentStart="true"
+                android:fontFamily="@font/digital"
+                android:text="@string/cero_tiempo"
+                android:textAlignment="center"
                 android:textColor="@color/colorPrimary"
-                android:textStyle="bold"
-                android:textSize="@dimen/tamanio_titulo_grande" />
+                android:textSize="@dimen/tamanio_titulo_grande"
+                android:textStyle="bold" />
 
             <TextView
                 android:id="@+id/kms"
@@ -215,14 +215,15 @@
             android:layout_below="@id/id_numeros"
             android:layout_marginTop="@dimen/margin_boton"
             android:orientation="horizontal">
-        <Button
-            android:id="@+id/buttonInicio"
-            android:layout_width="@dimen/ancho_boton_grande"
-            android:layout_height="@dimen/alto_boton"
-            android:layout_alignParentStart="true"
-            android:background="@android:color/transparent"
-            android:drawableTop="@drawable/iniciar_viaje"
-            tools:ignore="RtlHardcoded" />
+
+            <Button
+                android:id="@+id/buttonInicio"
+                android:layout_width="@dimen/ancho_boton_grande"
+                android:layout_height="@dimen/alto_boton"
+                android:layout_alignParentStart="true"
+                android:background="@android:color/transparent"
+                android:drawableTop="@drawable/iniciar_viaje"
+                tools:ignore="RtlHardcoded" />
 
             <Button
                 android:id="@+id/buttonAnular"
@@ -235,12 +236,12 @@
         </RelativeLayout>
 
     <RelativeLayout
+        android:id="@+id/id_teclado_sup"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_centerHorizontal="true"
         android:layout_below="@id/id_botones"
-        android:layout_marginTop="@dimen/margin_top"
-        android:id="@+id/id_teclado_sup"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="@dimen/margin_start"
         android:orientation="horizontal">
 
         <ImageButton
@@ -248,36 +249,35 @@
             android:layout_width="@dimen/ancho_boton"
             android:layout_height="@dimen/ancho_boton"
             android:background="@drawable/selector_uno"
-            android:scaleType="fitXY"
-             />
+            android:scaleType="fitXY" />
+
         <ImageButton
             android:id="@+id/imageButtonDos"
             android:layout_width="@dimen/ancho_boton"
             android:layout_height="@dimen/ancho_boton"
-            android:background="@drawable/selector_dos"
-            android:layout_toEndOf = "@id/imageButtonUno"
-            android:scaleType="fitXY"
             android:layout_marginStart="@dimen/campos_height"
-             />
+            android:layout_toEndOf="@id/imageButtonUno"
+            android:background="@drawable/selector_dos"
+            android:scaleType="fitXY" />
 
         <ImageButton
             android:id="@+id/imageButtonTres"
             android:layout_width="@dimen/ancho_boton"
             android:layout_height="@dimen/ancho_boton"
-            android:background="@drawable/selector_tres"
             android:layout_marginStart="@dimen/campos_height"
-            android:layout_toEndOf = "@id/imageButtonDos"
-            android:scaleType="fitXY"
-            />
+            android:layout_toEndOf="@id/imageButtonDos"
+            android:background="@drawable/selector_tres"
+            android:scaleType="fitXY" />
 
     </RelativeLayout>
+
     <RelativeLayout
+        android:id="@+id/id_teclado_medio"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_centerHorizontal="true"
         android:layout_below="@id/id_teclado_sup"
-        android:layout_marginTop="@dimen/margin_top_item_grande"
-        android:id="@+id/id_teclado_medio"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="@dimen/margin_start"
         android:orientation="horizontal">
 
         <ImageButton
@@ -285,36 +285,35 @@
             android:layout_width="@dimen/ancho_boton"
             android:layout_height="@dimen/ancho_boton"
             android:background="@drawable/selector_cuatro"
-            android:scaleType="fitXY"
-             />
+            android:scaleType="fitXY" />
+
         <ImageButton
             android:id="@+id/imageButtonCinco"
             android:layout_width="@dimen/ancho_boton"
             android:layout_height="@dimen/ancho_boton"
+            android:layout_marginStart="@dimen/campos_height"
+            android:layout_toEndOf="@id/imageButtonCuatro"
             android:background="@drawable/selector_cinco"
-            android:layout_toEndOf = "@id/imageButtonCuatro"
-            android:scaleType="fitXY"
-            android:layout_marginStart="@dimen/campos_height" />
+            android:scaleType="fitXY" />
 
         <ImageButton
             android:id="@+id/imageButtonSeis"
             android:layout_width="@dimen/ancho_boton"
             android:layout_height="@dimen/ancho_boton"
-            android:background="@drawable/selector_seis"
             android:layout_marginStart="@dimen/campos_height"
-            android:layout_toEndOf = "@id/imageButtonCinco"
-            android:scaleType="fitXY"
-             />
+            android:layout_toEndOf="@id/imageButtonCinco"
+            android:background="@drawable/selector_seis"
+            android:scaleType="fitXY" />
 
     </RelativeLayout>
 
     <RelativeLayout
+        android:id="@+id/id_teclado_inferior"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_centerHorizontal="true"
         android:layout_below="@id/id_teclado_medio"
-        android:layout_marginTop="@dimen/margin_top_item_grande"
-        android:id="@+id/id_teclado_inferior"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="@dimen/margin_start"
         android:orientation="horizontal">
 
         <ImageButton
@@ -322,29 +321,25 @@
             android:layout_width="@dimen/ancho_boton"
             android:layout_height="@dimen/ancho_boton"
             android:background="@drawable/selector_siete"
-            android:scaleType="fitXY"
-            />
+            android:scaleType="fitXY" />
+
         <ImageButton
             android:id="@+id/imageButtonOcho"
             android:layout_width="@dimen/ancho_boton"
             android:layout_height="@dimen/ancho_boton"
-            android:background="@drawable/selector_ocho"
-            android:layout_toEndOf = "@id/imageButtonSiete"
-            android:scaleType="fitXY"
             android:layout_marginStart="@dimen/campos_height"
-             />
+            android:layout_toEndOf="@id/imageButtonSiete"
+            android:background="@drawable/selector_ocho"
+            android:scaleType="fitXY" />
 
         <ImageButton
             android:id="@+id/imageButtonNueve"
             android:layout_width="@dimen/ancho_boton"
             android:layout_height="@dimen/ancho_boton"
-            android:background="@drawable/selector_nueve"
             android:layout_marginStart="@dimen/campos_height"
-            android:layout_toEndOf = "@id/imageButtonOcho"
-            android:scaleType="fitXY"
-            />
-
-
+            android:layout_toEndOf="@id/imageButtonOcho"
+            android:background="@drawable/selector_nueve"
+            android:scaleType="fitXY" />
 
 
     </RelativeLayout>
@@ -354,7 +349,7 @@
         android:layout_height="wrap_content"
         android:layout_centerHorizontal="true"
         android:layout_below="@id/id_teclado_inferior"
-        android:layout_marginTop="@dimen/margin_top_item_grande"
+        android:layout_marginTop="@dimen/margin_start"
         android:id="@+id/id_teclado_cero"
         android:orientation="horizontal">
 
@@ -362,11 +357,10 @@
             android:id="@+id/imageButtonCero"
             android:layout_width="@dimen/ancho_boton"
             android:layout_height="@dimen/ancho_boton"
-            android:background="@drawable/selector_cero"
-            android:layout_marginStart="@dimen/campos_height"
             android:layout_centerHorizontal="true"
-            android:scaleType="fitXY"
-             />
+            android:layout_marginStart="@dimen/campos_height"
+            android:background="@drawable/selector_cero"
+            android:scaleType="fitXY" />
     </RelativeLayout>
 
 </RelativeLayout>

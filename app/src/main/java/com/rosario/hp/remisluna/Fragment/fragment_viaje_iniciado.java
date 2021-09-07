@@ -387,7 +387,7 @@ public class fragment_viaje_iniciado extends Fragment {
                             valor_ficha = Double.parseDouble(importe_espera);
                             precio_espera = precio_espera + valor_ficha ;
                             precio_espera = Double.parseDouble(getTwoDecimals(precio_espera));
-                            ficha_espera.setText( String.valueOf(espera));
+                            ficha_espera.setText( String.valueOf(precio_espera));
                             tiempo_viaje.setText( "00:00");
                             break;
 
@@ -958,7 +958,7 @@ public class fragment_viaje_iniciado extends Fragment {
                         tiempo_viaje.setText(object.getString("tiempo"));
                         kms.setText(object.getString("fichas"));
                         ficha = Long.parseLong(object.getString("fichas"));
-                        ficha_espera.setText(object.getString("fichas_espera"));
+                        ficha_espera.setText(object.getString("importe_espera_viaje"));
                         espera = Long.parseLong(object.getString("fichas_espera"));
                         id_trayecto = Integer.parseInt(object.getString("trayectoria"));
                         tipo_espera = Integer.parseInt(object.getString("tipo_espera"));
