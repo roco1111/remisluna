@@ -10,6 +10,7 @@ import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
+import android.provider.Settings;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -45,6 +46,7 @@ import org.json.JSONObject;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -102,10 +104,14 @@ public class fragment_principal extends Fragment {
     byte FONT_TYPE;
     private TextView impresora;
     private TextView texto_tarifa;
+    private TextView gps;
     private Impresion impresion;
     private ArrayList<turno> datos;
     boolean mBound = false;
     private String ls_id_conductor;
+    private String ls_remiseria;
+    private String ls_es_feriado;
+
 
     @Override
     public void onStart() {
@@ -162,7 +168,13 @@ public class fragment_principal extends Fragment {
         this.boton_ocho = v.findViewById(R.id.imageButtonOcho);
         this.boton_nueve = v.findViewById(R.id.imageButtonNueve);
         this.impresora = v.findViewById(R.id.impresora);
+        this.gps = v.findViewById(R.id.gps);
         texto_tarifa = v.findViewById(R.id.tarifa);
+        if(checkIfLocationOpened()){
+            gps.setTextColor(getResources().getColor(R.color.colorPrimary));
+        }else{
+            gps.setTextColor(getResources().getColor(R.color.alarma));
+        }
         if(mBound) {
             impresora.setTextColor(getResources().getColor(R.color.colorPrimary));
         }else{
@@ -173,6 +185,7 @@ public class fragment_principal extends Fragment {
         SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getContext());
         ls_id_conductor     = settings.getString("id","");
         ls_id_turno     = settings.getString("id_turno_chofer","");
+        ls_remiseria     = settings.getString("remiseria","");
 
         this.boton_cero.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -294,15 +307,101 @@ public class fragment_principal extends Fragment {
                 getContext().startActivity(intent2);
             }
         });
+        feriado();
 
-        cargarParametroTarifaDesde(getContext());
         return v;
+    }
+
+    public void feriado(){
+        String newURL = Constantes.GET_FERIADO;
+        Log.d(TAG,newURL);
+
+        // Realizar petición GET_BY_ID
+        VolleySingleton.getInstance(getContext()).addToRequestQueue(
+                myRequest = new JsonObjectRequest(
+                        Request.Method.GET,
+                        newURL,
+                        null,
+                        new Response.Listener<JSONObject>() {
+
+                            @Override
+                            public void onResponse(JSONObject response) {
+                                // Procesar respuesta Json
+
+                                procesarRespuestaFeriado(response);
+
+                            }
+                        },
+                        new Response.ErrorListener() {
+                            @Override
+                            public void onErrorResponse(VolleyError error) {
+                                Log.d(TAG, "Error Volley viaje: " + error.getMessage());
+
+                            }
+                        }
+                )
+        );
+        myRequest.setRetryPolicy(new DefaultRetryPolicy(
+                50000,
+                5,//DefaultRetryPolicy.DEFAULT_MAX_RETRIES
+                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+
+    }
+
+    private void procesarRespuestaFeriado(JSONObject response) {
+
+        try {
+            // Obtener atributo "mensaje"
+            ls_es_feriado= response.getString("feriado");
+
+            cargarParametroTarifaDesde(getContext());
+
+
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private boolean checkIfLocationOpened() {
+        String provider = Settings.Secure.getString(getContext().getContentResolver(), Settings.Secure.LOCATION_PROVIDERS_ALLOWED);
+        System.out.println("Provider contains=> " + provider);
+        if (provider.contains("gps") || provider.contains("network")){
+            return true;
+        }
+        return false;
     }
 
     public void cargarParametroTarifaDesde(final Context context) {
 
+        HashMap<String, String> map = new HashMap<>();// Mapeo previo
+
+        map.put("parametro", "11");
+        map.put("remiseria", ls_remiseria);
+
+        JSONObject jobject = new JSONObject(map);
+
+
+        // Depurando objeto Json...
+        Log.d(TAG, jobject.toString());
+
+        StringBuilder encodedParams = new StringBuilder();
+        try {
+            for (Map.Entry<String, String> entry : map.entrySet()) {
+                encodedParams.append(URLEncoder.encode(entry.getKey(), "utf-8"));
+                encodedParams.append('=');
+                encodedParams.append(URLEncoder.encode(entry.getValue(), "utf-8"));
+                encodedParams.append('&');
+            }
+        } catch (UnsupportedEncodingException uee) {
+            throw new RuntimeException("Encoding not supported: " + "utf-8", uee);
+        }
+
+        encodedParams.setLength(Math.max(encodedParams.length() - 1, 0));
+
         // Añadir parámetro a la URL del web service
-        String newURL = Constantes.GET_ID_PARAMETRO + "?parametro=11";
+        String newURL = Constantes.GET_ID_PARAMETRO + "?" + encodedParams;
+
         Log.d(TAG,newURL);
 
         // Realizar petición GET_BY_ID
@@ -368,8 +467,34 @@ public class fragment_principal extends Fragment {
 
     public void cargarParametroTarifaHasta(final Context context) {
 
+        HashMap<String, String> map = new HashMap<>();// Mapeo previo
+
+        map.put("parametro", "12");
+        map.put("remiseria", ls_remiseria);
+
+        JSONObject jobject = new JSONObject(map);
+
+
+        // Depurando objeto Json...
+        Log.d(TAG, jobject.toString());
+
+        StringBuilder encodedParams = new StringBuilder();
+        try {
+            for (Map.Entry<String, String> entry : map.entrySet()) {
+                encodedParams.append(URLEncoder.encode(entry.getKey(), "utf-8"));
+                encodedParams.append('=');
+                encodedParams.append(URLEncoder.encode(entry.getValue(), "utf-8"));
+                encodedParams.append('&');
+            }
+        } catch (UnsupportedEncodingException uee) {
+            throw new RuntimeException("Encoding not supported: " + "utf-8", uee);
+        }
+
+        encodedParams.setLength(Math.max(encodedParams.length() - 1, 0));
+
         // Añadir parámetro a la URL del web service
-        String newURL = Constantes.GET_ID_PARAMETRO + "?parametro=12";
+        String newURL = Constantes.GET_ID_PARAMETRO + "?" + encodedParams;
+
         Log.d(TAG,newURL);
 
         // Realizar petición GET_BY_ID
@@ -432,7 +557,19 @@ public class fragment_principal extends Fragment {
                             {
                                 l_nocturno = "1";
                             }else{
-                                l_nocturno = "0";
+                                int dia_semana;
+                                dia_semana=c.get(Calendar.DAY_OF_WEEK);
+
+                                if(dia_semana == Calendar.SUNDAY){
+                                    l_nocturno = "1";
+                                }else{
+                                    if(ls_es_feriado.equals("si")){
+                                        l_nocturno = "1";
+                                    }else{
+                                        l_nocturno = "0";
+                                    }
+
+                                }
                             }
                         }
 

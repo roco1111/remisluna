@@ -13,16 +13,18 @@ import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
 import android.location.LocationManager;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
+import android.provider.Settings;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageButton;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -39,7 +41,6 @@ import com.rosario.hp.remisluna.Impresion;
 import com.rosario.hp.remisluna.MainActivity;
 import com.rosario.hp.remisluna.MainViaje;
 import com.rosario.hp.remisluna.R;
-import com.rosario.hp.remisluna.ServicioGeolocalizacion;
 import com.rosario.hp.remisluna.activity_preferencias;
 import com.rosario.hp.remisluna.include.Constantes;
 import com.rosario.hp.remisluna.include.PrinterCommands;
@@ -62,8 +63,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
-
-import io.socket.SocketIO;
 
 import static com.rosario.hp.remisluna.include.Utils.stringABytes;
 
@@ -134,6 +133,9 @@ public class fragment_viaje extends Fragment {
     private static OutputStream outputStream;
     byte FONT_TYPE;
     private TextView impresora;
+    private String ls_remiseria;
+    private TextView gps;
+    private String ls_es_feriado;
 
     @Override
     public void onStart() {
@@ -206,22 +208,36 @@ public class fragment_viaje extends Fragment {
             impresora.setTextColor(getResources().getColor(R.color.alarma));
         }
 
+        this.gps = v.findViewById(R.id.gps);
+        if(checkIfLocationOpened()){
+            gps.setTextColor(getResources().getColor(R.color.colorPrimary));
+        }else{
+            gps.setTextColor(getResources().getColor(R.color.alarma));
+        }
+
         SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getContext());
         ls_id_conductor     = settings.getString("id","");
         ls_id_turno     = settings.getString("id_turno_chofer","");
+        ls_remiseria     = settings.getString("remiseria","");
 
         this.inicio.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
-                if (!mLocationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
-                    showDialogGPS("GPS apagado", "Deseas activarlo?");
-                }else{
-                    if(mBound) {
-                        iniciar_viaje();
-                    }else{
-                        showDialogImpresora("Sin Impresora","Deseas activar la impresora?");
+                if(verificar_internet()) {
+                    if (!mLocationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+                        showDialogGPS("GPS apagado", "Deseas activarlo?");
+                    } else {
+                        if (mBound) {
+                            iniciar_viaje(getContext());
+                        } else {
+                            showDialogImpresora("Sin Impresora", "Deseas activar la impresora?");
+                        }
                     }
+                }else{
+                    Toast.makeText(
+                            getContext(),
+                            R.string.no_internet,
+                            Toast.LENGTH_LONG).show();
                 }
 
             }
@@ -356,15 +372,99 @@ public class fragment_viaje extends Fragment {
                 getContext().startActivity(intent2);
             }
         });
-        cargarParametroTarifaDesde(getContext());
 
+        feriado(getContext());
         return v;
+    }
+
+    public void feriado(final Context context){
+        String newURL = Constantes.GET_FERIADO;
+        Log.d(TAG,newURL);
+
+        // Realizar petición GET_BY_ID
+        VolleySingleton.getInstance(getContext()).addToRequestQueue(
+                myRequest = new JsonObjectRequest(
+                        Request.Method.GET,
+                        newURL,
+                        null,
+                        new Response.Listener<JSONObject>() {
+
+                            @Override
+                            public void onResponse(JSONObject response) {
+                                // Procesar respuesta Json
+
+                                procesarRespuestaFeriado(response, context);
+
+                            }
+                        },
+                        new Response.ErrorListener() {
+                            @Override
+                            public void onErrorResponse(VolleyError error) {
+                                Log.d(TAG, "Error Volley viaje: " + error.getMessage());
+
+                            }
+                        }
+                )
+        );
+        myRequest.setRetryPolicy(new DefaultRetryPolicy(
+                50000,
+                5,//DefaultRetryPolicy.DEFAULT_MAX_RETRIES
+                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+
+    }
+
+    private void procesarRespuestaFeriado(JSONObject response, Context context) {
+
+        try {
+            // Obtener atributo "mensaje"
+            ls_es_feriado= response.getString("feriado");
+
+            cargarParametroTarifaDesde(context);
+
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private boolean checkIfLocationOpened() {
+        String provider = Settings.Secure.getString(getContext().getContentResolver(), Settings.Secure.LOCATION_PROVIDERS_ALLOWED);
+        System.out.println("Provider contains=> " + provider);
+        if (provider.contains("gps") || provider.contains("network")){
+            return true;
+        }
+        return false;
     }
 
     public void cargarParametroTarifaDesde(final Context context) {
 
+        HashMap<String, String> map = new HashMap<>();// Mapeo previo
+
+        map.put("parametro", "11");
+        map.put("remiseria", ls_remiseria);
+
+        JSONObject jobject = new JSONObject(map);
+
+
+        // Depurando objeto Json...
+        Log.d(TAG, jobject.toString());
+
+        StringBuilder encodedParams = new StringBuilder();
+        try {
+            for (Map.Entry<String, String> entry : map.entrySet()) {
+                encodedParams.append(URLEncoder.encode(entry.getKey(), "utf-8"));
+                encodedParams.append('=');
+                encodedParams.append(URLEncoder.encode(entry.getValue(), "utf-8"));
+                encodedParams.append('&');
+            }
+        } catch (UnsupportedEncodingException uee) {
+            throw new RuntimeException("Encoding not supported: " + "utf-8", uee);
+        }
+
+        encodedParams.setLength(Math.max(encodedParams.length() - 1, 0));
+
         // Añadir parámetro a la URL del web service
-        String newURL = Constantes.GET_ID_PARAMETRO + "?parametro=11";
+        String newURL = Constantes.GET_ID_PARAMETRO + "?" + encodedParams;
         Log.d(TAG,newURL);
 
         // Realizar petición GET_BY_ID
@@ -429,8 +529,34 @@ public class fragment_viaje extends Fragment {
 
     public void cargarParametroTarifaHasta(final Context context) {
 
+        HashMap<String, String> map = new HashMap<>();// Mapeo previo
+
+        map.put("parametro", "12");
+        map.put("remiseria", ls_remiseria);
+
+        JSONObject jobject = new JSONObject(map);
+
+
+        // Depurando objeto Json...
+        Log.d(TAG, jobject.toString());
+
+        StringBuilder encodedParams = new StringBuilder();
+        try {
+            for (Map.Entry<String, String> entry : map.entrySet()) {
+                encodedParams.append(URLEncoder.encode(entry.getKey(), "utf-8"));
+                encodedParams.append('=');
+                encodedParams.append(URLEncoder.encode(entry.getValue(), "utf-8"));
+                encodedParams.append('&');
+            }
+        } catch (UnsupportedEncodingException uee) {
+            throw new RuntimeException("Encoding not supported: " + "utf-8", uee);
+        }
+
+        encodedParams.setLength(Math.max(encodedParams.length() - 1, 0));
+
         // Añadir parámetro a la URL del web service
-        String newURL = Constantes.GET_ID_PARAMETRO + "?parametro=12";
+        String newURL = Constantes.GET_ID_PARAMETRO + "?" + encodedParams;
+
         Log.d(TAG,newURL);
 
         // Realizar petición GET_BY_ID
@@ -493,7 +619,19 @@ public class fragment_viaje extends Fragment {
                             {
                                 l_nocturno = "1";
                             }else{
-                                l_nocturno = "0";
+                                int dia_semana;
+                                dia_semana=c.get(Calendar.DAY_OF_WEEK);
+
+                                if(dia_semana == Calendar.SUNDAY){
+                                    l_nocturno = "1";
+                                }else{
+                                    if(ls_es_feriado.equals("si")){
+                                        l_nocturno = "1";
+                                    }else{
+                                        l_nocturno = "0";
+                                    }
+
+                                }
                             }
 
                         }
@@ -680,6 +818,19 @@ public class fragment_viaje extends Fragment {
 
     }
 
+    private Boolean verificar_internet(){
+        ConnectivityManager connectivityManager = (ConnectivityManager) getActivity().getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
+
+        if (networkInfo != null && networkInfo.isConnected()) {
+            // Si hay conexión a Internet en este momento
+            return true;
+        } else {
+            // No hay conexión a Internet en este momento
+            return false;
+        }
+    }
+
     private void cerrar_turno(){
 
         String newURL = Constantes.FIN_TURNO + "?id=" + ls_id_turno;
@@ -824,14 +975,14 @@ public class fragment_viaje extends Fragment {
                 editor.putString("tipo_ventana","main");
                 editor.commit();
                 getActivity().startService(new Intent(getActivity(), Impresion.class));
-                iniciar_viaje();
+                iniciar_viaje(getContext());
             }
         });
         builder.setNegativeButton("No", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
 
                 dialog.cancel();
-                iniciar_viaje();
+                iniciar_viaje(getContext());
             }
         });
 
@@ -1383,7 +1534,7 @@ public class fragment_viaje extends Fragment {
 
     }
 
-    private void iniciar_viaje(){
+    private void iniciar_viaje(final Context context){
 
         Location location_salida = new Location("salida");
         location_salida.setLatitude(Double.parseDouble(latitud_salida));  //latitud
@@ -1437,7 +1588,7 @@ public class fragment_viaje extends Fragment {
                         new Response.Listener<JSONObject>() {
                             @Override
                             public void onResponse(JSONObject response) {
-                                procesarRespuestaActualizar(response);
+                                procesarRespuestaActualizar(response, context);
                             }
                         },
                         new Response.ErrorListener() {
@@ -1463,7 +1614,7 @@ public class fragment_viaje extends Fragment {
                 }
         );
     }
-    private void procesarRespuestaActualizar(JSONObject response) {
+    private void procesarRespuestaActualizar(JSONObject response, Context context) {
 
         try {
             // Obtener estado
@@ -1475,13 +1626,13 @@ public class fragment_viaje extends Fragment {
                 case "1":
 
 
-                    Intent intent2 = new Intent(getContext(), MainViaje.class);
-                    getContext().startActivity(intent2);
+                    Intent intent2 = new Intent(context, MainViaje.class);
+                    context.startActivity(intent2);
                     break;
                 case "2":
                     // Mostrar mensaje
                     Toast.makeText(
-                            getContext(),
+                            context,
                             mensaje,
                             Toast.LENGTH_LONG).show();
                     // Enviar código de falla

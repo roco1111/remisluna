@@ -41,8 +41,12 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  *
@@ -78,6 +82,7 @@ public class ServicioGeolocalizacion extends Service implements Runnable {
     private Integer l_metros_ficha;
     private String l_tiempo;
     private Integer l_tipo;
+    private String ls_remiseria;
     
 
     @Override
@@ -91,6 +96,7 @@ public class ServicioGeolocalizacion extends Service implements Runnable {
         cargarDatos(getApplicationContext());
         mLocationListener = new MyLocationListener();
         mLocationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+        ls_remiseria     = settings.getString("remiseria","");
 
     }
 
@@ -180,8 +186,33 @@ public class ServicioGeolocalizacion extends Service implements Runnable {
 
     public void cargarParametroTolerancia(final Context context) {
 
+        HashMap<String, String> map = new HashMap<>();// Mapeo previo
+
+        map.put("parametro", "9");
+        map.put("remiseria", ls_remiseria);
+
+        JSONObject jobject = new JSONObject(map);
+
+
+        // Depurando objeto Json...
+        Log.d(TAG, jobject.toString());
+
+        StringBuilder encodedParams = new StringBuilder();
+        try {
+            for (Map.Entry<String, String> entry : map.entrySet()) {
+                encodedParams.append(URLEncoder.encode(entry.getKey(), "utf-8"));
+                encodedParams.append('=');
+                encodedParams.append(URLEncoder.encode(entry.getValue(), "utf-8"));
+                encodedParams.append('&');
+            }
+        } catch (UnsupportedEncodingException uee) {
+            throw new RuntimeException("Encoding not supported: " + "utf-8", uee);
+        }
+
+        encodedParams.setLength(Math.max(encodedParams.length() - 1, 0));
+
         // Añadir parámetro a la URL del web service
-        String newURL = Constantes.GET_ID_PARAMETRO + "?parametro=9";
+        String newURL = Constantes.GET_ID_PARAMETRO + "?" + encodedParams;
         Log.d(TAG,newURL);
 
         // Realizar petición GET_BY_ID
@@ -244,8 +275,33 @@ public class ServicioGeolocalizacion extends Service implements Runnable {
 
     public void cargarParametroEspera(final Context context) {
 
+        HashMap<String, String> map = new HashMap<>();// Mapeo previo
+
+        map.put("parametro", "13");
+        map.put("remiseria", ls_remiseria);
+
+        JSONObject jobject = new JSONObject(map);
+
+
+        // Depurando objeto Json...
+        Log.d(TAG, jobject.toString());
+
+        StringBuilder encodedParams = new StringBuilder();
+        try {
+            for (Map.Entry<String, String> entry : map.entrySet()) {
+                encodedParams.append(URLEncoder.encode(entry.getKey(), "utf-8"));
+                encodedParams.append('=');
+                encodedParams.append(URLEncoder.encode(entry.getValue(), "utf-8"));
+                encodedParams.append('&');
+            }
+        } catch (UnsupportedEncodingException uee) {
+            throw new RuntimeException("Encoding not supported: " + "utf-8", uee);
+        }
+
+        encodedParams.setLength(Math.max(encodedParams.length() - 1, 0));
+
         // Añadir parámetro a la URL del web service
-        String newURL = Constantes.GET_ID_PARAMETRO + "?parametro=13";
+        String newURL = Constantes.GET_ID_PARAMETRO + "?" + encodedParams;
         Log.d(TAG,newURL);
 
         // Realizar petición GET_BY_ID
@@ -308,8 +364,33 @@ public class ServicioGeolocalizacion extends Service implements Runnable {
 
     public void cargarParametroMetrosFicha(final Context context) {
 
+        HashMap<String, String> map = new HashMap<>();// Mapeo previo
+
+        map.put("parametro", "14");
+        map.put("remiseria", ls_remiseria);
+
+        JSONObject jobject = new JSONObject(map);
+
+
+        // Depurando objeto Json...
+        Log.d(TAG, jobject.toString());
+
+        StringBuilder encodedParams = new StringBuilder();
+        try {
+            for (Map.Entry<String, String> entry : map.entrySet()) {
+                encodedParams.append(URLEncoder.encode(entry.getKey(), "utf-8"));
+                encodedParams.append('=');
+                encodedParams.append(URLEncoder.encode(entry.getValue(), "utf-8"));
+                encodedParams.append('&');
+            }
+        } catch (UnsupportedEncodingException uee) {
+            throw new RuntimeException("Encoding not supported: " + "utf-8", uee);
+        }
+
+        encodedParams.setLength(Math.max(encodedParams.length() - 1, 0));
+
         // Añadir parámetro a la URL del web service
-        String newURL = Constantes.GET_ID_PARAMETRO + "?parametro=14";
+        String newURL = Constantes.GET_ID_PARAMETRO + "?" + encodedParams;
         Log.d(TAG,newURL);
 
         // Realizar petición GET_BY_ID
@@ -451,7 +532,9 @@ public class ServicioGeolocalizacion extends Service implements Runnable {
             latitud_inicial = latitud;
             longitud_inicial = longitud;
 
-
+            if(distance > 83){
+                return;
+            }
 
             if(distance > 6) {
                 l_tipo = 1;
@@ -459,15 +542,10 @@ public class ServicioGeolocalizacion extends Service implements Runnable {
                 l_tipo = 2;
             }
 
-            if(distance > 150){
-                return;
-            }
-
             Log.d("DISTANCIA recorrida",String.valueOf(distance));
 
 
-            if(l_tipo == 1) {
-                l_inicio = System.currentTimeMillis();
+            if(l_tipo == 1) {//fichas
 
                 distancia_acumulada += distance;
                 distancia_acumulada = Double.valueOf(getTwoDecimals(distancia_acumulada));
@@ -479,7 +557,7 @@ public class ServicioGeolocalizacion extends Service implements Runnable {
                             new Intent("key").putExtra("coordenadas", latitud + ";"
                                     + longitud + ";" + 1 + ""));
                 }
-
+                l_inicio = System.currentTimeMillis();
             }else if (l_tipo == 2){
                 distancia_acumulada = 0;
                 l_final = System.currentTimeMillis();
@@ -525,7 +603,7 @@ public class ServicioGeolocalizacion extends Service implements Runnable {
                     }
                 }else {
                     tiempo_acumulado += l_diferencia;
-                    Log.d("tiempo_acumulado","ok");
+
                     if(tiempo_acumulado >= l_tiempo_espera){
 
                         tiempo_acumulado = 0L;
@@ -581,6 +659,7 @@ public class ServicioGeolocalizacion extends Service implements Runnable {
                 //                                          int[] grantResults)
                 // to handle the case where the user grants the permission. See the documentation
                 // for ActivityCompat#requestPermissions for more details.
+                Toast.makeText(getApplicationContext(), "Error con GPS", Toast.LENGTH_LONG).show();
                 return;
             }
             mLocationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 5000, 0, mLocationListener);

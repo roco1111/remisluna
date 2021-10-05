@@ -100,10 +100,10 @@ public class fragment_viaje_iniciado extends Fragment {
     private Double precio_total = 0.00;
     private Double precio_ficha = 0.00;
     private Double precio_espera = 0.00;
+    private Double precio_bajada= 0.00;
     private Integer id_trayecto = 0;
     private static OutputStream outputStream;
     private Impresion impresion;
-    byte FONT_TYPE;
     boolean mBound = false;
     private LocationManager mLocationManager;
     boolean lb_ticket;
@@ -120,6 +120,9 @@ public class fragment_viaje_iniciado extends Fragment {
     private Integer tipo_espera;
     private SimpleDateFormat sdf;
     private boolean lb_viaje_terminado = false;
+    private Double ldb_porcentaje_titular;
+    private String ls_remiseria;
+    private String ls_es_feriado;
 
     @Override
     public void onPause() {
@@ -197,6 +200,7 @@ public class fragment_viaje_iniciado extends Fragment {
         SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getContext());
         ls_id_conductor     = settings.getString("id","");
         id_turno            = settings.getString("id_turno_chofer","");
+        ls_remiseria     = settings.getString("remiseria","");
 
         this.con_ticket.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -244,7 +248,7 @@ public class fragment_viaje_iniciado extends Fragment {
             }
         });
 
-        cargarDatos(getContext());
+        feriado();
 
         return v;
     }
@@ -258,6 +262,8 @@ public class fragment_viaje_iniciado extends Fragment {
         }
         return false;
     }
+
+
 
     private BroadcastReceiver onBroadcast = new BroadcastReceiver() {
 
@@ -280,6 +286,57 @@ public class fragment_viaje_iniciado extends Fragment {
         DecimalFormat df = new DecimalFormat("0.00");
         return df.format(value);
     }
+
+    public void feriado(){
+        String newURL = Constantes.GET_FERIADO;
+        Log.d(TAG,newURL);
+
+        // Realizar petición GET_BY_ID
+        VolleySingleton.getInstance(getContext()).addToRequestQueue(
+                myRequest = new JsonObjectRequest(
+                        Request.Method.GET,
+                        newURL,
+                        null,
+                        new Response.Listener<JSONObject>() {
+
+                            @Override
+                            public void onResponse(JSONObject response) {
+                                // Procesar respuesta Json
+
+                                procesarRespuestaFeriado(response);
+
+                            }
+                        },
+                        new Response.ErrorListener() {
+                            @Override
+                            public void onErrorResponse(VolleyError error) {
+                                Log.d(TAG, "Error Volley viaje: " + error.getMessage());
+
+                            }
+                        }
+                )
+        );
+        myRequest.setRetryPolicy(new DefaultRetryPolicy(
+                50000,
+                5,//DefaultRetryPolicy.DEFAULT_MAX_RETRIES
+                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+
+    }
+
+    private void procesarRespuestaFeriado(JSONObject response) {
+
+        try {
+            // Obtener atributo "mensaje"
+            ls_es_feriado= response.getString("feriado");
+
+            cargarDatos(getContext());
+
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+
 
     public void cargarTarifa(final Context context, final String[] tokens) {
 
@@ -343,7 +400,19 @@ public class fragment_viaje_iniciado extends Fragment {
                         {
                             l_nocturno = "1";
                         }else{
-                            l_nocturno = "0";
+                            int dia_semana;
+                            dia_semana=c.get(Calendar.DAY_OF_WEEK);
+
+                            if(dia_semana == Calendar.SUNDAY){
+                                l_nocturno = "1";
+                            }else{
+                                if(ls_es_feriado.equals("si")){
+                                    l_nocturno = "1";
+                                }else{
+                                    l_nocturno = "0";
+                                }
+
+                            }
                         }
                     }
 
@@ -370,7 +439,7 @@ public class fragment_viaje_iniciado extends Fragment {
                     }
 
                     Double valor_ficha = 0.00 ;
-                    String ls_tiempo, ls_milisegundos;
+                    String ls_tiempo;
 
                     switch (tokens[2]) {
                         case "1"://ficha
@@ -667,8 +736,33 @@ public class fragment_viaje_iniciado extends Fragment {
 
     public void cargarParametro(final Context context) {
 
+        HashMap<String, String> map = new HashMap<>();// Mapeo previo
+
+        map.put("parametro", "10");
+        map.put("remiseria", ls_remiseria);
+
+        JSONObject jobject = new JSONObject(map);
+
+
+        // Depurando objeto Json...
+        Log.d(TAG, jobject.toString());
+
+        StringBuilder encodedParams = new StringBuilder();
+        try {
+            for (Map.Entry<String, String> entry : map.entrySet()) {
+                encodedParams.append(URLEncoder.encode(entry.getKey(), "utf-8"));
+                encodedParams.append('=');
+                encodedParams.append(URLEncoder.encode(entry.getValue(), "utf-8"));
+                encodedParams.append('&');
+            }
+        } catch (UnsupportedEncodingException uee) {
+            throw new RuntimeException("Encoding not supported: " + "utf-8", uee);
+        }
+
+        encodedParams.setLength(Math.max(encodedParams.length() - 1, 0));
+
         // Añadir parámetro a la URL del web service
-        String newURL = Constantes.GET_ID_PARAMETRO + "?parametro=10";
+        String newURL = Constantes.GET_ID_PARAMETRO + "?" + encodedParams;
         Log.d(TAG,newURL);
 
         // Realizar petición GET_BY_ID
@@ -735,8 +829,33 @@ public class fragment_viaje_iniciado extends Fragment {
 
     public void cargarParametroTarifaDesde(final Context context) {
 
+        HashMap<String, String> map = new HashMap<>();// Mapeo previo
+
+        map.put("parametro", "11");
+        map.put("remiseria", ls_remiseria);
+
+        JSONObject jobject = new JSONObject(map);
+
+
+        // Depurando objeto Json...
+        Log.d(TAG, jobject.toString());
+
+        StringBuilder encodedParams = new StringBuilder();
+        try {
+            for (Map.Entry<String, String> entry : map.entrySet()) {
+                encodedParams.append(URLEncoder.encode(entry.getKey(), "utf-8"));
+                encodedParams.append('=');
+                encodedParams.append(URLEncoder.encode(entry.getValue(), "utf-8"));
+                encodedParams.append('&');
+            }
+        } catch (UnsupportedEncodingException uee) {
+            throw new RuntimeException("Encoding not supported: " + "utf-8", uee);
+        }
+
+        encodedParams.setLength(Math.max(encodedParams.length() - 1, 0));
+
         // Añadir parámetro a la URL del web service
-        String newURL = Constantes.GET_ID_PARAMETRO + "?parametro=11";
+        String newURL = Constantes.GET_ID_PARAMETRO + "?" + encodedParams;
         Log.d(TAG,newURL);
 
         // Realizar petición GET_BY_ID
@@ -800,8 +919,33 @@ public class fragment_viaje_iniciado extends Fragment {
 
     public void cargarParametroTarifaHasta(final Context context) {
 
+        HashMap<String, String> map = new HashMap<>();// Mapeo previo
+
+        map.put("parametro", "12");
+        map.put("remiseria", ls_remiseria);
+
+        JSONObject jobject = new JSONObject(map);
+
+
+        // Depurando objeto Json...
+        Log.d(TAG, jobject.toString());
+
+        StringBuilder encodedParams = new StringBuilder();
+        try {
+            for (Map.Entry<String, String> entry : map.entrySet()) {
+                encodedParams.append(URLEncoder.encode(entry.getKey(), "utf-8"));
+                encodedParams.append('=');
+                encodedParams.append(URLEncoder.encode(entry.getValue(), "utf-8"));
+                encodedParams.append('&');
+            }
+        } catch (UnsupportedEncodingException uee) {
+            throw new RuntimeException("Encoding not supported: " + "utf-8", uee);
+        }
+
+        encodedParams.setLength(Math.max(encodedParams.length() - 1, 0));
+
         // Añadir parámetro a la URL del web service
-        String newURL = Constantes.GET_ID_PARAMETRO + "?parametro=12";
+        String newURL = Constantes.GET_ID_PARAMETRO + "?" + encodedParams;
         Log.d(TAG,newURL);
 
         // Realizar petición GET_BY_ID
@@ -925,6 +1069,7 @@ public class fragment_viaje_iniciado extends Fragment {
                     dato_salida.setText(object.getString("salida"));
                     destino.setText(object.getString("destino"));
                     id_vehiculo = object.getString("id_movil");
+                    ldb_porcentaje_titular = Double.parseDouble(object.getString("porc_titular"));
                     SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getContext());
                     String l_nocturno;
                     l_nocturno     = settings.getString("nocturno","");
@@ -949,6 +1094,7 @@ public class fragment_viaje_iniciado extends Fragment {
                     }
                     movil = object.getString("movil");
                     ls_bajada = importe_bajada;
+                    precio_bajada = Double.parseDouble(importe_bajada);
                     if(object.getString("bajada").equals("null")) {
                         precio_total = Double.parseDouble(importe_bajada);
                         id_trayecto = 0;
@@ -1247,11 +1393,15 @@ public class fragment_viaje_iniciado extends Fragment {
 
         distancia = String.valueOf(cuadras / 10);
 
-        Double descuento;
-        Double total;
+        Double descuento, descuento_titular;
+        Double total, subtotal;
 
-        descuento = precio_total * (l_porcentaje / 100);
-        total = precio_total - descuento;
+        descuento = precio_total * (l_porcentaje / 100);//porcentaje remiseria
+        subtotal = precio_total - descuento;
+
+        descuento_titular = subtotal * (ldb_porcentaje_titular / 100);//porcentaje titular
+        total = subtotal - descuento_titular;
+
 
         HashMap<String, String> map = new HashMap<>();// Mapeo previo
 
@@ -1270,6 +1420,8 @@ public class fragment_viaje_iniciado extends Fragment {
         map.put("fichas", String.valueOf(ficha));
         map.put("fichas_espera", String.valueOf(espera));
         map.put("importe_fichas", String.valueOf(precio_ficha));
+        map.put("importe_titular", String.valueOf(descuento_titular));
+
 
 
         JSONObject jobject = new JSONObject(map);
@@ -1632,12 +1784,14 @@ public class fragment_viaje_iniciado extends Fragment {
             printNewLine();
             printText("TARIFA AL  " + fecha_tarifa);
             printNewLine();
+            printText("BAJADA  " + '$' + String.format(Locale.GERMAN,"%.2f",precio_bajada));
+            printNewLine();
             printText("VIAJE  " + '$' + String.format(Locale.GERMAN,"%.2f",precio_ficha));
             printNewLine();
             printText("ESPERA  "+ '$' + String.format(Locale.GERMAN,"%.2f",precio_espera));
             printNewLine();
             printNewLine();
-            printCustom ("TOTAL:  " + '$' +ls_precio,2,0);
+            printCustom ("TOTAL:  " + '$' +String.format(Locale.GERMAN,"%.2f",precio_total),2,0);
             printNewLine();
             printNewLine();
             outputStream.flush();

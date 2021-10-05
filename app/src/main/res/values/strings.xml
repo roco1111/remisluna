@@ -52,8 +52,7 @@
     <string name="foto">Foto Perfil</string>
 
     <string name="no_impresora">Debe conectar la impresora para poder imprimir</string>
-
-
+    <string name="no_internet">Verifique su conexión a internet</string>
     <string name="esperando">esperando...</string>
 
     <string name="nro_viaje">Nro Viaje</string>
@@ -92,7 +91,7 @@
     <string name="menu_ayuda_ventana_impresa">Ayuda Pantalla Impresa</string>
     <string name="menu_ayuda_app">Ayuda App</string>
     <string name="menu_ayuda_app_impresa">Ayuda App Impresa</string>
-    <string name="menu_reportes">Reportes Disponibles</string>
+    <string name="menu_reportes">Ayuda Para Chofer</string>
 
     <string name="reporte_ayuda">0: Ayuda</string>
     <string name="reporte_parcial">1: Parcial</string>

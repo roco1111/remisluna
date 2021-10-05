@@ -47,4 +47,6 @@ public class Constantes {
     public static final String GET_ID_PARAMETRO = "https://" + IP + PUERTO_HOST + "/obtener_parametro.php";
 
     public static final String GET_TARIFAS = "https://" + IP + PUERTO_HOST + "/obtener_ultima_tarifa.php";
+
+    public static final String GET_FERIADO = "https://" + IP + PUERTO_HOST + "/es_feriado.php";
 }
