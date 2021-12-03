@@ -13,6 +13,7 @@ import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.location.LocationManager;
+import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -86,7 +87,7 @@ public class fragment_viaje_iniciado extends Fragment {
     private String id_turno;
     private String movil;
     private Button sin_ticket;
-    private Button con_ticket;
+
     private Button suspender;
     private Button alarma;
     private String importe_bajada;
@@ -139,41 +140,6 @@ public class fragment_viaje_iniciado extends Fragment {
     }
 
     @Override
-    public void onStart() {
-        super.onStart();
-        // Bind to LocalService
-        Intent intent = new Intent(getActivity(), Impresion.class);
-        getActivity().bindService(intent, connection, Context.BIND_AUTO_CREATE);
-    }
-
-    @Override
-    public void onStop() {
-        super.onStop();
-        getActivity().unbindService(connection);
-        mBound = false;
-    }
-
-    /** Defines callbacks for service binding, passed to bindService() */
-    private ServiceConnection connection = new ServiceConnection() {
-
-        @Override
-        public void onServiceConnected(ComponentName className,
-                                       IBinder service) {
-            // We've bound to LocalService, cast the IBinder and get LocalService instance
-            Impresion.LocalBinder binder = (Impresion.LocalBinder) service;
-            impresion = binder.getService();
-            if(impresion.getbluetoothSocket() != null){
-            mBound = true;
-            }
-        }
-
-        @Override
-        public void onServiceDisconnected(ComponentName arg0) {
-            mBound = false;
-        }
-    };
-
-    @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              final Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.activity_viaje_iniciado, container, false);
@@ -186,7 +152,7 @@ public class fragment_viaje_iniciado extends Fragment {
         dato_salida = v.findViewById(R.id.dato_salida);
         destino = v.findViewById(R.id.dato_destino);
         sin_ticket = v.findViewById(R.id.buttonSinTicket);
-        con_ticket = v.findViewById(R.id.buttonConTicket);
+
         suspender = v.findViewById(R.id.buttonSuspender);
         alarma = v.findViewById(R.id.buttonAlarma);
         kms = v.findViewById(R.id.kms);
@@ -201,29 +167,14 @@ public class fragment_viaje_iniciado extends Fragment {
         ls_id_conductor     = settings.getString("id","");
         id_turno            = settings.getString("id_turno_chofer","");
         ls_remiseria     = settings.getString("remiseria","");
-
-        this.con_ticket.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                //ComponentName receiver = new ComponentName(getContext(), ServicioGeolocalizacion.class);
-                //PackageManager pm = getContext().getPackageManager();
-                //pm.setComponentEnabledSetting(receiver, PackageManager.COMPONENT_ENABLED_STATE_DISABLED, PackageManager.DONT_KILL_APP);
-            lb_ticket = true;
-            if(isMyServiceRunning(ServicioGeolocalizacion.class)) {
-                getActivity().unregisterReceiver(onBroadcast);
-                getActivity().stopService(new Intent(getActivity(), ServicioGeolocalizacion.class));
-            }
-            lb_viaje_terminado = true;
-            cargarDatosVehiculo(getContext()); }
-
-        });
+        MediaPlayer mediaPlayer = MediaPlayer.create(getActivity(), R.raw.doorbell);
 
         this.sin_ticket.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 lb_ticket = false;
                 lb_viaje_terminado = true;
-
+                mediaPlayer.start();
                 if(isMyServiceRunning(ServicioGeolocalizacion.class)) {
                     getActivity().unregisterReceiver(onBroadcast);
                     getActivity().stopService(new Intent(getActivity(), ServicioGeolocalizacion.class));
@@ -237,6 +188,7 @@ public class fragment_viaje_iniciado extends Fragment {
         this.suspender.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                mediaPlayer.start();
                 suspender_viaje();
             }
         });
@@ -244,6 +196,7 @@ public class fragment_viaje_iniciado extends Fragment {
         this.alarma.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                mediaPlayer.start();
                 alarma_viaje();
             }
         });
@@ -1200,17 +1153,9 @@ public class fragment_viaje_iniciado extends Fragment {
                     fecha = object.getString("fecha");
                     chofer = object.getString("chofer");
 
-                    if(lb_ticket) {
+                    cargarViaje_solicitado(context);
 
-                        if (!mBound) {
-                            cargarViaje_solicitado(context);
-                        } else {
 
-                            printTicket();
-                        }
-                    }else{
-                        cargarViaje_solicitado(context);
-                        }
 
                     break;
 
@@ -1738,178 +1683,6 @@ public class fragment_viaje_iniciado extends Fragment {
         }
     }
 
-    protected void printTicket() {
-
-        outputStream = impresion.getOutputStream();
-
-        //print command
-        try {
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-
-            byte[] printformat = { 0x1B,0x21,0x08 };
-            outputStream.write(printformat);
-
-            //print title
-            printUnicode();
-            //print normal text
-            printCustom (getResources().getString(R.string.empresa),2,1);
-            printNewLine();
-            printPhoto(R.drawable.remisluna_logo_impresion);
-            printCustom (getResources().getString(R.string.telefono),1,1);
-
-            printNewLine();
-            printText(getResources().getString(R.string.recibo)); // total 32 char in a single line
-            printNewLine();
-            printText(stringABytes(getResources().getString(R.string.servicio)));
-            printNewLine();
-            printText(fecha);//fecha
-            printNewLine();
-            printCustom ("Chofer: " + chofer,1,0);
-            printCustom ("Nro Remis: " + movil,1,0);
-            printNewLine();
-            printText("SALIDA  " + hora_inicio);
-            printNewLine();
-            printText("DESDE  " + dato_salida.getText().toString());
-            printNewLine();
-            printText("HASTA  " + destino.getText().toString());
-            printNewLine();
-            printText("LLEGADA  " + hora_fin);
-            printNewLine();
-            printText("RECORRIDO  " + String.valueOf(cuadras));
-            printNewLine();
-            printNewLine();
-            printText("TARIFA AL  " + fecha_tarifa);
-            printNewLine();
-            printText("BAJADA  " + '$' + String.format(Locale.GERMAN,"%.2f",precio_bajada));
-            printNewLine();
-            printText("VIAJE  " + '$' + String.format(Locale.GERMAN,"%.2f",precio_ficha));
-            printNewLine();
-            printText("ESPERA  "+ '$' + String.format(Locale.GERMAN,"%.2f",precio_espera));
-            printNewLine();
-            printNewLine();
-            printCustom ("TOTAL:  " + '$' +String.format(Locale.GERMAN,"%.2f",precio_total),2,0);
-            printNewLine();
-            printNewLine();
-            outputStream.flush();
-            cargarViaje_solicitado(getContext());
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    //print custom
-    private void printCustom(String msg, int size, int align) {
-        //Print config "mode"
-        byte[] cc = new byte[]{0x1B,0x21,0x03};  // 0- normal size text
-        //byte[] cc1 = new byte[]{0x1B,0x21,0x00};  // 0- normal size text
-        byte[] bb = new byte[]{0x1B,0x21,0x08};  // 1- only bold text
-        byte[] bb2 = new byte[]{0x1B,0x21,0x20}; // 2- bold with medium text
-        byte[] bb3 = new byte[]{0x1B,0x21,0x10}; // 3- bold with large text
-        try {
-            switch (size){
-                case 0:
-                    outputStream.write(cc);
-                    break;
-                case 1:
-                    outputStream.write(bb);
-                    break;
-                case 2:
-                    outputStream.write(bb2);
-                    break;
-                case 3:
-                    outputStream.write(bb3);
-                    break;
-            }
-
-            switch (align){
-                case 0:
-                    //left align
-                    outputStream.write(PrinterCommands.ESC_ALIGN_LEFT);
-                    break;
-                case 1:
-                    //center align
-                    outputStream.write(PrinterCommands.ESC_ALIGN_CENTER);
-                    break;
-                case 2:
-                    //right align
-                    outputStream.write(PrinterCommands.ESC_ALIGN_RIGHT);
-                    break;
-            }
-            outputStream.write(msg.getBytes());
-            outputStream.write(PrinterCommands.LF);
-            //outputStream.write(cc);
-            //printNewLine();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-    }
-
-    //print unicode
-    public void printUnicode(){
-        try {
-            outputStream.write(PrinterCommands.ESC_ALIGN_CENTER);
-            printText(Utils.UNICODE_TEXT);
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    //print new line
-    private void printNewLine() {
-        try {
-            outputStream.write(PrinterCommands.FEED_LINE);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-    }
-
-    //print text
-    private void printText(String msg) {
-        try {
-            // Print normal text
-            outputStream.write(msg.getBytes());
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-    }
-
-    //print byte[]
-    private void printText(byte[] msg) {
-        try {
-            // Print normal text
-            outputStream.write(msg);
-            printNewLine();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    //print photo
-    public void printPhoto(int img) {
-        try {
-            Bitmap bmp = BitmapFactory.decodeResource(getResources(),
-                    img);
-            if(bmp!=null){
-                byte[] command = Utils.decodeBitmap(bmp);
-                outputStream.write(PrinterCommands.ESC_ALIGN_CENTER);
-                printText(command);
-            }else{
-                Log.e("Print Photo error", "the file isn't exists");
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            Log.e("PrintTools", "the file isn't exists");
-        }
-    }
 
     private void guardar_ubicacion(String latitud, String longitud){
 

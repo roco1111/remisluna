@@ -1,5 +1,6 @@
 package com.rosario.hp.remisluna.Fragment;
 
+import android.Manifest;
 import android.app.AlertDialog;
 import android.content.ComponentName;
 import android.content.Context;
@@ -7,12 +8,14 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
 import android.location.LocationManager;
+import android.media.MediaPlayer;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
@@ -28,6 +31,7 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.Fragment;
 
 import com.android.volley.DefaultRetryPolicy;
@@ -35,6 +39,7 @@ import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.error.VolleyError;
 import com.android.volley.request.JsonObjectRequest;
+import com.rosario.hp.remisluna.Entidades.parada;
 import com.rosario.hp.remisluna.Entidades.turno;
 import com.rosario.hp.remisluna.Entidades.viaje;
 import com.rosario.hp.remisluna.Impresion;
@@ -56,6 +61,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -87,14 +93,13 @@ public class fragment_viaje extends Fragment {
     private ImageButton boton_ocho;
     private ImageButton boton_nueve;
 
+
     private String recaudacion;
     private String kms;
     private String fecha;
     private String hora_inicio;
     private String estado;
     private String ls_id_turno;
-
-
     private String fecha_ultimo;
     private String salida_ultimo;
     private String destino_ultimo;
@@ -107,6 +112,10 @@ public class fragment_viaje extends Fragment {
     private String distancia_ultimo ;
     private String fecha_tarifa_ultimo ;
     private String movil_ultimo ;
+    private String fichas_ultimo;
+    private String bajada_ultimo;
+
+    private String id_movil;
 
     private ArrayList<viaje> viajes = new ArrayList<>();
     private ArrayList<turno> datos;
@@ -152,6 +161,16 @@ public class fragment_viaje extends Fragment {
         mBound = false;
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+        if(checkIfLocationOpened()){
+            gps.setTextColor(getResources().getColor(R.color.colorPrimary));
+        }else{
+            gps.setTextColor(getResources().getColor(R.color.alarma));
+        }
+    }
+
     /** Defines callbacks for service binding, passed to bindService() */
     private ServiceConnection connection = new ServiceConnection() {
 
@@ -177,8 +196,6 @@ public class fragment_viaje extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              final Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.activity_viaje, container, false);
-
-
         mLocationManager = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
 
         solicitante = v.findViewById(R.id.dato_solicitante);
@@ -187,7 +204,6 @@ public class fragment_viaje extends Fragment {
         inicio = v.findViewById(R.id.buttonInicio);
         anular = v.findViewById(R.id.buttonAnular);
         texto_tarifa = v.findViewById(R.id.tarifa);
-
         this.boton_cero = v.findViewById(R.id.imageButtonCero);
         this.boton_uno = v.findViewById(R.id.imageButtonUno);
         this.boton_dos = v.findViewById(R.id.imageButtonDos);
@@ -198,8 +214,8 @@ public class fragment_viaje extends Fragment {
         this.boton_siete = v.findViewById(R.id.imageButtonSiete);
         this.boton_ocho = v.findViewById(R.id.imageButtonOcho);
         this.boton_nueve = v.findViewById(R.id.imageButtonNueve);
-
         datos = new ArrayList<>();
+        MediaPlayer mediaPlayer = MediaPlayer.create(getActivity(), R.raw.everblue);
 
         this.impresora = v.findViewById(R.id.impresora);
         if(mBound) {
@@ -223,15 +239,18 @@ public class fragment_viaje extends Fragment {
         this.inicio.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                mediaPlayer.start();
                 if(verificar_internet()) {
                     if (!mLocationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
-                        showDialogGPS("GPS apagado", "Deseas activarlo?");
-                    } else {
-                        if (mBound) {
-                            iniciar_viaje(getContext());
-                        } else {
-                            showDialogImpresora("Sin Impresora", "Deseas activar la impresora?");
-                        }
+                        Toast.makeText(
+                                getContext(),
+                                R.string.no_gps,
+                                Toast.LENGTH_LONG).show();
+
+                    }else{
+
+                        iniciar_viaje(getContext());
+
                     }
                 }else{
                     Toast.makeText(
@@ -246,15 +265,27 @@ public class fragment_viaje extends Fragment {
         this.anular.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
+                mediaPlayer.start();
                 anular_viaje();
 
             }
         });
 
+        this.gps.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mediaPlayer.start();
+                 habilitar_gps();
+
+            }
+        });
+
+
+
         this.boton_cero.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                mediaPlayer.start();
                 if(mBound) {
                     impresion_cero();
                 }else{
@@ -270,6 +301,7 @@ public class fragment_viaje extends Fragment {
         this.boton_uno.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                mediaPlayer.start();
                 if (mBound) {
                     datos_turno(getContext());
                 }else{
@@ -284,6 +316,7 @@ public class fragment_viaje extends Fragment {
         this.boton_dos.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                mediaPlayer.start();
                 if(mBound) {
                     cerrar_turno();
                 }else {
@@ -298,6 +331,7 @@ public class fragment_viaje extends Fragment {
         this.boton_tres.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                mediaPlayer.start();
                 if(mBound) {
                     cargarDatosRecaudacion();
                 }else{
@@ -312,6 +346,7 @@ public class fragment_viaje extends Fragment {
         this.boton_cuatro.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                mediaPlayer.start();
                 if(mBound) {
                     datos_ultimos_viajes(getContext());
                 }else{
@@ -326,6 +361,7 @@ public class fragment_viaje extends Fragment {
         this.boton_cinco.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                mediaPlayer.start();
                 SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getContext());
                 SharedPreferences.Editor editor = settings.edit();
                 editor.putString("tipo_ventana","main");
@@ -338,6 +374,7 @@ public class fragment_viaje extends Fragment {
         this.boton_seis.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                mediaPlayer.start();
                 if(mBound) {
                     repetirTicket(getContext());
                 }else{
@@ -352,6 +389,7 @@ public class fragment_viaje extends Fragment {
         this.boton_siete.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                mediaPlayer.start();
                 Intent intent2 = new Intent(getContext(), activity_preferencias.class);
                 getContext().startActivity(intent2);
             }
@@ -360,6 +398,7 @@ public class fragment_viaje extends Fragment {
         this.boton_ocho.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                mediaPlayer.start();
                 Intent intent2 = new Intent(getContext(), turnos_activity.class);
                 getContext().startActivity(intent2);
             }
@@ -368,6 +407,7 @@ public class fragment_viaje extends Fragment {
         this.boton_nueve.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                mediaPlayer.start();
                 Intent intent2 = new Intent(getContext(), MainViaje.class);
                 getContext().startActivity(intent2);
             }
@@ -375,6 +415,20 @@ public class fragment_viaje extends Fragment {
 
         feriado(getContext());
         return v;
+    }
+
+    private void habilitar_gps(){
+        LocationManager mlocManager = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
+
+        final boolean gpsEnabled = mlocManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
+        if (!gpsEnabled) {
+            Intent settingsIntent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+            startActivity(settingsIntent);
+        }
+        if (ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.ACCESS_FINE_LOCATION,}, 1000);
+            return;
+        }
     }
 
     public void feriado(final Context context){
@@ -735,8 +789,6 @@ public class fragment_viaje extends Fragment {
 
                         tur.setRecaudacion(recaudacion);
 
-
-
                         datos.add(tur);
 
                     }
@@ -998,9 +1050,10 @@ public class fragment_viaje extends Fragment {
         builder.setMessage(message);
         builder.setPositiveButton("Si", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
-                Intent settingsIntent = new Intent(android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS);
-                settingsIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
+
+                Intent settingsIntent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
                 startActivity(settingsIntent);
+
             }
         });
         builder.setNegativeButton("No", new DialogInterface.OnClickListener() {
@@ -1070,8 +1123,8 @@ public class fragment_viaje extends Fragment {
                     destino.setText(object.getString("destino"));
                     salida_coordenada = object.getString("salida_coordenadas");
                     destino_coordenada = object.getString("destino_coordenadas");
+                    id_movil = object.getString("id_movil");
                     actualizar_coordenadas(context);
-
                     break;
 
                 case "2":
@@ -1853,7 +1906,7 @@ public class fragment_viaje extends Fragment {
             }
             printNewLine();
             printText("TOTAL: ");
-            printText(String.valueOf(l_total));
+            printText(String.valueOf(getTwoDecimals(l_total)));
             printNewLine();
             printNewLine();
             printUnicode();
@@ -1863,6 +1916,11 @@ public class fragment_viaje extends Fragment {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    private static String getTwoDecimals(double value){
+        DecimalFormat df = new DecimalFormat("0.00");
+        return df.format(value);
     }
 
     public void repetirTicket(final Context context) {
@@ -1935,6 +1993,19 @@ public class fragment_viaje extends Fragment {
                     }
                     espera_ultimo = ls_importe;
 
+                    ls_importe = object.getString("importe_fichas");
+                    if(ls_importe.equals("null"))
+                    {
+                        ls_importe = "0,00";
+                    }
+                    fichas_ultimo = ls_importe;
+
+                    ls_importe = object.getString("bajada");
+                    if(ls_importe.equals("null"))
+                    {
+                        ls_importe = "0,00";
+                    }
+                    bajada_ultimo = ls_importe;
 
                     ls_importe = object.getString("total");
                     if(ls_importe.equals("null"))
@@ -1966,7 +2037,6 @@ public class fragment_viaje extends Fragment {
         }
 
     }
-
 
     protected void repetirTicket() {
 
@@ -2013,12 +2083,14 @@ public class fragment_viaje extends Fragment {
             printNewLine();
             printText("TARIFA AL  " + fecha_tarifa_ultimo);
             printNewLine();
-            printText("VIAJE  " + '$' + String.format(Locale.GERMANY,"%.2f",Double.parseDouble(importe_ultimo)));
+            printText("BAJADA  " + '$' + String.format(Locale.GERMAN,"%.2f",Double.parseDouble(bajada_ultimo)));
             printNewLine();
-            printText("ESPERA  "+ '$' + String.format(Locale.GERMANY,"%.2f",Double.parseDouble(espera_ultimo)));
+            printText("VIAJE  " + '$' + String.format(Locale.GERMAN,"%.2f",Double.parseDouble(fichas_ultimo)));
+            printNewLine();
+            printText("ESPERA  "+ '$' + String.format(Locale.GERMAN,"%.2f",Double.parseDouble(espera_ultimo)));
             printNewLine();
             printNewLine();
-            printCustom ("TOTAL:  " + '$' + String.format(Locale.GERMANY,"%.2f",Double.parseDouble(total_ultimo)),2,0);
+            printCustom ("TOTAL:  " + '$' + String.format(Locale.GERMANY,"%.2f",Double.parseDouble(importe_ultimo)),2,0);
             printNewLine();
             printNewLine();
             outputStream.flush();

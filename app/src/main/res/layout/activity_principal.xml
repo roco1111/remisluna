@@ -229,11 +229,10 @@
             android:id="@+id/imageButtonNueve"
             android:layout_width="@dimen/ancho_boton"
             android:layout_height="@dimen/ancho_boton"
-            android:background="@drawable/selector_nueve"
             android:layout_marginStart="@dimen/campos_height"
-            android:layout_toEndOf = "@id/imageButtonOcho"
-            android:scaleType="fitXY"
-             />
+            android:layout_toEndOf="@id/imageButtonOcho"
+            android:background="@drawable/selector_nueve"
+            android:scaleType="fitXY" />
 
 
 
@@ -253,10 +252,17 @@
             android:id="@+id/imageButtonCero"
             android:layout_width="@dimen/ancho_boton"
             android:layout_height="@dimen/ancho_boton"
+
             android:background="@drawable/selector_cero"
+            android:scaleType="fitXY" />
+
+        <ImageButton
+            android:id="@+id/imageParada"
+            android:layout_width="@dimen/ancho_boton"
+            android:layout_height="@dimen/ancho_boton"
             android:layout_marginStart="@dimen/campos_height"
-            android:layout_centerHorizontal="true"
-            android:scaleType="fitXY"
-             />
+            android:layout_toEndOf="@id/imageButtonCero"
+            android:background="@drawable/selector_parada"
+            android:scaleType="fitXY" />
     </RelativeLayout>
 </RelativeLayout>

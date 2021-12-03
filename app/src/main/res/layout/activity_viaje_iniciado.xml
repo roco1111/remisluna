@@ -236,20 +236,13 @@
 
             <Button
                 android:id="@+id/buttonSinTicket"
-                android:layout_width="@dimen/perfil_image_size"
-                android:layout_height="@dimen/alto_boton"
+                android:layout_width="@dimen/campos_width_medio"
+                android:layout_height="@dimen/alto_imagen"
                 android:background="@android:color/transparent"
-                android:drawableTop="@drawable/sin_ticket"
+                android:drawableTop="@drawable/terminar_viaje"
                 tools:ignore="RtlHardcoded" />
 
-            <Button
-                android:id="@+id/buttonConTicket"
-                android:layout_width="@dimen/perfil_image_size"
-                android:layout_height="@dimen/alto_boton"
-                android:layout_marginStart="10dp"
-                android:background="@android:color/transparent"
-                android:drawableTop="@drawable/con_ticket"
-                tools:ignore="RtlHardcoded" />
+
 
         </LinearLayout>
 

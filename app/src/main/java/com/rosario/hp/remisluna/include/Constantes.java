@@ -49,4 +49,8 @@ public class Constantes {
     public static final String GET_TARIFAS = "https://" + IP + PUERTO_HOST + "/obtener_ultima_tarifa.php";
 
     public static final String GET_FERIADO = "https://" + IP + PUERTO_HOST + "/es_feriado.php";
+
+    public static final String GET_PARADAS = "https://" + IP + PUERTO_HOST + "/obtener_paradas.php";
+    public static final String UPDATE_PARADAS = "https://" + IP + PUERTO_HOST + "/actualizar_parada.php";
+    public static final String GET_PARADAS_REMISERIA = "https://" + IP + PUERTO_HOST + "/obtener_paradas_remiseria.php";
 }

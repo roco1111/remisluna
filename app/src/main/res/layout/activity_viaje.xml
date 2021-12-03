@@ -357,10 +357,12 @@
             android:id="@+id/imageButtonCero"
             android:layout_width="@dimen/ancho_boton"
             android:layout_height="@dimen/ancho_boton"
-            android:layout_centerHorizontal="true"
-            android:layout_marginStart="@dimen/campos_height"
+
+
             android:background="@drawable/selector_cero"
             android:scaleType="fitXY" />
+
+
     </RelativeLayout>
 
 </RelativeLayout>

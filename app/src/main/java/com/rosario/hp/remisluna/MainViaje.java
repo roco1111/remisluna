@@ -129,6 +129,20 @@ public class MainViaje extends AppCompatActivity {
                 .commit();
 
         cargarDatos(getApplicationContext());
+
+    }
+    private void habilitar_gps(){
+        LocationManager mlocManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+
+        final boolean gpsEnabled = mlocManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
+        if (!gpsEnabled) {
+            Intent settingsIntent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+            startActivity(settingsIntent);
+        }
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION,}, 1000);
+            return;
+        }
     }
 
     @Override
@@ -541,6 +555,7 @@ public class MainViaje extends AppCompatActivity {
                     getSupportFragmentManager().beginTransaction()
                             .replace(R.id.main_content, fragment)
                             .commit();
+                    habilitar_gps();
                     break;
 
                 case "2":
@@ -627,7 +642,7 @@ public class MainViaje extends AppCompatActivity {
                     getSupportFragmentManager().beginTransaction()
                             .replace(R.id.main_content, fragment)
                             .commit();
-
+                    habilitar_gps();
                     break;
 
                 case "2":

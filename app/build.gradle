@@ -8,9 +8,9 @@ android {
     defaultConfig {
         applicationId "com.rosario.hp.remisluna"
         minSdkVersion 19
-        targetSdkVersion 29
-        versionCode 12
-        versionName "1.11"
+        targetSdkVersion 30
+        versionCode 14
+        versionName "1.13"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         multiDexEnabled true
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"

@@ -53,6 +53,7 @@
 
     <string name="no_impresora">Debe conectar la impresora para poder imprimir</string>
     <string name="no_internet">Verifique su conexión a internet</string>
+    <string name="no_gps">Verifique que el gps no este apagado</string>
     <string name="esperando">esperando...</string>
 
     <string name="nro_viaje">Nro Viaje</string>
