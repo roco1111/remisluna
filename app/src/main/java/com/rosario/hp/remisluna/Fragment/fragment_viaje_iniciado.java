@@ -1027,10 +1027,10 @@ public class fragment_viaje_iniciado extends Fragment {
                     String l_nocturno;
                     l_nocturno     = settings.getString("nocturno","");
                     if(l_nocturno.equals("0")) {
-                        if(object.getString("bajada").equals("null")) {
+                        if(object.getString("bajada").equals("null") || object.getString("bajada").equals("0.000")) {
                             importe_bajada = object.getString("importe_bajada");
                         }else{
-                            importe_bajada =object.getString("id_movil");
+                            importe_bajada =object.getString("bajada");
                         }
                         importe_ficha = object.getString("importe_ficha");
                         importe_espera = object.getString("importe_espera");
@@ -1039,7 +1039,7 @@ public class fragment_viaje_iniciado extends Fragment {
                         if(object.getString("bajada").equals("null")) {
                             importe_bajada = object.getString("importe_bajada_nocturno");
                         }else{
-                            importe_bajada =object.getString("id_movil");
+                            importe_bajada =object.getString("bajada");
                         }
                         importe_ficha = object.getString("importe_ficha_nocturno");
                         importe_espera = object.getString("importe_espera_nocturno");
@@ -1048,7 +1048,7 @@ public class fragment_viaje_iniciado extends Fragment {
                     movil = object.getString("movil");
                     ls_bajada = importe_bajada;
                     precio_bajada = Double.parseDouble(importe_bajada);
-                    if(object.getString("bajada").equals("null")) {
+                    if(object.getString("bajada").equals("null") || object.getString("bajada").equals("0.000")) {
                         precio_total = Double.parseDouble(importe_bajada);
                         id_trayecto = 0;
 

@@ -16,6 +16,7 @@ import com.rosario.hp.remisluna.R;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.rosario.hp.remisluna.Entidades.turno;
+import com.rosario.hp.remisluna.viajes_activity;
 
 import java.util.ArrayList;
 
@@ -91,7 +92,8 @@ public class turnoAdapter extends RecyclerView.Adapter<turnoAdapter.HolderTurno>
         public void onClick(View v) {
 
             listener.onItemClick(v, getAdapterPosition());
-            Intent intent = new Intent(v.getContext(), MainTurno.class);
+            //Intent intent = new Intent(v.getContext(), MainTurno.class);
+            Intent intent = new Intent(v.getContext(), viajes_activity.class);
             v.getContext().startActivity(intent);
         }
 

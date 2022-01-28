@@ -51,6 +51,11 @@ public class Constantes {
     public static final String GET_FERIADO = "https://" + IP + PUERTO_HOST + "/es_feriado.php";
 
     public static final String GET_PARADAS = "https://" + IP + PUERTO_HOST + "/obtener_paradas.php";
+    public static final String GET_PARADA = "https://" + IP + PUERTO_HOST + "/obtener_parada.php";
     public static final String UPDATE_PARADAS = "https://" + IP + PUERTO_HOST + "/actualizar_parada.php";
     public static final String GET_PARADAS_REMISERIA = "https://" + IP + PUERTO_HOST + "/obtener_paradas_remiseria.php";
+
+    public static final String GET_REMISERIA = "https://" + IP + PUERTO_HOST + "/obtener_remiseria.php";
+    public static final String GET_TOLERANCIA = "https://" + IP + PUERTO_HOST + "/obtener_tolerancia.php";
+
 }

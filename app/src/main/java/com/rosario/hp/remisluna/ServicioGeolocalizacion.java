@@ -188,7 +188,6 @@ public class ServicioGeolocalizacion extends Service implements Runnable {
 
         HashMap<String, String> map = new HashMap<>();// Mapeo previo
 
-        map.put("parametro", "9");
         map.put("remiseria", ls_remiseria);
 
         JSONObject jobject = new JSONObject(map);
@@ -212,7 +211,7 @@ public class ServicioGeolocalizacion extends Service implements Runnable {
         encodedParams.setLength(Math.max(encodedParams.length() - 1, 0));
 
         // Añadir parámetro a la URL del web service
-        String newURL = Constantes.GET_ID_PARAMETRO + "?" + encodedParams;
+        String newURL = Constantes.GET_TOLERANCIA + "?" + encodedParams;
         Log.d(TAG,newURL);
 
         // Realizar petición GET_BY_ID
@@ -253,12 +252,12 @@ public class ServicioGeolocalizacion extends Service implements Runnable {
 
             switch (mensaje) {
                 case "1":
-                    JSONArray datos_parametro = response.getJSONArray("parametro");
+                    JSONArray datos_parametro = response.getJSONArray("remiseria");
 
                     for(int i = 0; i < datos_parametro.length(); i++)
                     {JSONObject object = datos_parametro.getJSONObject(i);
 
-                        l_tolerancia_tope = Long.parseLong(object.getString("valor")) * 60000;
+                        l_tolerancia_tope = Long.parseLong(object.getString("tiempo_tolerancia")) * 60000;
 
                     }
                     cargarParametroEspera(context);

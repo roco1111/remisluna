@@ -27,12 +27,14 @@
                 android:id="@+id/gps"
                 android:layout_width="wrap_content"
                 android:layout_height="@dimen/icono_chico"
+                android:layout_alignParentStart="true"
                 android:text="@string/gps"
                 android:textAlignment="center"
-                android:layout_alignParentStart="true"
                 android:textColor="@color/colorPrimary"
-                android:textStyle="bold"
-                android:textSize="@dimen/tamanio_parrafo" />
+                android:textSize="@dimen/tamanio_parrafo"
+                android:textStyle="bold" />
+
+
 
             <TextView
                 android:id="@+id/tarifa"
@@ -50,8 +52,8 @@
             android:id="@+id/id_datos_libre"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/margin_start"
             android:layout_below="@id/id_datos_superior"
+            android:layout_marginTop="@dimen/margin_start"
             android:orientation="horizontal">
 
             <TextView
@@ -62,6 +64,17 @@
                 android:text="@string/impresora_lista"
                 android:textAlignment="center"
                 android:textColor="@color/alarma"
+                android:textSize="@dimen/tamanio_parrafo"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/parada"
+                android:layout_width="wrap_content"
+                android:layout_height="@dimen/icono_chico"
+                android:layout_centerHorizontal="true"
+                android:text="@string/parada"
+                android:textAlignment="center"
+                android:textColor="@color/colorPrimary"
                 android:textSize="@dimen/tamanio_parrafo"
                 android:textStyle="bold" />
 
@@ -248,21 +261,32 @@
         android:id="@+id/id_teclado_cero"
         android:orientation="horizontal">
 
-        <ImageButton
-            android:id="@+id/imageButtonCero"
-            android:layout_width="@dimen/ancho_boton"
-            android:layout_height="@dimen/ancho_boton"
 
-            android:background="@drawable/selector_cero"
-            android:scaleType="fitXY" />
 
         <ImageButton
             android:id="@+id/imageParada"
             android:layout_width="@dimen/ancho_boton"
             android:layout_height="@dimen/ancho_boton"
+
+
+            android:background="@drawable/selector_parada"
+            android:scaleType="fitXY" />
+        <ImageButton
+            android:id="@+id/imageButtonCero"
+            android:layout_width="@dimen/ancho_boton"
+            android:layout_height="@dimen/ancho_boton"
+            android:layout_toEndOf="@id/imageParada"
+            android:layout_marginStart="@dimen/campos_height"
+            android:background="@drawable/selector_cero"
+            android:scaleType="fitXY" />
+
+        <ImageButton
+            android:id="@+id/imageWa"
+            android:layout_width="@dimen/ancho_boton"
+            android:layout_height="@dimen/ancho_boton"
             android:layout_marginStart="@dimen/campos_height"
             android:layout_toEndOf="@id/imageButtonCero"
-            android:background="@drawable/selector_parada"
+            android:background="@drawable/selector_whatsapp"
             android:scaleType="fitXY" />
     </RelativeLayout>
 </RelativeLayout>

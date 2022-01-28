@@ -14,7 +14,9 @@ import android.location.Geocoder;
 import android.location.Location;
 import android.location.LocationManager;
 import android.media.MediaPlayer;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
 import android.provider.Settings;
@@ -27,6 +29,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
 import com.android.volley.DefaultRetryPolicy;
@@ -52,6 +55,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
@@ -85,6 +89,7 @@ public class fragment_principal extends Fragment {
     private ImageButton boton_nueve;
 
     private ImageButton boton_parada;
+    private ImageButton boton_whatsapp;
 
     private String l_hora_desde;
     private String l_hora_hasta;
@@ -117,6 +122,7 @@ public class fragment_principal extends Fragment {
     private TextView impresora;
     private TextView texto_tarifa;
     private TextView gps;
+    private TextView txt_parada;
     private Impresion impresion;
     private ArrayList<turno> datos;
     boolean mBound = false;
@@ -129,6 +135,9 @@ public class fragment_principal extends Fragment {
     private String latitud_destino;
     private String longitud_destino;
     private String id_movil;
+    private String telefono_base;
+    private File dir;
+    private String path;
 
 
     @Override
@@ -197,6 +206,8 @@ public class fragment_principal extends Fragment {
         this.boton_nueve = v.findViewById(R.id.imageButtonNueve);
         this.impresora = v.findViewById(R.id.impresora);
         this.boton_parada = v.findViewById(R.id.imageParada);
+        this.boton_whatsapp = v.findViewById(R.id.imageWa);
+        this.txt_parada = v.findViewById(R.id.parada);
         this.gps = v.findViewById(R.id.gps);
         texto_tarifa = v.findViewById(R.id.tarifa);
         paradas = new ArrayList<>();
@@ -225,6 +236,16 @@ public class fragment_principal extends Fragment {
 
                 mediaPlayer.start();
                 cargarIdVehiculo(getContext());
+
+            }
+        });
+
+        this.boton_whatsapp.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                mediaPlayer.start();
+                cargarDatosRemiseria(getContext());
 
             }
         });
@@ -325,6 +346,7 @@ public class fragment_principal extends Fragment {
                 editor.putString("tipo_ventana","main");
                 editor.commit();
                 getActivity().startService(new Intent(getActivity(), Impresion.class));
+                feriado();
             }
         });
 
@@ -656,7 +678,7 @@ public class fragment_principal extends Fragment {
                             texto_tarifa.setText(R.string.nocturno);
                         }
 
-                        SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(context);
+                        SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getContext());
                         SharedPreferences.Editor editor = settings.edit();
                         editor.putString("nocturno",l_nocturno);
                         editor.commit();
@@ -1252,6 +1274,71 @@ public class fragment_principal extends Fragment {
                     }
                     break;
 
+
+            }
+
+            cargarParada(context);
+
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    public void cargarParada(final Context context) {
+
+        String newURL = Constantes.GET_PARADA + "?conductor=" + ls_id_conductor;
+        Log.d(TAG,newURL);
+
+        // Realizar petición GET_BY_ID
+        VolleySingleton.getInstance(context).addToRequestQueue(
+                myRequest = new JsonObjectRequest(
+                        Request.Method.POST,
+                        newURL,
+                        null,
+                        new Response.Listener<JSONObject>() {
+
+                            @Override
+                            public void onResponse(JSONObject response) {
+                                // Procesar respuesta Json
+                                procesarRespuestaParada(response, context);
+                            }
+                        },
+                        new Response.ErrorListener() {
+                            @Override
+                            public void onErrorResponse(VolleyError error) {
+                                Log.d(TAG, "Error Volley parametro: " + error.getMessage());
+
+                            }
+                        }
+                )
+        );
+        myRequest.setRetryPolicy(new DefaultRetryPolicy(
+                50000,
+                5,//DefaultRetryPolicy.DEFAULT_MAX_RETRIES
+                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+
+    }
+
+    private void procesarRespuestaParada(JSONObject response, Context context) {
+
+        try {
+            // Obtener atributo "mensaje"
+            String mensaje = response.getString("estado");
+
+            switch (mensaje) {
+                case "1":
+                    JSONArray datos_parada = response.getJSONArray("parada");
+
+                    for(int i = 0; i < datos_parada.length(); i++)
+                    {
+                        JSONObject object = datos_parada.getJSONObject(i);
+
+                        txt_parada.setText("Parada Nro: " + object.getString("id"));
+                    }
+                    break;
+
             }
 
 
@@ -1260,6 +1347,9 @@ public class fragment_principal extends Fragment {
         }
 
     }
+
+
+
 
     protected void ticket_recaudacion( ArrayList<turno> turnos) {
         outputStream = impresion.getOutputStream();
@@ -1977,6 +2067,82 @@ public class fragment_principal extends Fragment {
 
     }
 
+    public void cargarDatosRemiseria(final Context context) {
+
+        // Añadir parámetro a la URL del web service
+        String newURL = Constantes.GET_REMISERIA + "?remiseria=" + ls_remiseria;
+        Log.d(TAG,newURL);
+
+        // Realizar petición GET_BY_ID
+        VolleySingleton.getInstance(context).addToRequestQueue(
+                myRequest = new JsonObjectRequest(
+                        Request.Method.POST,
+                        newURL,
+                        null,
+                        new Response.Listener<JSONObject>() {
+
+                            @Override
+                            public void onResponse(JSONObject response) {
+                                // Procesar respuesta Json
+                                procesarRespuesta_remiseria(response, context);
+                            }
+                        },
+                        new Response.ErrorListener() {
+                            @Override
+                            public void onErrorResponse(VolleyError error) {
+                                Log.d(TAG, "Error Volley viaje: " + error.getMessage());
+
+                            }
+                        }
+                )
+        );
+        myRequest.setRetryPolicy(new DefaultRetryPolicy(
+                50000,
+                5,//DefaultRetryPolicy.DEFAULT_MAX_RETRIES
+                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+
+    }
+
+    private void procesarRespuesta_remiseria(JSONObject response, Context context) {
+
+        try {
+            // Obtener atributo "mensaje"
+            String mensaje = response.getString("estado");
+
+            switch (mensaje) {
+                case "1":
+                    // Obtener objeto "cliente"
+                    JSONArray mensaje1 = response.getJSONArray("remiseria");
+
+                    JSONObject object = mensaje1.getJSONObject(0);
+                    //Parsear objeto
+
+                    telefono_base = object.getString("TELEFONO_BASE");
+                    Intent intent = new Intent("android.intent.action.MAIN");
+                    intent.setAction(Intent.ACTION_SEND);
+                    intent.setType("text/plain");
+                    intent.putExtra(Intent.EXTRA_TEXT, "Hola");
+                    intent.putExtra("jid", telefono_base + "@s.whatsapp.net"); //numero telefonico sin prefijo "+"!
+
+                    intent.setPackage("com.whatsapp");
+                    startActivity(intent);
+
+                    break;
+
+                case "2":
+
+                    break;
+
+            }
+
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+
     private void actualizar_coordenadas_paradas(Context context){
 
         Geocoder coder = new Geocoder(context);
@@ -2113,6 +2279,9 @@ public class fragment_principal extends Fragment {
             String mensaje = response.getString("mensaje");
 
             switch (estado) {
+                case "1":
+                    feriado();
+                    break;
                 case "2":
                     // Mostrar mensaje
                     Toast.makeText(

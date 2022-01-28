@@ -3,14 +3,14 @@ plugins {
 }
 
 android {
-    compileSdkVersion 29
+    compileSdkVersion 30
 
     defaultConfig {
         applicationId "com.rosario.hp.remisluna"
         minSdkVersion 19
         targetSdkVersion 30
-        versionCode 14
-        versionName "1.13"
+        versionCode 17
+        versionName "1.16"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         multiDexEnabled true
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
@@ -33,11 +33,6 @@ android {
     }
 
 
-    lintOptions {
-
-        checkReleaseBuilds false
-
-    }
     dexOptions{
         maxProcessCount 2
         javaMaxHeapSize "4g"
@@ -65,7 +60,11 @@ android {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
-}}
+}
+    lint {
+        checkReleaseBuilds false
+    }
+}
 
 
 dependencies {
