@@ -30,6 +30,7 @@ public class Constantes {
     public static final String ACTUALIZAR_VIAJE = "https://" + IP + PUERTO_HOST + "/actualizar_viaje.php";
     public static final String ALARMA_VIAJE = "https://" + IP + PUERTO_HOST + "/alarma_viaje.php";
     public static final String INSERTAR_TRAYECTORIA = "https://" + IP + PUERTO_HOST + "/agregar_trayectoria.php";
+    public static final String VIAJE_AUTOMATICO = "https://" + IP + PUERTO_HOST + "/agregar_viaje_aut.php";
 
     public static final String GET_VEHICULO = "https://" + IP + PUERTO_HOST + "/obtener_vehiculo.php";
     public static final String GET_ID_VEHICULO = "https://" + IP + PUERTO_HOST + "/obtener_id_vehiculo.php";

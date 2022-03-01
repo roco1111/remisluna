@@ -289,4 +289,20 @@
             android:background="@drawable/selector_whatsapp"
             android:scaleType="fitXY" />
     </RelativeLayout>
+
+    <RelativeLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_below="@id/id_teclado_cero"
+        android:layout_marginTop="@dimen/margin_top_item_grande"
+        android:id="@+id/id_teclado_automatico"
+        android:orientation="horizontal">
+        <ImageButton
+            android:id="@+id/imageautomatico"
+            android:layout_width="@dimen/ancho_boton"
+            android:layout_height="@dimen/ancho_boton"
+            android:background="@drawable/selector_automatico"
+            android:scaleType="fitXY" />
+    </RelativeLayout>
 </RelativeLayout>

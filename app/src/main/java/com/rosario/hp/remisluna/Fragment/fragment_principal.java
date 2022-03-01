@@ -87,6 +87,7 @@ public class fragment_principal extends Fragment {
     private ImageButton boton_siete;
     private ImageButton boton_ocho;
     private ImageButton boton_nueve;
+    private ImageButton boton_automatico;
 
     private ImageButton boton_parada;
     private ImageButton boton_whatsapp;
@@ -136,6 +137,11 @@ public class fragment_principal extends Fragment {
     private String longitud_destino;
     private String id_movil;
     private String telefono_base;
+    private String telefono_queja;
+    private String telefono_remiseria;
+    private String localidad_abreviada;
+    private String nombre_remiseria;
+    private String viajes_automaticos;
     private File dir;
     private String path;
 
@@ -207,6 +213,7 @@ public class fragment_principal extends Fragment {
         this.impresora = v.findViewById(R.id.impresora);
         this.boton_parada = v.findViewById(R.id.imageParada);
         this.boton_whatsapp = v.findViewById(R.id.imageWa);
+        this.boton_automatico = v.findViewById(R.id.imageautomatico);
         this.txt_parada = v.findViewById(R.id.parada);
         this.gps = v.findViewById(R.id.gps);
         texto_tarifa = v.findViewById(R.id.tarifa);
@@ -227,8 +234,23 @@ public class fragment_principal extends Fragment {
         ls_id_conductor     = settings.getString("id","");
         ls_id_turno     = settings.getString("id_turno_chofer","");
         ls_remiseria     = settings.getString("remiseria","");
+        viajes_automaticos = settings.getString("viajes_automaticos","");
+        if(viajes_automaticos.equals("0")){
+            this.boton_automatico.setVisibility(View.GONE);
+        }else{
+            this.boton_automatico.setVisibility(View.VISIBLE);
+        }
         MediaPlayer mediaPlayer = MediaPlayer.create(getActivity(), R.raw.everblue);
 
+        this.boton_automatico.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                mediaPlayer.start();
+                viaje_automatico(getContext());
+
+            }
+        });
 
         this.boton_parada.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -346,7 +368,7 @@ public class fragment_principal extends Fragment {
                 editor.putString("tipo_ventana","main");
                 editor.commit();
                 getActivity().startService(new Intent(getActivity(), Impresion.class));
-                feriado();
+                feriado(getContext());
             }
         });
 
@@ -356,7 +378,7 @@ public class fragment_principal extends Fragment {
             public void onClick(View v) {
                 mediaPlayer.start();
                 if(mBound) {
-                    repetirTicket(getContext());
+                    boton_repetirTicket(getContext());
                 }else{
                     Toast.makeText(
                             getContext(),
@@ -392,7 +414,7 @@ public class fragment_principal extends Fragment {
                 getContext().startActivity(intent2);
             }
         });
-        feriado();
+        feriado(getContext());
 
         return v;
     }
@@ -411,12 +433,12 @@ public class fragment_principal extends Fragment {
         }
     }
 
-    public void feriado(){
+    public void feriado( final Context context){
         String newURL = Constantes.GET_FERIADO;
         Log.d(TAG,newURL);
 
         // Realizar petición GET_BY_ID
-        VolleySingleton.getInstance(getContext()).addToRequestQueue(
+        VolleySingleton.getInstance(context).addToRequestQueue(
                 myRequest = new JsonObjectRequest(
                         Request.Method.GET,
                         newURL,
@@ -427,7 +449,7 @@ public class fragment_principal extends Fragment {
                             public void onResponse(JSONObject response) {
                                 // Procesar respuesta Json
 
-                                procesarRespuestaFeriado(response);
+                                procesarRespuestaFeriado(response, context);
 
                             }
                         },
@@ -447,13 +469,13 @@ public class fragment_principal extends Fragment {
 
     }
 
-    private void procesarRespuestaFeriado(JSONObject response) {
+    private void procesarRespuestaFeriado(JSONObject response, Context context) {
 
         try {
             // Obtener atributo "mensaje"
             ls_es_feriado= response.getString("feriado");
 
-            cargarParametroTarifaDesde(getContext());
+            cargarParametroTarifaDesde(context);
 
 
 
@@ -678,7 +700,7 @@ public class fragment_principal extends Fragment {
                             texto_tarifa.setText(R.string.nocturno);
                         }
 
-                        SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getContext());
+                        SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(context);
                         SharedPreferences.Editor editor = settings.edit();
                         editor.putString("nocturno",l_nocturno);
                         editor.commit();
@@ -1821,7 +1843,7 @@ public class fragment_principal extends Fragment {
         return df.format(value);
     }
 
-    public void repetirTicket(final Context context) {
+    public void boton_repetirTicket(final Context context) {
 
         // Añadir parámetro a la URL del web service
         String newURL = Constantes.GET_ULTIMO_VIAJE + "?conductor=" + ls_id_conductor;
@@ -1917,6 +1939,10 @@ public class fragment_principal extends Fragment {
                     distancia_ultimo = object.getString("distancia");
                     fecha_tarifa_ultimo = object.getString("fecha_tarifa");
                     movil_ultimo = object.getString("movil");
+                    localidad_abreviada = object.getString("abreviada");
+                    telefono_queja = object.getString("telefono_queja");
+                    telefono_remiseria = object.getString("telefono");
+                    nombre_remiseria = object.getString("remiseria");
 
                     repetirTicket();
 
@@ -1956,14 +1982,16 @@ public class fragment_principal extends Fragment {
             //print title
             printUnicode();
             //print normal text
-            printCustom (getResources().getString(R.string.empresa),2,1);
+            printCustom (nombre_remiseria,2,1);
             printNewLine();
             printPhoto(R.drawable.remisluna_logo_impresion);
-            printCustom (getResources().getString(R.string.telefono),1,1);
+            printCustom ("Tel. Remis: " + telefono_remiseria,1,1);
+            printNewLine();
+            printCustom ("Tel. Queja: " + telefono_queja,1,1);
             printNewLine();
             printText(getResources().getString(R.string.recibo)); // total 32 char in a single line
             printNewLine();
-            printText(stringABytes(getResources().getString(R.string.servicio)));
+            printText(stringABytes(getResources().getString(R.string.servicio) + ' ' + localidad_abreviada));
             printNewLine();
             printText(fecha_ultimo);//fecha
             printNewLine();
@@ -2160,10 +2188,10 @@ public class fragment_principal extends Fragment {
         {
             e.printStackTrace();
         }
-        traer_parada ();
+        traer_parada (context);
     }
 
-    public void traer_parada () {
+    public void traer_parada (final Context context) {
 
         double distancia = 100000.00;
         String parada = "";
@@ -2199,11 +2227,11 @@ public class fragment_principal extends Fragment {
 
         }
 
-        guardar_parada(parada);
+        guardar_parada(parada, context);
 
     }
 
-    private void guardar_parada(String parada){
+    private void guardar_parada(String parada, final Context context){
 
         HashMap<String, String> map = new HashMap<>();// Mapeo previo
 
@@ -2236,7 +2264,7 @@ public class fragment_principal extends Fragment {
         Log.d(TAG,newURL);
 
         // Actualizar datos en el servidor
-        VolleySingleton.getInstance(getContext()).addToRequestQueue(
+        VolleySingleton.getInstance(context).addToRequestQueue(
                 new JsonObjectRequest(
                         Request.Method.POST,
                         newURL,
@@ -2244,7 +2272,7 @@ public class fragment_principal extends Fragment {
                         new Response.Listener<JSONObject>() {
                             @Override
                             public void onResponse(JSONObject response) {
-                                procesarRespuestaActualizarPosicion(response);
+                                procesarRespuestaActualizarPosicion(response, context);
                             }
                         },
                         new Response.ErrorListener() {
@@ -2270,7 +2298,7 @@ public class fragment_principal extends Fragment {
                 }
         );
     }
-    private void procesarRespuestaActualizarPosicion(JSONObject response) {
+    private void procesarRespuestaActualizarPosicion(JSONObject response, Context context) {
 
         try {
             // Obtener estado
@@ -2280,12 +2308,80 @@ public class fragment_principal extends Fragment {
 
             switch (estado) {
                 case "1":
-                    feriado();
+                    feriado(context);
                     break;
                 case "2":
                     // Mostrar mensaje
                     Toast.makeText(
-                            getContext(),
+                            context,
+                            mensaje,
+                            Toast.LENGTH_LONG).show();
+                    // Enviar código de falla
+                    break;
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void viaje_automatico(final Context context) {
+        String newURL = Constantes.VIAJE_AUTOMATICO + "?conductor=" + ls_id_conductor;
+
+        Log.d("viaje",newURL);
+
+        // Actualizar datos en el servidor
+        VolleySingleton.getInstance(context).addToRequestQueue(
+                new JsonObjectRequest(
+                        Request.Method.GET,
+                        newURL,
+                        null,
+                        new Response.Listener<JSONObject>() {
+                            @Override
+                            public void onResponse(JSONObject response) {
+                                procesarAgregarViajeAut(response, context);
+                            }
+                        },
+                        new Response.ErrorListener() {
+                            @Override
+                            public void onErrorResponse(VolleyError error) {
+                                Log.d(TAG, "Error inicio: " + error.getMessage());
+
+                            }
+                        }
+
+                ) {
+                    @Override
+                    public Map<String, String> getHeaders() {
+                        Map<String, String> headers = new HashMap<>();
+                        headers.put("Content-Type", "application/json; charset=utf-8");
+                        return headers;
+                    }
+
+                    @Override
+                    public String getBodyContentType() {
+                        return "application/json; charset=utf-8" + getParamsEncoding();
+                    }
+                }
+        );
+    }
+
+    private void procesarAgregarViajeAut(JSONObject response, Context context) {
+
+        try {
+            // Obtener estado
+            String estado = response.getString("estado");
+            // Obtener mensaje
+            String mensaje = response.getString("mensaje");
+
+            switch (estado) {
+                case "1":
+                    Intent intent2 = new Intent(getContext(), MainViaje.class);
+                    getContext().startActivity(intent2);
+                    break;
+                case "2":
+                    // Mostrar mensaje
+                    Toast.makeText(
+                            context,
                             mensaje,
                             Toast.LENGTH_LONG).show();
                     // Enviar código de falla

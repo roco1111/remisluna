@@ -120,11 +120,7 @@ public class MainActivity extends AppCompatActivity {
         ls_id_conductor     = settings.getString("id","");
         getSupportActionBar().setTitle("Remisluna");
 
-        Fragment fragment = new fragment_principal();
 
-        getSupportFragmentManager().beginTransaction()
-                .replace(R.id.main_content, fragment)
-                .commit();
 
         cargarDatos(getApplicationContext());
 
@@ -241,7 +237,6 @@ public class MainActivity extends AppCompatActivity {
         try {
             // Obtener atributo "mensaje"
             String mensaje = response.getString("estado");
-            Fragment fragment = null;
             switch (mensaje) {
                 case "1":
                     JSONArray mensaje1 = response.getJSONArray("conductor");
@@ -253,11 +248,17 @@ public class MainActivity extends AppCompatActivity {
 
 
                     editor.putString("id_turno_chofer",object.getString("id"));
+                    editor.putString("viajes_automaticos",object.getString("viajes_automaticos"));
                     editor.apply();
 
                     editor.commit();
 
                     cargarViajes(context);
+                    Fragment fragment = new fragment_principal();
+
+                    getSupportFragmentManager().beginTransaction()
+                            .replace(R.id.main_content, fragment)
+                            .commit();
 
                     break;
 

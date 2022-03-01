@@ -3,7 +3,7 @@
     <string name="empresa">Remisluna</string>
     <string name="telefono">341375869</string>
     <string name="recibo">Ticket para el Pasajero</string>
-    <string name="servicio">Servicio Público VGG</string>
+    <string name="servicio">Servicio Público</string>
     <string name="ticket_turno">Totales Turno</string>
     <string name="ticket_ultimos_viajes">Viaje x Viaje</string>
     <string name="parcial_turno">Parcial Turno</string>
