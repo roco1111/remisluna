@@ -105,6 +105,9 @@
     <string name="reporte_perfil">7: Perfil</string>
     <string name="reporte_viajes">8: Historial</string>
     <string name="reporte_viaje">9:Viaje Asignado</string>
+    <string name="paradas">P:Paradas</string>
+    <string name="automatico">A:Viaje de Prueba </string>
+    <string name="whatsapps">W:Whatsapps </string>
 
     <string name="diurno">Tarifa Diurna</string>
     <string name="nocturno">Tarifa Nocturna</string>

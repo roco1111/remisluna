@@ -1,6 +1,8 @@
 package com.rosario.hp.remisluna;
 
+import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.Fragment;
 
@@ -24,6 +26,7 @@ import android.os.IBinder;
 import android.preference.PreferenceManager;
 import android.provider.Settings;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;;
 import android.view.WindowManager;
@@ -54,6 +57,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 
 import static com.rosario.hp.remisluna.include.Utils.stringABytes;
 
@@ -90,6 +94,24 @@ public class MainActivity extends AppCompatActivity {
         mBound = false;
     }
 
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        // TODO Auto-generated method stub
+        if (keyCode == event.KEYCODE_BACK)
+        {
+            //this.finish();
+            return false;
+
+        }
+            return super.onKeyDown(keyCode, event);
+
+    }
+
+    @Override
+    public void onBackPressed() {
+        this.finish();
+    }
+
     /** Defines callbacks for service binding, passed to bindService() */
     private ServiceConnection connection = new ServiceConnection() {
 
@@ -118,7 +140,9 @@ public class MainActivity extends AppCompatActivity {
         ayudas = new ArrayList<>();
         SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
         ls_id_conductor     = settings.getString("id","");
-        getSupportActionBar().setTitle("Remisluna");
+        Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(false);
+        Objects.requireNonNull(getSupportActionBar()).setDisplayShowHomeEnabled(false);
+        Objects.requireNonNull(getSupportActionBar()).setTitle("Remisluna");
 
 
 
@@ -131,69 +155,6 @@ public class MainActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_principal, menu);
-        MenuItem myMenuItem = menu.findItem(R.id.menu_principal);
-        getMenuInflater().inflate(R.menu.sub_menu_ayuda, myMenuItem.getSubMenu());
-
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-
-        int id = item.getItemId();
-        SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-        SharedPreferences.Editor editor = settings.edit();
-        Intent intent = null;
-        switch (id) {
-
-            case R.id.menu_ayuda:
-
-                editor.putString("url", "https://remisluna.com.ar/remiseria/pagina_ayuda.php?id=2");
-                editor.apply();
-                intent = new Intent(getApplicationContext(), WebActivity.class);
-                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                getApplicationContext().startActivity(intent);
-                editor.commit();
-                break;
-            case R.id.menu_ayuda_app:
-
-                editor.putString("url", "https://remisluna.com.ar/remiseria/paginas_ayuda.php");
-                editor.apply();
-                intent = new Intent(getApplicationContext(), WebActivity.class);
-                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                getApplicationContext().startActivity(intent);
-                editor.commit();
-                break;
-            case R.id.menu_app_impresa:
-                if(mBound) {
-                    cargarAyudas(getApplicationContext());
-
-                }else{
-                    Toast.makeText(
-                            getApplicationContext(),
-                            R.string.no_impresora,
-                            Toast.LENGTH_LONG).show();
-                }
-                break;
-            case R.id.menu_ayuda_impresa:
-                if(mBound) {
-                    cargarAyuda(getApplicationContext());
-
-                }else{
-                    Toast.makeText(
-                            getApplicationContext(),
-                            R.string.no_impresora,
-                            Toast.LENGTH_LONG).show();
-                }
-                break;
-        }
-        return super.onOptionsItemSelected(item);
     }
 
     public void cargarDatos(final Context context) {
@@ -708,301 +669,5 @@ public class MainActivity extends AppCompatActivity {
             e.printStackTrace();
         }
     }
-
-    public void cargarAyuda(final Context context) {
-
-        // Añadir parámetro a la URL del web service
-        String newURL = Constantes.GET_ID_AYUDA + "?ayuda=2";
-        Log.d(TAG,newURL);
-
-        // Realizar petición GET_BY_ID
-        VolleySingleton.getInstance(context).addToRequestQueue(
-                myRequest = new JsonObjectRequest(
-                        Request.Method.POST,
-                        newURL,
-                        null,
-                        new Response.Listener<JSONObject>() {
-
-                            @Override
-                            public void onResponse(JSONObject response) {
-                                // Procesar respuesta Json
-                                procesarRespuestaAyuda(response, context);
-                            }
-                        },
-                        new Response.ErrorListener() {
-                            @Override
-                            public void onErrorResponse(VolleyError error) {
-                                Log.d(TAG, "Error Volley ayuda: " + error.getMessage());
-
-                            }
-                        }
-                )
-        );
-        myRequest.setRetryPolicy(new DefaultRetryPolicy(
-                50000,
-                5,//DefaultRetryPolicy.DEFAULT_MAX_RETRIES
-                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
-
-    }
-
-    private void procesarRespuestaAyuda(JSONObject response, Context context) {
-
-        try {
-            // Obtener atributo "mensaje"
-            String mensaje = response.getString("estado");
-            Fragment fragment = null;
-            switch (mensaje) {
-                case "1":
-                    JSONArray datos_ayuda = response.getJSONArray("ayuda");
-
-                    ayudas.clear();
-
-                    for(int i = 0; i < mensaje.length(); i++)
-                    {JSONObject object = datos_ayuda.getJSONObject(i);
-                        ayuda ay = new ayuda();
-
-
-                        String titulo = object.getString("titulo");
-
-                        ay.setTitulo(titulo);
-
-                        String descripcion = object.getString("descripcion");
-
-                        ay.setDescripcion(descripcion);
-
-
-                        ayudas.add(ay);
-
-                    }
-                    ticket_ayuda_app(ayudas);
-
-                    break;
-
-
-            }
-
-
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-
-    }
-
-    public void cargarAyudas(final Context context) {
-
-        // Añadir parámetro a la URL del web service
-        String newURL = Constantes.GET_AYUDAS;
-        Log.d(TAG,newURL);
-
-        // Realizar petición GET_BY_ID
-        VolleySingleton.getInstance(context).addToRequestQueue(
-                myRequest = new JsonObjectRequest(
-                        Request.Method.POST,
-                        newURL,
-                        null,
-                        new Response.Listener<JSONObject>() {
-
-                            @Override
-                            public void onResponse(JSONObject response) {
-                                // Procesar respuesta Json
-                                procesarRespuestaAyudas(response, context);
-                            }
-                        },
-                        new Response.ErrorListener() {
-                            @Override
-                            public void onErrorResponse(VolleyError error) {
-                                Log.d(TAG, "Error Volley ayudas: " + error.getMessage());
-
-                            }
-                        }
-                )
-        );
-        myRequest.setRetryPolicy(new DefaultRetryPolicy(
-                50000,
-                5,//DefaultRetryPolicy.DEFAULT_MAX_RETRIES
-                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
-
-    }
-
-    private void procesarRespuestaAyudas(JSONObject response, Context context) {
-
-        try {
-            // Obtener atributo "mensaje"
-            String mensaje = response.getString("estado");
-
-            switch (mensaje) {
-                case "1":
-                    JSONArray datos_ayuda = response.getJSONArray("ayuda");
-
-                    ayudas.clear();
-
-                    for(int i = 0; i < datos_ayuda.length(); i++)
-                    {JSONObject object = datos_ayuda.getJSONObject(i);
-                        ayuda ay = new ayuda();
-
-                        String id = object.getString("ID");
-
-                        ay.setId(id);
-
-                        String titulo = object.getString("TITULO");
-
-                        ay.setTitulo(titulo);
-
-                        String descripcion = object.getString("DESCRIPCION");
-
-                        ay.setDescripcion(descripcion);
-
-
-                        ayudas.add(ay);
-
-                    }
-                    ticket_ayuda_app(ayudas);
-
-                    break;
-
-
-            }
-
-
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-
-    }
-
-    protected void ticket_ayuda_app( ArrayList<ayuda> ayudas) {
-
-        outputStream = impresion.getOutputStream();
-
-        //print command
-        try {
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-
-            byte[] printformat = {0x1B, 0 * 21, FONT_TYPE};
-            //outputStream.write(printformat);
-
-            //print title
-            printUnicode();
-            //print normal text
-            printCustom(getResources().getString(R.string.empresa), 2, 1);
-            printNewLine();
-            printCustom(getResources().getString(R.string.menu_ayuda), 1, 1); // total 32 char in a single line
-
-            printNewLine();
-            String titulo;
-            String descripcion;
-            printCustom("",1,0);
-            for (ayuda Ayuda : ayudas) {
-                titulo = Ayuda.getTitulo();
-                printText(stringABytes(titulo));
-                printNewLine();
-
-                descripcion = Ayuda.getDescripcion();
-                printText(stringABytes(descripcion));
-                printNewLine();
-            }
-            printNewLine();
-
-            //resetPrint(); //reset printer
-            printUnicode();
-            printNewLine();
-            printNewLine();
-
-            outputStream.flush();
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-
-    }
-    //print custom
-    private void printCustom(String msg, int size, int align) {
-        //Print config "mode"
-        byte[] cc = new byte[]{0x1B,0x21,0x03};  // 0- normal size text
-        //byte[] cc1 = new byte[]{0x1B,0x21,0x00};  // 0- normal size text
-        byte[] bb = new byte[]{0x1B,0x21,0x08};  // 1- only bold text
-        byte[] bb2 = new byte[]{0x1B,0x21,0x20}; // 2- bold with medium text
-        byte[] bb3 = new byte[]{0x1B,0x21,0x10}; // 3- bold with large text
-        try {
-            switch (size){
-                case 0:
-                    outputStream.write(cc);
-                    break;
-                case 1:
-                    outputStream.write(bb);
-                    break;
-                case 2:
-                    outputStream.write(bb2);
-                    break;
-                case 3:
-                    outputStream.write(bb3);
-                    break;
-            }
-
-            switch (align){
-                case 0:
-                    //left align
-                    outputStream.write(PrinterCommands.ESC_ALIGN_LEFT);
-                    break;
-                case 1:
-                    //center align
-                    outputStream.write(PrinterCommands.ESC_ALIGN_CENTER);
-                    break;
-                case 2:
-                    //right align
-                    outputStream.write(PrinterCommands.ESC_ALIGN_RIGHT);
-                    break;
-            }
-            outputStream.write(msg.getBytes());
-            outputStream.write(PrinterCommands.LF);
-            //outputStream.write(cc);
-            //printNewLine();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-    }
-
-    //print unicode
-    public void printUnicode(){
-        try {
-            outputStream.write(PrinterCommands.ESC_ALIGN_CENTER);
-            printText(Utils.UNICODE_TEXT);
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    //print new line
-    private void printNewLine() {
-        try {
-            outputStream.write(PrinterCommands.FEED_LINE);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-    }
-
-
-    //print byte[]
-    private void printText(byte[] msg) {
-        try {
-            // Print normal text
-            outputStream.write(msg);
-            printNewLine();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-
-
 
 }

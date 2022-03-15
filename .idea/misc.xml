@@ -8,10 +8,12 @@
         <entry key="..\:/Users/hp/AndroidStudioProjects/remisluna/app/src/main/res/drawable/selector_automatico.xml" value="0.1055" />
         <entry key="..\:/Users/hp/AndroidStudioProjects/remisluna/app/src/main/res/drawable/selector_uno.xml" value="0.20833333333333334" />
         <entry key="..\:/Users/hp/AndroidStudioProjects/remisluna/app/src/main/res/layout/activity_datos_viaje.xml" value="0.33" />
+        <entry key="..\:/Users/hp/AndroidStudioProjects/remisluna/app/src/main/res/layout/activity_main_basica.xml" value="0.1" />
         <entry key="..\:/Users/hp/AndroidStudioProjects/remisluna/app/src/main/res/layout/activity_principal.xml" value="0.22" />
         <entry key="..\:/Users/hp/AndroidStudioProjects/remisluna/app/src/main/res/layout/activity_principal_previa.xml" value="0.13722826086956522" />
         <entry key="..\:/Users/hp/AndroidStudioProjects/remisluna/app/src/main/res/layout/activity_viaje.xml" value="0.2" />
         <entry key="..\:/Users/hp/AndroidStudioProjects/remisluna/app/src/main/res/layout/activity_viaje_iniciado.xml" value="0.21" />
+        <entry key="..\:/Users/hp/AndroidStudioProjects/remisluna/app/src/main/res/layout/main_content_basica.xml" value="0.1" />
       </map>
     </option>
   </component>

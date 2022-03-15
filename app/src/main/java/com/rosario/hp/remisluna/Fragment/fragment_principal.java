@@ -1,8 +1,10 @@
 package com.rosario.hp.remisluna.Fragment;
 
 import android.Manifest;
+import android.app.AlertDialog;
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
@@ -21,6 +23,7 @@ import android.os.IBinder;
 import android.preference.PreferenceManager;
 import android.provider.Settings;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -160,6 +163,7 @@ public class fragment_principal extends Fragment {
         getActivity().unbindService(connection);
         mBound = false;
     }
+
 
     @Override
     public void onResume() {
@@ -1555,6 +1559,12 @@ public class fragment_principal extends Fragment {
             printText(getResources().getString(R.string.reporte_viajes));
             printNewLine();
             printText(getResources().getString(R.string.reporte_viaje));
+            printNewLine();
+            printText(getResources().getString(R.string.paradas));
+            printNewLine();
+            printText(getResources().getString(R.string.automatico));
+            printNewLine();
+            printText(getResources().getString(R.string.whatsapps));
 
             printNewLine();
             printNewLine();
@@ -2149,7 +2159,7 @@ public class fragment_principal extends Fragment {
                     Intent intent = new Intent("android.intent.action.MAIN");
                     intent.setAction(Intent.ACTION_SEND);
                     intent.setType("text/plain");
-                    intent.putExtra(Intent.EXTRA_TEXT, "Hola");
+                    intent.putExtra(Intent.EXTRA_TEXT, "a");
                     intent.putExtra("jid", telefono_base + "@s.whatsapp.net"); //numero telefonico sin prefijo "+"!
 
                     intent.setPackage("com.whatsapp");
