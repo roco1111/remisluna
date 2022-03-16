@@ -91,6 +91,11 @@ public class ServicioGeolocalizacion extends Service implements Runnable {
         Log.d("Taxímetro","Taxímetro iniciado");
         super.onCreate();
         distancia_acumulada = 0;
+        l_diferencia = 0L;
+        tiempo_acumulado = 0L;
+        tiempo_tolerancia = 0L;
+        latitud_inicial = 0;
+        longitud_inicial = 0;
         SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
         ls_id_conductor     = settings.getString("id","");
         cargarDatos(getApplicationContext());
