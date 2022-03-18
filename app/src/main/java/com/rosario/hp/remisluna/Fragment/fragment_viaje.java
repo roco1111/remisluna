@@ -145,6 +145,8 @@ public class fragment_viaje extends Fragment {
     private String ls_remiseria;
     private TextView gps;
     private String ls_es_feriado;
+    private String chapa;
+    private String patente;
 
     @Override
     public void onStart() {
@@ -2018,6 +2020,8 @@ public class fragment_viaje extends Fragment {
                     distancia_ultimo = object.getString("distancia");
                     fecha_tarifa_ultimo = object.getString("fecha_tarifa");
                     movil_ultimo = object.getString("movil");
+                    chapa = object.getString("chapa");
+                    patente = object.getString("patente");
 
                     repetirTicket();
 
@@ -2068,7 +2072,9 @@ public class fragment_viaje extends Fragment {
             printText(fecha_ultimo);//fecha
             printNewLine();
             printCustom ("Chofer: " + chofer_ultimo,1,0);
-            printCustom ("Nro Remis: " + movil_ultimo,1,0);
+            printText (stringABytes(getResources().getString(R.string.nro_movil) +  movil_ultimo));
+            printCustom ("Patente: " + patente,1,0);
+            printText (stringABytes(getResources().getString(R.string.chapa) + chapa));
             printNewLine();
             printText("SALIDA  " + hora_salida_ultimo);
             printNewLine();
@@ -2091,6 +2097,8 @@ public class fragment_viaje extends Fragment {
             printNewLine();
             printNewLine();
             printCustom ("TOTAL:  " + '$' + String.format(Locale.GERMANY,"%.2f",Double.parseDouble(importe_ultimo)),2,0);
+            printCustom ("",1,1);
+            printUnicode();
             printNewLine();
             printNewLine();
             outputStream.flush();

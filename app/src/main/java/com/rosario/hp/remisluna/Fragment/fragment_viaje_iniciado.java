@@ -241,7 +241,7 @@ public class fragment_viaje_iniciado extends Fragment {
     }
 
     public void feriado(){
-        String newURL = Constantes.GET_FERIADO;
+        String newURL = Constantes.GET_FERIADO ;
         Log.d(TAG,newURL);
 
         // Realizar petición GET_BY_ID
@@ -294,7 +294,7 @@ public class fragment_viaje_iniciado extends Fragment {
     public void cargarTarifa(final Context context, final String[] tokens) {
 
         // Añadir parámetro a la URL del web service
-        String newURL = Constantes.GET_TARIFAS;
+        String newURL = Constantes.GET_TARIFAS + "?id_remiseria=" + ls_remiseria;
         Log.d(TAG,newURL);
 
         // Realizar petición GET_BY_ID

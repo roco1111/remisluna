@@ -20,6 +20,7 @@
     <string name="historial_viaje">Historial Turnos</string>
     <string name="perfil">Perfil</string>
     <string name="vacio">No hay Elementos</string>
+    <string name="chapa">Habilitación: </string>
     <string name="sin_viaje">No hay Viajes Asignados</string>
     <string name="nav_header_subtitle">info@remisluna.com.ar</string>
     <string name="home">Principal</string>
@@ -56,7 +57,7 @@
     <string name="no_internet">Verifique su conexión a internet</string>
     <string name="no_gps">Verifique que el gps no este apagado</string>
     <string name="esperando">esperando...</string>
-
+    <string name="nro_movil">Nro Móvil: </string>
     <string name="nro_viaje">Nro Viaje</string>
     <string name="nro_viaje2">Viaje</string>
     <string name="solicitante">Solicitante</string>

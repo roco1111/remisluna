@@ -147,7 +147,8 @@ public class fragment_principal extends Fragment {
     private String viajes_automaticos;
     private File dir;
     private String path;
-
+    private String chapa;
+    private String patente;
 
     @Override
     public void onStart() {
@@ -1953,6 +1954,8 @@ public class fragment_principal extends Fragment {
                     telefono_queja = object.getString("telefono_queja");
                     telefono_remiseria = object.getString("telefono");
                     nombre_remiseria = object.getString("remiseria");
+                    chapa = object.getString("chapa");
+                    patente = object.getString("patente");
 
                     repetirTicket();
 
@@ -1994,7 +1997,6 @@ public class fragment_principal extends Fragment {
             //print normal text
             printCustom (nombre_remiseria,2,1);
             printNewLine();
-            printPhoto(R.drawable.remisluna_logo_impresion);
             printCustom ("Tel. Remis: " + telefono_remiseria,1,1);
             printNewLine();
             printCustom ("Tel. Queja: " + telefono_queja,1,1);
@@ -2006,7 +2008,9 @@ public class fragment_principal extends Fragment {
             printText(fecha_ultimo);//fecha
             printNewLine();
             printCustom ("Chofer: " + chofer_ultimo,1,0);
-            printCustom ("Nro Remis: " + movil_ultimo,1,0);
+            printText (stringABytes(getResources().getString(R.string.nro_movil) +  movil_ultimo));
+            printCustom ("Patente: " + patente,1,0);
+            printText (stringABytes(getResources().getString(R.string.chapa) + chapa));
             printNewLine();
             printText("SALIDA  " + hora_salida_ultimo);
             printNewLine();
@@ -2029,6 +2033,8 @@ public class fragment_principal extends Fragment {
             printNewLine();
             printNewLine();
             printCustom ("TOTAL:  " + '$' + String.format(Locale.GERMANY,"%.2f",Double.parseDouble(importe_ultimo)),2,0);
+            printCustom ("",1,1);
+            printUnicode();
             printNewLine();
             printNewLine();
             outputStream.flush();

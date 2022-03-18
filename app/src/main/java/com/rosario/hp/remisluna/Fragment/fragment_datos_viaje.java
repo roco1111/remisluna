@@ -66,11 +66,17 @@ public class fragment_datos_viaje extends Fragment{
     private String distancia;
     private String fecha_tarifa;
     private String movil;
+    private String telefono_queja;
+    private String telefono_remiseria;
+    private String nombre_remiseria;
     private TextView total;
     private TextView descuento;
     private TextView espera;
     private LinearLayout suspension;
     private Button imprimir;
+    private String importe_fichas;
+    private String bajada;
+    private String localidad_abreviada;
 
     private String ls_id_viaje;
     private Impresion impresion;
@@ -215,6 +221,7 @@ public class fragment_datos_viaje extends Fragment{
                     salida.setText(object.getString("salida"));
                     destino.setText(object.getString("destino"));
                     hora_salida.setText(object.getString("hora_inicio"));
+                    localidad_abreviada = object.getString("abreviada");
                     if(object.getString("estado").equals("6")){
                         hora_destino.setVisibility(View.INVISIBLE);
                     }else{
@@ -256,6 +263,11 @@ public class fragment_datos_viaje extends Fragment{
                     distancia = object.getString("distancia");
                     fecha_tarifa = object.getString("fecha_tarifa");
                     movil = object.getString("movil");
+                    telefono_queja = object.getString("telefono_queja");
+                    telefono_remiseria = object.getString("telefono");
+                    nombre_remiseria = object.getString("remiseria");
+                    bajada = object.getString("bajada");
+                    importe_fichas = object.getString("importe_fichas");
                     if(object.getString("estado").equals("4")){
                         suspension.setVisibility(View.VISIBLE);
                     }else{
@@ -298,14 +310,15 @@ public class fragment_datos_viaje extends Fragment{
             //print title
             printUnicode();
             //print normal text
-            printCustom (getResources().getString(R.string.empresa),2,1);
+            printCustom (nombre_remiseria,2,1);
             printNewLine();
-            printPhoto(R.drawable.remisluna_logo_impresion);
-            printCustom (getResources().getString(R.string.telefono),1,1);
+            printCustom ("Tel. Remis: " + telefono_remiseria,1,1);
+            printNewLine();
+            printCustom ("Tel. Queja: " + telefono_queja,1,1);
             printNewLine();
             printText(getResources().getString(R.string.recibo)); // total 32 char in a single line
             printNewLine();
-            printText(stringABytes(getResources().getString(R.string.servicio)));
+            printText(stringABytes(getResources().getString(R.string.servicio) + ' ' + localidad_abreviada));
             printNewLine();
             printText(fecha.getText().toString());//fecha
             printNewLine();
@@ -325,9 +338,11 @@ public class fragment_datos_viaje extends Fragment{
             printNewLine();
             printText("TARIFA AL  " + fecha_tarifa);
             printNewLine();
-            printText("VIAJE  " + '$' + String.format(Locale.GERMANY,"%.2f",Double.parseDouble(importe.getText().toString())));
+            printText("BAJADA  " + '$' + String.format(Locale.GERMAN,"%.2f",Double.parseDouble(bajada)));
             printNewLine();
-            printText("ESPERA  ");
+            printText("VIAJE  " + '$' + String.format(Locale.GERMANY,"%.2f",Double.parseDouble(importe_fichas)));
+            printNewLine();
+            printText("ESPERA  "+ '$' + String.format(Locale.GERMANY,"%.2f",Double.parseDouble(espera.getText().toString())));
             printNewLine();
             printNewLine();
             printCustom ("TOTAL:  " + '$' + String.format(Locale.GERMANY,"%.2f",Double.parseDouble(importe.getText().toString())),2,0);
