@@ -83,15 +83,15 @@ public class MainActivity extends AppCompatActivity {
     public void onStart() {
         super.onStart();
         // Bind to LocalService
-        Intent intent = new Intent(getApplicationContext(), Impresion.class);
-        getApplicationContext().bindService(intent, connection, Context.BIND_AUTO_CREATE);
+        //Intent intent = new Intent(getApplicationContext(), Impresion.class);
+        //getApplicationContext().bindService(intent, connection, Context.BIND_AUTO_CREATE);
     }
 
     @Override
     public void onStop() {
         super.onStop();
-        getApplicationContext().unbindService(connection);
-        mBound = false;
+        //getApplicationContext().unbindService(connection);
+        //mBound = false;
     }
 
     @Override
@@ -120,6 +120,7 @@ public class MainActivity extends AppCompatActivity {
                                        IBinder service) {
             // We've bound to LocalService, cast the IBinder and get LocalService instance
             Impresion.LocalBinder binder = (Impresion.LocalBinder) service;
+            Log.d("impresora","Main");
             impresion = binder.getService();
             if(impresion.getbluetoothSocket() != null){
                 mBound = true;
@@ -281,14 +282,6 @@ public class MainActivity extends AppCompatActivity {
 
                     JSONObject object = mensaje1.getJSONObject(0);
                     ls_vehiculo = object.getString("id_movil");
-
-                    /*
-                    if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                        ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION,}, 1000);
-                    } else {
-                        locationStart();
-                    }
-                    */
 
                     locationEnd();
 

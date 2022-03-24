@@ -1036,7 +1036,7 @@ public class fragment_viaje_iniciado extends Fragment {
                         importe_espera = object.getString("importe_espera");
                         texto_tarifa.setText(R.string.diurno);
                     }else{
-                        if(object.getString("bajada").equals("null")) {
+                        if(object.getString("bajada").equals("null")|| object.getString("bajada").equals("0.000")) {
                             importe_bajada = object.getString("importe_bajada_nocturno");
                         }else{
                             importe_bajada =object.getString("bajada");
@@ -1154,8 +1154,6 @@ public class fragment_viaje_iniciado extends Fragment {
                     chofer = object.getString("chofer");
 
                     cargarViaje_solicitado(context);
-
-
 
                     break;
 

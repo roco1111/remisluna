@@ -576,7 +576,6 @@ public class fragment_viaje extends Fragment {
 
             }
 
-
         } catch (JSONException e) {
             e.printStackTrace();
         }

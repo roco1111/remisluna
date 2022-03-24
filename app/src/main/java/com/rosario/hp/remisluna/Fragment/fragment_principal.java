@@ -154,8 +154,8 @@ public class fragment_principal extends Fragment {
     public void onStart() {
         super.onStart();
         // Bind to LocalService
-        Intent intent = new Intent(getActivity(), Impresion.class);
-        getActivity().bindService(intent, connection, Context.BIND_AUTO_CREATE);
+        cargarImpresora(getContext());
+
     }
 
     @Override
@@ -228,11 +228,7 @@ public class fragment_principal extends Fragment {
         }else{
             gps.setTextColor(getResources().getColor(R.color.alarma));
         }
-        if(mBound) {
-            impresora.setTextColor(getResources().getColor(R.color.colorPrimary));
-        }else{
-            impresora.setTextColor(getResources().getColor(R.color.alarma));
-        }
+
         datos = new ArrayList<>();
         impresion = new Impresion();
         SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getContext());
@@ -1364,6 +1360,94 @@ public class fragment_principal extends Fragment {
 
                         txt_parada.setText("Parada Nro: " + object.getString("id"));
                     }
+
+                    break;
+
+            }
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    public void cargarImpresora(final Context context) {
+
+        String newURL = Constantes.GET_CONDUCTOR_BY_ID + "?conductor=" + ls_id_conductor;
+        Log.d(TAG,newURL);
+
+        // Realizar petición GET_BY_ID
+        VolleySingleton.getInstance(context).addToRequestQueue(
+                myRequest = new JsonObjectRequest(
+                        Request.Method.POST,
+                        newURL,
+                        null,
+                        new Response.Listener<JSONObject>() {
+
+                            @Override
+                            public void onResponse(JSONObject response) {
+                                // Procesar respuesta Json
+                                procesarRespuestaImpresora(response, context);
+                            }
+                        },
+                        new Response.ErrorListener() {
+                            @Override
+                            public void onErrorResponse(VolleyError error) {
+                                Log.d(TAG, "Error Volley parametro: " + error.getMessage());
+
+                            }
+                        }
+                )
+        );
+        myRequest.setRetryPolicy(new DefaultRetryPolicy(
+                50000,
+                5,//DefaultRetryPolicy.DEFAULT_MAX_RETRIES
+                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+
+    }
+
+    private void procesarRespuestaImpresora(JSONObject response, Context context) {
+
+        try {
+            // Obtener atributo "mensaje"
+            String mensaje = response.getString("estado");
+
+            switch (mensaje) {
+                case "1":
+                    JSONArray datos_parada = response.getJSONArray("conductor");
+
+                    for(int i = 0; i < datos_parada.length(); i++)
+                    {
+                        JSONObject object = datos_parada.getJSONObject(i);
+
+                        SharedPreferences settings1 = PreferenceManager.getDefaultSharedPreferences(context);
+
+                        SharedPreferences.Editor editor = settings1.edit();
+
+                        String l_impresora;
+
+                        l_impresora = object.getString("impresora");
+
+                        editor.putString("impresora",l_impresora);
+                        editor.apply();
+
+                        editor.commit();
+
+                        if(!l_impresora.equals("")) {
+                            editor.putString("tipo_ventana", "main");
+                            editor.commit();
+                            Intent intent = new Intent(getActivity(), Impresion.class);
+                            getActivity().startService(intent);
+
+                            getActivity().bindService(intent, connection, Context.BIND_AUTO_CREATE);
+                            //if (mBound) {
+                              //  impresora.setTextColor(getResources().getColor(R.color.colorPrimary));
+                           // } else {
+                             //   impresora.setTextColor(getResources().getColor(R.color.alarma));
+                           // }
+                        }
+
+                    }
                     break;
 
             }
@@ -1374,9 +1458,6 @@ public class fragment_principal extends Fragment {
         }
 
     }
-
-
-
 
     protected void ticket_recaudacion( ArrayList<turno> turnos) {
         outputStream = impresion.getOutputStream();
