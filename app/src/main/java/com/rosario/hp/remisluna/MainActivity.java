@@ -90,7 +90,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public void onStop() {
         super.onStop();
-        //getApplicationContext().unbindService(connection);
+        //().unbindService(connection);
         //mBound = false;
     }
 

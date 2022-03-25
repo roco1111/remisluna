@@ -882,51 +882,55 @@ public class fragment_principal extends Fragment {
 
         outputStream = impresion.getOutputStream();
 
-        //print command
-        try {
+        if(outputStream == null){
+            Toast.makeText(getContext(), "No se pudo conectar el dispositivo. Verifique si la impresora esta encendida", Toast.LENGTH_SHORT).show();
+        }else {
+
+            //print command
             try {
-                Thread.sleep(1000);
-            } catch (InterruptedException e) {
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+
+                byte[] printformat = {0x1B, 0 * 21, FONT_TYPE};
+                //outputStream.write(printformat);
+
+                //print title
+                printUnicode();
+                //print normal text
+                printCustom(getResources().getString(R.string.empresa), 2, 1);
+                printNewLine();
+                printCustom(getResources().getString(R.string.parcial_turno), 1, 0); // total 32 char in a single line
+
+                printNewLine();
+                printText(fecha);
+                printText(" - ");
+                printText(hora_inicio);//fecha
+                printNewLine();
+
+                printNewLine();
+                printText("K.TOTAL:  ");
+                printText(kms);
+                printNewLine();
+                printNewLine();
+                printText("RECAUDACION: ");
+                printText(recaudacion);
+                printNewLine();
+                printNewLine();
+                //resetPrint(); //reset printer
+                printUnicode();
+                printNewLine();
+                printNewLine();
+
+                outputStream.flush();
+
+            } catch (IOException e) {
                 e.printStackTrace();
             }
 
-            byte[] printformat = {0x1B, 0 * 21, FONT_TYPE};
-            //outputStream.write(printformat);
-
-            //print title
-            printUnicode();
-            //print normal text
-            printCustom(getResources().getString(R.string.empresa), 2, 1);
-            printNewLine();
-            printCustom(getResources().getString(R.string.parcial_turno), 1, 0); // total 32 char in a single line
-
-            printNewLine();
-            printText(fecha);
-            printText(" - ");
-            printText(hora_inicio);//fecha
-            printNewLine();
-
-            printNewLine();
-            printText("K.TOTAL:  ");
-            printText(kms);
-            printNewLine();
-            printNewLine();
-            printText("RECAUDACION: ");
-            printText(recaudacion);
-            printNewLine();
-            printNewLine();
-            //resetPrint(); //reset printer
-            printUnicode();
-            printNewLine();
-            printNewLine();
-
-            outputStream.flush();
-
-        } catch (IOException e) {
-            e.printStackTrace();
         }
-
-
     }
 
     private void cerrar_turno(){
@@ -1445,6 +1449,9 @@ public class fragment_principal extends Fragment {
                            // } else {
                              //   impresora.setTextColor(getResources().getColor(R.color.alarma));
                            // }
+                        }else{
+                            Intent intent = new Intent(getActivity(), Impresion.class);
+                            getActivity().bindService(intent, connection, Context.BIND_AUTO_CREATE);
                         }
 
                     }
@@ -1461,67 +1468,69 @@ public class fragment_principal extends Fragment {
 
     protected void ticket_recaudacion( ArrayList<turno> turnos) {
         outputStream = impresion.getOutputStream();
-
-        //print command
-        try {
+        if(outputStream == null){
+            Toast.makeText(getContext(), "No se pudo conectar el dispositivo. Verifique si la impresora esta encendida", Toast.LENGTH_SHORT).show();
+        }else {
+            //print command
             try {
-                Thread.sleep(1000);
-            } catch (InterruptedException e) {
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+
+                byte[] printformat = {0x1B, 0 * 21, FONT_TYPE};
+                //outputStream.write(printformat);
+
+                //print title
+                printUnicode();
+                //print normal text
+                printCustom(getResources().getString(R.string.empresa), 2, 1);
+                printNewLine();
+                printPhoto(R.drawable.remisluna_logo_impresion);
+                printCustom(getResources().getString(R.string.telefono), 1, 1);
+
+                printNewLine();
+                printText(stringABytes(getResources().getString(R.string.ticket_recaudacion))); // total 32 char in a single line
+
+                printNewLine();
+
+                String id;
+                String fecha;
+                String hora_inicio;
+                String hora_fin;
+                String importe;
+
+                for (turno Turno : turnos) {
+                    printNewLine();
+                    id = Turno.getId();
+                    fecha = Turno.getFecha();
+                    hora_inicio = Turno.getHora_inicio();
+                    hora_fin = Turno.getHora_fin();
+                    printCustom("TURNO " + id, 1, 0);
+                    printCustom("Fecha " + fecha, 1, 0);
+                    printCustom("Hora Inicio " + hora_inicio, 1, 0);
+                    if (!hora_fin.equals("null")) {
+                        printCustom("Hora Fin " + hora_fin, 1, 0);
+                    }
+                    importe = Turno.getRecaudacion();
+                    printText("TOTAL:  " + importe);
+                    printNewLine();
+                }
+
+                printNewLine();
+                printNewLine();
+                //resetPrint(); //reset printer
+                printUnicode();
+                printNewLine();
+                printNewLine();
+
+                outputStream.flush();
+
+            } catch (IOException e) {
                 e.printStackTrace();
             }
-
-            byte[] printformat = {0x1B, 0 * 21, FONT_TYPE};
-            //outputStream.write(printformat);
-
-            //print title
-            printUnicode();
-            //print normal text
-            printCustom(getResources().getString(R.string.empresa), 2, 1);
-            printNewLine();
-            printPhoto(R.drawable.remisluna_logo_impresion);
-            printCustom(getResources().getString(R.string.telefono), 1, 1);
-
-            printNewLine();
-            printText(stringABytes(getResources().getString(R.string.ticket_recaudacion))); // total 32 char in a single line
-
-            printNewLine();
-
-            String id;
-            String fecha;
-            String hora_inicio;
-            String hora_fin;
-            String importe;
-
-            for (turno Turno : turnos) {
-                printNewLine();
-                id = Turno.getId();
-                fecha = Turno.getFecha();
-                hora_inicio = Turno.getHora_inicio();
-                hora_fin = Turno.getHora_fin();
-                printCustom("TURNO " + id, 1, 0);
-                printCustom("Fecha " + fecha, 1, 0);
-                printCustom("Hora Inicio " + hora_inicio, 1, 0);
-                if(!hora_fin.equals("null")) {
-                    printCustom("Hora Fin " + hora_fin, 1, 0);
-                }
-                importe = Turno.getRecaudacion();
-                printText("TOTAL:  " + importe);
-                printNewLine();
-            }
-
-            printNewLine();
-            printNewLine();
-            //resetPrint(); //reset printer
-            printUnicode();
-            printNewLine();
-            printNewLine();
-
-            outputStream.flush();
-
-        } catch (IOException e) {
-            e.printStackTrace();
         }
-
     }
 
 
@@ -1529,139 +1538,149 @@ public class fragment_principal extends Fragment {
 
         outputStream = impresion.getOutputStream();
 
-        //print command
-        try {
+        if(outputStream == null){
+            Toast.makeText(getContext(), "No se pudo conectar el dispositivo. Verifique si la impresora esta encendida", Toast.LENGTH_SHORT).show();
+        }else {
+
+            //print command
             try {
-                Thread.sleep(1000);
-            } catch (InterruptedException e) {
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+
+                byte[] printformat = {0x1B, 0 * 21, FONT_TYPE};
+                //outputStream.write(printformat);
+
+                //print title
+                printUnicode();
+                //print normal text
+                printCustom(getResources().getString(R.string.empresa), 2, 1);
+                printNewLine();
+                printPhoto(R.drawable.remisluna_logo_impresion);
+                printCustom(getResources().getString(R.string.telefono), 1, 1);
+
+                printNewLine();
+                printUnicode();
+                printNewLine();
+                printText(getResources().getString(R.string.ticket_turno)); // total 32 char in a single line
+
+                printNewLine();
+                printText(fecha);//fecha
+                printText(" - ");
+                printText(hora_inicio);//fecha
+                printNewLine();
+
+                String id;
+                String importe;
+
+                for (viaje Viaje : viajes) {
+                    id = Viaje.getId();
+                    printCustom("VIAJE " + id, 1, 0);
+
+                    importe = Viaje.getImporte();
+                    printText("TOTAL:  " + importe);
+                    printNewLine();
+                }
+                printNewLine();
+                printText("K.TOTAL:  ");
+                printText(kms);
+                printNewLine();
+                printNewLine();
+                printText("RECAUDACION: ");
+                printText(recaudacion);
+                printNewLine();
+                printNewLine();
+                //resetPrint(); //reset printer
+                printUnicode();
+                printNewLine();
+                printNewLine();
+
+                outputStream.flush();
+                iniciar_turno();
+            } catch (IOException e) {
                 e.printStackTrace();
             }
-
-            byte[] printformat = {0x1B, 0 * 21, FONT_TYPE};
-            //outputStream.write(printformat);
-
-            //print title
-            printUnicode();
-            //print normal text
-            printCustom(getResources().getString(R.string.empresa), 2, 1);
-            printNewLine();
-            printPhoto(R.drawable.remisluna_logo_impresion);
-            printCustom(getResources().getString(R.string.telefono), 1, 1);
-
-            printNewLine();
-            printUnicode();
-            printNewLine();
-            printText(getResources().getString(R.string.ticket_turno)); // total 32 char in a single line
-
-            printNewLine();
-            printText(fecha);//fecha
-            printText(" - ");
-            printText(hora_inicio);//fecha
-            printNewLine();
-
-            String id;
-            String importe;
-
-            for (viaje Viaje : viajes) {
-                id = Viaje.getId();
-                printCustom("VIAJE " + id, 1, 0);
-
-                importe = Viaje.getImporte();
-                printText("TOTAL:  " + importe);
-                printNewLine();
-            }
-            printNewLine();
-            printText("K.TOTAL:  ");
-            printText(kms);
-            printNewLine();
-            printNewLine();
-            printText("RECAUDACION: ");
-            printText(recaudacion);
-            printNewLine();
-            printNewLine();
-            //resetPrint(); //reset printer
-            printUnicode();
-            printNewLine();
-            printNewLine();
-
-            outputStream.flush();
-            iniciar_turno();
-        } catch (IOException e) {
-            e.printStackTrace();
         }
+
     }
 
     protected void impresion_cero() {
 
         outputStream = impresion.getOutputStream();
 
-        //print command
-        try {
+        if(outputStream == null){
+            Toast.makeText(getContext(), "No se pudo conectar el dispositivo. Verifique si la impresora esta encendida", Toast.LENGTH_SHORT).show();
+        }else {
+
+            //print command
             try {
-                Thread.sleep(1000);
-            } catch (InterruptedException e) {
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+
+                byte[] printformat = {0x1B, 0 * 21, FONT_TYPE};
+                //outputStream.write(printformat);
+
+                //print title
+                printUnicode();
+                //print normal text
+                printCustom(getResources().getString(R.string.empresa), 2, 1);
+                printNewLine();
+
+                String fecha_hoy = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(new Date());
+                printCustom(fecha_hoy, 0, 1);
+                printNewLine();
+                printUnicode();
+                printText(getResources().getString(R.string.menu_reportes)); // total 32 char in a single line
+
+                printNewLine();
+                printUnicode();
+                printNewLine();
+
+                printCustom(getResources().getString(R.string.reporte_ayuda), 0, 0);
+                printNewLine();
+                printText(getResources().getString(R.string.reporte_parcial));
+                printNewLine();
+                printText(getResources().getString(R.string.reporte_turno));
+                printNewLine();
+                printText(stringABytes(getResources().getString(R.string.reporte_ultimos)));
+                printNewLine();
+                printText(getResources().getString(R.string.reporte_resumen));
+                printNewLine();
+                printText(getResources().getString(R.string.reporte_impresora));
+                printNewLine();
+                printText(stringABytes(getResources().getString(R.string.reporte_ticket)));
+                printNewLine();
+                printText(getResources().getString(R.string.reporte_perfil));
+                printNewLine();
+                printText(getResources().getString(R.string.reporte_viajes));
+                printNewLine();
+                printText(getResources().getString(R.string.reporte_viaje));
+                printNewLine();
+                printText(getResources().getString(R.string.paradas));
+                printNewLine();
+                printText(getResources().getString(R.string.automatico));
+                printNewLine();
+                printText(getResources().getString(R.string.whatsapps));
+
+                printNewLine();
+                printNewLine();
+                //resetPrint(); //reset printer
+                printUnicode();
+                printNewLine();
+                printNewLine();
+
+                outputStream.flush();
+                Intent intent2 = new Intent(getContext(), MainActivity.class);
+                getContext().startActivity(intent2);
+            } catch (IOException e) {
                 e.printStackTrace();
             }
-
-            byte[] printformat = {0x1B, 0 * 21, FONT_TYPE};
-            //outputStream.write(printformat);
-
-            //print title
-            printUnicode();
-            //print normal text
-            printCustom(getResources().getString(R.string.empresa), 2, 1);
-            printNewLine();
-
-            String fecha_hoy = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(new Date());
-            printCustom(fecha_hoy, 0, 1);
-            printNewLine();
-            printUnicode();
-            printText(getResources().getString(R.string.menu_reportes)); // total 32 char in a single line
-
-            printNewLine();
-            printUnicode();
-            printNewLine();
-
-            printCustom(getResources().getString(R.string.reporte_ayuda),0,0);
-            printNewLine();
-            printText(getResources().getString(R.string.reporte_parcial));
-            printNewLine();
-            printText(getResources().getString(R.string.reporte_turno));
-            printNewLine();
-            printText(stringABytes(getResources().getString(R.string.reporte_ultimos)));
-            printNewLine();
-            printText(getResources().getString(R.string.reporte_resumen));
-            printNewLine();
-            printText(getResources().getString(R.string.reporte_impresora));
-            printNewLine();
-            printText(stringABytes(getResources().getString(R.string.reporte_ticket)));
-            printNewLine();
-            printText(getResources().getString(R.string.reporte_perfil));
-            printNewLine();
-            printText(getResources().getString(R.string.reporte_viajes));
-            printNewLine();
-            printText(getResources().getString(R.string.reporte_viaje));
-            printNewLine();
-            printText(getResources().getString(R.string.paradas));
-            printNewLine();
-            printText(getResources().getString(R.string.automatico));
-            printNewLine();
-            printText(getResources().getString(R.string.whatsapps));
-
-            printNewLine();
-            printNewLine();
-            //resetPrint(); //reset printer
-            printUnicode();
-            printNewLine();
-            printNewLine();
-
-            outputStream.flush();
-            Intent intent2 = new Intent(getContext(), MainActivity.class);
-            getContext().startActivity(intent2);
-        } catch (IOException e) {
-            e.printStackTrace();
         }
-
 
     }
     //print custom
@@ -1866,67 +1885,71 @@ public class fragment_principal extends Fragment {
     protected void ticket_ultimos_viajes( ArrayList<viaje> viajes) {
 
         outputStream = impresion.getOutputStream();
+        if(outputStream == null){
+            Toast.makeText(getContext(), "No se pudo conectar el dispositivo. Verifique si la impresora esta encendida", Toast.LENGTH_SHORT).show();
+        }else {
 
-        //print command
-        try {
+            //print command
             try {
-                Thread.sleep(1000);
-            } catch (InterruptedException e) {
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+
+                byte[] printformat = {0x1B, 0 * 21, FONT_TYPE};
+                //outputStream.write(printformat);
+
+                //print title
+                printUnicode();
+                //print normal text
+                printCustom(getResources().getString(R.string.empresa), 2, 1);
+                printNewLine();
+                printPhoto(R.drawable.remisluna_logo_impresion);
+                printCustom(getResources().getString(R.string.telefono), 1, 1);
+
+                printNewLine();
+                printUnicode();
+                printNewLine();
+                printText(getResources().getString(R.string.ticket_ultimos_viajes)); // total 32 char in a single line
+                printNewLine();
+
+                String id;
+                String importe;
+                String fecha;
+                String hora;
+                Double l_total = 0.00;
+
+                for (viaje Viaje : viajes) {
+                    id = Viaje.getId();
+                    printCustom("VIAJE " + id, 1, 0);
+
+                    fecha = Viaje.getFecha();
+                    printText("Fecha:  " + fecha);
+
+                    hora = Viaje.getHora_inicio();
+                    printNewLine();
+                    printText("Hora Inicio:  " + hora);
+
+                    importe = Viaje.getImporte();
+                    printNewLine();
+                    printText("Importe:  " + importe);
+                    l_total = l_total + Double.parseDouble(importe);
+                    printNewLine();
+                    printNewLine();
+                }
+                printNewLine();
+                printText("TOTAL: ");
+                printText(String.valueOf(getTwoDecimals(l_total)));
+                printNewLine();
+                printNewLine();
+                printUnicode();
+                //resetPrint(); //reset printer
+
+                outputStream.flush();
+            } catch (IOException e) {
                 e.printStackTrace();
             }
-
-            byte[] printformat = {0x1B, 0 * 21, FONT_TYPE};
-            //outputStream.write(printformat);
-
-            //print title
-            printUnicode();
-            //print normal text
-            printCustom(getResources().getString(R.string.empresa), 2, 1);
-            printNewLine();
-            printPhoto(R.drawable.remisluna_logo_impresion);
-            printCustom(getResources().getString(R.string.telefono), 1, 1);
-
-            printNewLine();
-            printUnicode();
-            printNewLine();
-            printText(getResources().getString(R.string.ticket_ultimos_viajes)); // total 32 char in a single line
-            printNewLine();
-
-            String id;
-            String importe;
-            String fecha;
-            String hora;
-            Double l_total = 0.00;
-
-            for (viaje Viaje : viajes) {
-                id = Viaje.getId();
-                printCustom("VIAJE " + id, 1, 0);
-
-                fecha = Viaje.getFecha();
-                printText("Fecha:  " + fecha);
-
-                hora = Viaje.getHora_inicio();
-                printNewLine();
-                printText("Hora Inicio:  " + hora);
-
-                importe = Viaje.getImporte();
-                printNewLine();
-                printText("Importe:  " + importe);
-                l_total = l_total + Double.parseDouble(importe);
-                printNewLine();
-                printNewLine();
-            }
-            printNewLine();
-            printText("TOTAL: ");
-            printText(String.valueOf(getTwoDecimals(l_total)));
-            printNewLine();
-            printNewLine();
-            printUnicode();
-            //resetPrint(); //reset printer
-
-            outputStream.flush();
-        } catch (IOException e) {
-            e.printStackTrace();
         }
     }
 
@@ -2061,67 +2084,71 @@ public class fragment_principal extends Fragment {
     protected void repetirTicket() {
 
         outputStream = impresion.getOutputStream();
+        if(outputStream == null){
+            Toast.makeText(getContext(), "No se pudo conectar el dispositivo. Verifique si la impresora esta encendida", Toast.LENGTH_SHORT).show();
+        }else {
 
-        //print command
-        try {
+            //print command
             try {
-                Thread.sleep(1000);
-            } catch (InterruptedException e) {
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+
+                byte[] printformat = {0x1B, 0x21, 0x08};
+                outputStream.write(printformat);
+
+                //print title
+                printUnicode();
+                //print normal text
+                printCustom(nombre_remiseria, 2, 1);
+                printNewLine();
+                printCustom("Tel. Remis: " + telefono_remiseria, 1, 1);
+                printNewLine();
+                printCustom("Tel. Queja: " + telefono_queja, 1, 1);
+                printNewLine();
+                printText(getResources().getString(R.string.recibo)); // total 32 char in a single line
+                printNewLine();
+                printText(stringABytes(getResources().getString(R.string.servicio) + ' ' + localidad_abreviada));
+                printNewLine();
+                printText(fecha_ultimo);//fecha
+                printNewLine();
+                printCustom("Chofer: " + chofer_ultimo, 1, 0);
+                printText(stringABytes(getResources().getString(R.string.nro_movil) + movil_ultimo));
+                printCustom("Patente: " + patente, 1, 0);
+                printText(stringABytes(getResources().getString(R.string.chapa) + chapa));
+                printNewLine();
+                printText("SALIDA  " + hora_salida_ultimo);
+                printNewLine();
+                printText("DESDE  " + salida_ultimo);
+                printNewLine();
+                printText("HASTA  " + destino_ultimo);
+                printNewLine();
+                printText("LLEGADA  " + hora_destino_ultimo);
+                printNewLine();
+                printText("RECORRIDO  " + String.format(Locale.GERMANY, "%.2f", Double.parseDouble(distancia_ultimo)) + " Kms.");
+                printNewLine();
+                printNewLine();
+                printText("TARIFA AL  " + fecha_tarifa_ultimo);
+                printNewLine();
+                printText("BAJADA  " + '$' + String.format(Locale.GERMAN, "%.2f", Double.parseDouble(bajada_ultimo)));
+                printNewLine();
+                printText("VIAJE  " + '$' + String.format(Locale.GERMANY, "%.2f", Double.parseDouble(fichas_ultimo)));
+                printNewLine();
+                printText("ESPERA  " + '$' + String.format(Locale.GERMANY, "%.2f", Double.parseDouble(espera_ultimo)));
+                printNewLine();
+                printNewLine();
+                printCustom("TOTAL:  " + '$' + String.format(Locale.GERMANY, "%.2f", Double.parseDouble(importe_ultimo)), 2, 0);
+                printCustom("", 1, 1);
+                printUnicode();
+                printNewLine();
+                printNewLine();
+                outputStream.flush();
+
+            } catch (IOException e) {
                 e.printStackTrace();
             }
-
-            byte[] printformat = { 0x1B,0x21,0x08 };
-            outputStream.write(printformat);
-
-            //print title
-            printUnicode();
-            //print normal text
-            printCustom (nombre_remiseria,2,1);
-            printNewLine();
-            printCustom ("Tel. Remis: " + telefono_remiseria,1,1);
-            printNewLine();
-            printCustom ("Tel. Queja: " + telefono_queja,1,1);
-            printNewLine();
-            printText(getResources().getString(R.string.recibo)); // total 32 char in a single line
-            printNewLine();
-            printText(stringABytes(getResources().getString(R.string.servicio) + ' ' + localidad_abreviada));
-            printNewLine();
-            printText(fecha_ultimo);//fecha
-            printNewLine();
-            printCustom ("Chofer: " + chofer_ultimo,1,0);
-            printText (stringABytes(getResources().getString(R.string.nro_movil) +  movil_ultimo));
-            printCustom ("Patente: " + patente,1,0);
-            printText (stringABytes(getResources().getString(R.string.chapa) + chapa));
-            printNewLine();
-            printText("SALIDA  " + hora_salida_ultimo);
-            printNewLine();
-            printText("DESDE  " + salida_ultimo);
-            printNewLine();
-            printText("HASTA  " + destino_ultimo);
-            printNewLine();
-            printText("LLEGADA  " + hora_destino_ultimo);
-            printNewLine();
-            printText("RECORRIDO  " + String.format(Locale.GERMANY,"%.2f",Double.parseDouble(distancia_ultimo)) + " Kms.");
-            printNewLine();
-            printNewLine();
-            printText("TARIFA AL  " + fecha_tarifa_ultimo);
-            printNewLine();
-            printText("BAJADA  " + '$' + String.format(Locale.GERMAN,"%.2f",Double.parseDouble(bajada_ultimo)));
-            printNewLine();
-            printText("VIAJE  " + '$' + String.format(Locale.GERMANY,"%.2f",Double.parseDouble(fichas_ultimo)));
-            printNewLine();
-            printText("ESPERA  "+ '$' + String.format(Locale.GERMANY,"%.2f",Double.parseDouble(espera_ultimo)));
-            printNewLine();
-            printNewLine();
-            printCustom ("TOTAL:  " + '$' + String.format(Locale.GERMANY,"%.2f",Double.parseDouble(importe_ultimo)),2,0);
-            printCustom ("",1,1);
-            printUnicode();
-            printNewLine();
-            printNewLine();
-            outputStream.flush();
-
-        } catch (IOException e) {
-            e.printStackTrace();
         }
     }
 
@@ -2463,6 +2490,169 @@ public class fragment_principal extends Fragment {
     }
 
     private void procesarAgregarViajeAut(JSONObject response, Context context) {
+
+        try {
+            // Obtener estado
+            String estado = response.getString("estado");
+            // Obtener mensaje
+            String mensaje = response.getString("mensaje");
+
+            switch (estado) {
+                case "1":
+
+                    cargarIdVehiculoParada(context);
+
+                    break;
+                case "2":
+                    // Mostrar mensaje
+                    Toast.makeText(
+                            context,
+                            mensaje,
+                            Toast.LENGTH_LONG).show();
+                    // Enviar código de falla
+                    break;
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void cargarIdVehiculoParada(final Context context) {
+
+        // Añadir parámetro a la URL del web service
+        String newURL = Constantes.GET_ID_VEHICULO + "?id=" + ls_id_conductor;
+        Log.d(TAG,newURL);
+
+        // Realizar petición GET_BY_ID
+        VolleySingleton.getInstance(context).addToRequestQueue(
+                myRequest = new JsonObjectRequest(
+                        Request.Method.POST,
+                        newURL,
+                        null,
+                        new Response.Listener<JSONObject>() {
+
+                            @Override
+                            public void onResponse(JSONObject response) {
+                                // Procesar respuesta Json
+                                procesarRespuesta_ID_Parada(response, context);
+                            }
+                        },
+                        new Response.ErrorListener() {
+                            @Override
+                            public void onErrorResponse(VolleyError error) {
+                                Log.d(TAG, "Error Volley viaje: " + error.getMessage());
+
+                            }
+                        }
+                )
+        );
+        myRequest.setRetryPolicy(new DefaultRetryPolicy(
+                50000,
+                5,//DefaultRetryPolicy.DEFAULT_MAX_RETRIES
+                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+
+    }
+
+    private void procesarRespuesta_ID_Parada(JSONObject response, Context context) {
+
+        try {
+            // Obtener atributo "mensaje"
+            String mensaje = response.getString("estado");
+
+            switch (mensaje) {
+                case "1":
+                    // Obtener objeto "cliente"
+                    JSONArray mensaje1 = response.getJSONArray("vehiculo");
+
+                    JSONObject object = mensaje1.getJSONObject(0);
+                    //Parsear objeto
+
+                    id_movil = object.getString("id");
+                    borrar_parada(context);
+                    break;
+
+                case "2":
+
+                    break;
+
+            }
+
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    private void borrar_parada(final Context context){
+
+        HashMap<String, String> map = new HashMap<>();// Mapeo previo
+        String l_parada = "0";
+
+        map.put("parada", l_parada);
+        map.put("id", id_movil);
+
+
+        // Crear nuevo objeto Json basado en el mapa
+        JSONObject jobject = new JSONObject(map);
+
+
+        // Depurando objeto Json...
+        Log.d(TAG, jobject.toString());
+
+        StringBuilder encodedParams = new StringBuilder();
+        try {
+            for (Map.Entry<String, String> entry : map.entrySet()) {
+                encodedParams.append(URLEncoder.encode(entry.getKey(), "utf-8"));
+                encodedParams.append('=');
+                encodedParams.append(URLEncoder.encode(entry.getValue(), "utf-8"));
+                encodedParams.append('&');
+            }
+        } catch (UnsupportedEncodingException uee) {
+            throw new RuntimeException("Encoding not supported: " + "utf-8", uee);
+        }
+
+        encodedParams.setLength(Math.max(encodedParams.length() - 1, 0));
+
+        String newURL = Constantes.UPDATE_PARADAS + "?" + encodedParams;
+        Log.d(TAG,newURL);
+
+        // Actualizar datos en el servidor
+        VolleySingleton.getInstance(context).addToRequestQueue(
+                new JsonObjectRequest(
+                        Request.Method.POST,
+                        newURL,
+                        null,
+                        new Response.Listener<JSONObject>() {
+                            @Override
+                            public void onResponse(JSONObject response) {
+                                procesarRespuestaBorrarParada(response, context);
+                            }
+                        },
+                        new Response.ErrorListener() {
+                            @Override
+                            public void onErrorResponse(VolleyError error) {
+                                Log.d(TAG, "Error inicio: " + error.getMessage());
+
+                            }
+                        }
+
+                ) {
+                    @Override
+                    public Map<String, String> getHeaders() {
+                        Map<String, String> headers = new HashMap<>();
+                        headers.put("Content-Type", "application/json; charset=utf-8");
+                        return headers;
+                    }
+
+                    @Override
+                    public String getBodyContentType() {
+                        return "application/json; charset=utf-8" + getParamsEncoding();
+                    }
+                }
+        );
+    }
+    private void procesarRespuestaBorrarParada(JSONObject response, Context context) {
 
         try {
             // Obtener estado

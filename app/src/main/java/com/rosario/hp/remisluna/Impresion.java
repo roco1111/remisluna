@@ -10,7 +10,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Binder;
+import android.os.Handler;
 import android.os.IBinder;
+import android.os.Looper;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import android.widget.Toast;
@@ -81,34 +83,37 @@ public class Impresion extends Service {
         String l_impresora  = settings.getString("impresora","");
         String l_conductor = settings.getString("id","");
         if(!l_impresora.equals("")){
-            dispositivoBluetooth = bluetoothAdapter.getRemoteDevice(l_impresora);
-            final Thread t = new Thread() {
-                @Override
-                public void run() {
-                    try {
-                        // Conectamos los dispositivos
+            if (startId == 1) {
+                dispositivoBluetooth = bluetoothAdapter.getRemoteDevice(l_impresora);
+                final Thread t = new Thread() {
+                    @Override
+                    public void run() {
+                        try {
+                            // Conectamos los dispositivos
 
-                        // Creamos un socket
-                        bluetoothSocket = dispositivoBluetooth.createRfcommSocketToServiceRecord(aplicacionUUID);
-                        Log.d("impresora","socket");
-                        bluetoothSocket.connect();// conectamos el socket
-                        outputStream = bluetoothSocket.getOutputStream();
-                        inputStream = bluetoothSocket.getInputStream();
+                            // Creamos un socket
+                            bluetoothSocket = dispositivoBluetooth.createRfcommSocketToServiceRecord(aplicacionUUID);
+                            Log.d("impresora", "socket");
+                            bluetoothSocket.connect();// conectamos el socket
+                            outputStream = bluetoothSocket.getOutputStream();
+                            inputStream = bluetoothSocket.getInputStream();
 
-                        //empezarEscucharDatos();
+                            //empezarEscucharDatos();
 
 
-                    } catch (IOException e) {
+                        } catch (IOException e) {
 
-                        Log.e(TAG_DEBUG, "Error al conectar el dispositivo bluetooth");
-                        //Toast.makeText(getApplicationContext(), "No se pudo conectar el dispositivo", Toast.LENGTH_SHORT).show();
+                            Log.e(TAG_DEBUG, "Error al conectar el dispositivo bluetooth");
+
+                            showToast(getApplicationContext());
+                        }
+
                     }
+                };
+                t.start();
 
-                }
-            };
-            t.start();
-
-            return START_STICKY;
+                return START_STICKY;
+            }
         }else {
             if (startId == 1) {
                 Log.d("Impresión", "Servicio iniciado...");
@@ -153,7 +158,16 @@ public class Impresion extends Service {
                 return START_STICKY;
             }
         }
+        return START_STICKY;
+    }
 
+    private void showToast(Context ctx) {
+        Handler handler = new Handler(Looper.getMainLooper());
+        handler.post(new Runnable() {
+            public void run() {
+                Toast.makeText(ctx, "No se pudo conectar el dispositivo. Verifique si la impresora esta encendida", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     private void guardar_impresora(String impresora, String conductor, final Context context){
