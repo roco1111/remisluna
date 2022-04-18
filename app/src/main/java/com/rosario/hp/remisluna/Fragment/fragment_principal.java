@@ -72,6 +72,7 @@ import java.util.HashMap;
 
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 
 import static com.rosario.hp.remisluna.include.Utils.stringABytes;
 
@@ -149,6 +150,8 @@ public class fragment_principal extends Fragment {
     private String path;
     private String chapa;
     private String patente;
+    private String chofer_habilitado;
+    private String movil_habilitado;
 
     @Override
     public void onStart() {
@@ -158,11 +161,17 @@ public class fragment_principal extends Fragment {
 
     }
 
+
+
     @Override
-    public void onStop() {
-        super.onStop();
-        getActivity().unbindService(connection);
-        mBound = false;
+    public void onPause() {
+        super.onPause();
+
+        if(mBound) {
+            Objects.requireNonNull(getActivity()).unbindService(connection);
+
+            mBound = false;
+        }
     }
 
 
@@ -188,11 +197,16 @@ public class fragment_principal extends Fragment {
             if(impresion.getbluetoothSocket() != null){
                 impresora.setTextColor(getResources().getColor(R.color.colorPrimary));
                 mBound = true;
+            }else{
+                impresora.setTextColor(getResources().getColor(R.color.alarma));
+                mBound = false;
             }
         }
 
         @Override
         public void onServiceDisconnected(ComponentName arg0) {
+
+            impresora.setTextColor(getResources().getColor(R.color.alarma));
             mBound = false;
         }
     };
@@ -236,10 +250,45 @@ public class fragment_principal extends Fragment {
         ls_id_turno     = settings.getString("id_turno_chofer","");
         ls_remiseria     = settings.getString("remiseria","");
         viajes_automaticos = settings.getString("viajes_automaticos","");
+        movil_habilitado = settings.getString("estado_vehiculo","");
+        chofer_habilitado = settings.getString("estado_conductor","");
+
+        this.boton_uno.setEnabled(false);
+        this.boton_uno.setBackground(getResources().getDrawable(R.drawable.uno_gris));
         if(viajes_automaticos.equals("0")){
             this.boton_automatico.setVisibility(View.GONE);
         }else{
             this.boton_automatico.setVisibility(View.VISIBLE);
+        }
+
+        if(movil_habilitado.equals("1") && chofer_habilitado.equals("1"))
+        {
+            this.boton_uno.setEnabled(true);
+            this.boton_uno.setBackground(getResources().getDrawable(R.drawable.selector_uno));
+            this.boton_dos.setEnabled(true);
+            this.boton_dos.setBackground(getResources().getDrawable(R.drawable.selector_dos));
+            this.boton_tres.setEnabled(true);
+            this.boton_tres.setBackground(getResources().getDrawable(R.drawable.selector_tres));
+            this.boton_cuatro.setEnabled(true);
+            this.boton_cuatro.setBackground(getResources().getDrawable(R.drawable.selector_cuatro));
+            this.boton_seis.setEnabled(true);
+            this.boton_seis.setBackground(getResources().getDrawable(R.drawable.selector_seis));
+            this.boton_parada.setEnabled(true);
+            this.boton_parada.setBackground(getResources().getDrawable(R.drawable.selector_parada));
+
+        }else{
+            this.boton_uno.setEnabled(false);
+            this.boton_uno.setBackground(getResources().getDrawable(R.drawable.uno_gris));
+            this.boton_dos.setEnabled(false);
+            this.boton_dos.setBackground(getResources().getDrawable(R.drawable.dos_gris));
+            this.boton_tres.setEnabled(false);
+            this.boton_tres.setBackground(getResources().getDrawable(R.drawable.tres_gris));
+            this.boton_cuatro.setEnabled(false);
+            this.boton_cuatro.setBackground(getResources().getDrawable(R.drawable.cuatro_gris));
+            this.boton_seis.setEnabled(false);
+            this.boton_seis.setBackground(getResources().getDrawable(R.drawable.seis_gris));
+            this.boton_parada.setEnabled(false);
+            this.boton_parada.setBackground(getResources().getDrawable(R.drawable.parada_gris));
         }
         MediaPlayer mediaPlayer = MediaPlayer.create(getActivity(), R.raw.everblue);
 
@@ -367,9 +416,19 @@ public class fragment_principal extends Fragment {
                 SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getContext());
                 SharedPreferences.Editor editor = settings.edit();
                 editor.putString("tipo_ventana","main");
-                editor.commit();
-                getActivity().startService(new Intent(getActivity(), Impresion.class));
-                feriado(getContext());
+                editor.apply();
+                if(mBound) {
+                    Objects.requireNonNull(getActivity()).unbindService(connection);
+                    impresora.setTextColor(getResources().getColor(R.color.alarma));
+                    mBound = false;
+                }
+                if(!mBound) {
+
+                    Intent intent2 = new Intent(getContext(), MainActivity.class);
+                    getContext().startActivity(intent2);
+                    getActivity().finish();
+
+                }
             }
         });
 
@@ -411,8 +470,10 @@ public class fragment_principal extends Fragment {
             @Override
             public void onClick(View v) {
                 mediaPlayer.start();
+
                 Intent intent2 = new Intent(getContext(), MainViaje.class);
                 getContext().startActivity(intent2);
+                getActivity().finish();
             }
         });
         feriado(getContext());
@@ -1435,23 +1496,21 @@ public class fragment_principal extends Fragment {
                         editor.putString("impresora",l_impresora);
                         editor.apply();
 
-                        editor.commit();
-
                         if(!l_impresora.equals("")) {
-                            editor.putString("tipo_ventana", "main");
-                            editor.commit();
-                            Intent intent = new Intent(getActivity(), Impresion.class);
-                            getActivity().startService(intent);
 
-                            getActivity().bindService(intent, connection, Context.BIND_AUTO_CREATE);
-                            //if (mBound) {
-                              //  impresora.setTextColor(getResources().getColor(R.color.colorPrimary));
-                           // } else {
-                             //   impresora.setTextColor(getResources().getColor(R.color.alarma));
-                           // }
+                                editor.putString("tipo_ventana", "main");
+                                editor.apply();
+                                Intent intent = new Intent(context, Impresion.class);
+                                Objects.requireNonNull(context).startService(intent);
+
+                                context.bindService(intent, connection, Context.BIND_AUTO_CREATE);
+
                         }else{
-                            Intent intent = new Intent(getActivity(), Impresion.class);
-                            getActivity().bindService(intent, connection, Context.BIND_AUTO_CREATE);
+
+                                Intent intent = new Intent(context, Impresion.class);
+                                Objects.requireNonNull(context).bindService(intent, connection, Context.BIND_AUTO_CREATE);
+                                Objects.requireNonNull(context).startService(intent);
+
                         }
 
                     }
@@ -1675,8 +1734,7 @@ public class fragment_principal extends Fragment {
                 printNewLine();
 
                 outputStream.flush();
-                Intent intent2 = new Intent(getContext(), MainActivity.class);
-                getContext().startActivity(intent2);
+
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -2662,8 +2720,10 @@ public class fragment_principal extends Fragment {
 
             switch (estado) {
                 case "1":
+
                     Intent intent2 = new Intent(getContext(), MainViaje.class);
-                    getContext().startActivity(intent2);
+                    Objects.requireNonNull(getContext()).startActivity(intent2);
+                    Objects.requireNonNull(getActivity()).finish();
                     break;
                 case "2":
                     // Mostrar mensaje

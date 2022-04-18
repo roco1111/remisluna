@@ -82,15 +82,15 @@ public class MainViaje extends AppCompatActivity {
     protected void onStart() {
         super.onStart();
         // Bind to LocalService
-        Intent intent = new Intent(this, Impresion.class);
-        bindService(intent, connection, Context.BIND_AUTO_CREATE);
+        //Intent intent = new Intent(this, Impresion.class);
+        //bindService(intent, connection, Context.BIND_AUTO_CREATE);
     }
 
     @Override
     protected void onStop() {
         super.onStop();
-        unbindService(connection);
-        mBound = false;
+        //unbindService(connection);
+        //mBound = false;
     }
 
     /** Defines callbacks for service binding, passed to bindService() */
@@ -222,6 +222,7 @@ public class MainViaje extends AppCompatActivity {
                     getSupportFragmentManager().beginTransaction()
                             .replace(R.id.main_content, fragment)
                             .commit();
+
                     habilitar_gps();
                     break;
 
@@ -321,7 +322,7 @@ public class MainViaje extends AppCompatActivity {
                     Intent intent2 = new Intent(getApplicationContext(), MainActivity.class);
                     intent2.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK );
                     getApplicationContext().startActivity(intent2);
-
+                    finish();
                     break;
 
             }

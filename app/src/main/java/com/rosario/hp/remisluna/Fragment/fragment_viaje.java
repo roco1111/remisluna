@@ -1,6 +1,7 @@
 package com.rosario.hp.remisluna.Fragment;
 
 import android.Manifest;
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.ComponentName;
 import android.content.Context;
@@ -69,6 +70,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 
 import static com.rosario.hp.remisluna.include.Utils.stringABytes;
 
@@ -147,20 +149,24 @@ public class fragment_viaje extends Fragment {
     private String ls_es_feriado;
     private String chapa;
     private String patente;
+    private Activity act;
 
     @Override
     public void onStart() {
         super.onStart();
         // Bind to LocalService
-        Intent intent = new Intent(getActivity(), Impresion.class);
-        getActivity().bindService(intent, connection, Context.BIND_AUTO_CREATE);
+        cargarImpresora(getContext());
     }
 
     @Override
-    public void onStop() {
-        super.onStop();
-        getActivity().unbindService(connection);
-        mBound = false;
+    public void onPause() {
+        super.onPause();
+
+        if(mBound) {
+            Objects.requireNonNull(getActivity()).unbindService(connection);
+
+            mBound = false;
+        }
     }
 
     @Override
@@ -183,13 +189,17 @@ public class fragment_viaje extends Fragment {
             Impresion.LocalBinder binder = (Impresion.LocalBinder) service;
             impresion = binder.getService();
             if(impresion.getbluetoothSocket() != null){
+                impresora.setTextColor(act.getResources().getColor(R.color.colorPrimary));
                 mBound = true;
-                impresora.setTextColor(getResources().getColor(R.color.colorPrimary));
+            }else{
+                impresora.setTextColor(act.getResources().getColor(R.color.alarma));
+                mBound = false;
             }
         }
 
         @Override
         public void onServiceDisconnected(ComponentName arg0) {
+            impresora.setTextColor(getResources().getColor(R.color.alarma));
             mBound = false;
         }
     };
@@ -217,6 +227,7 @@ public class fragment_viaje extends Fragment {
         this.boton_ocho = v.findViewById(R.id.imageButtonOcho);
         this.boton_nueve = v.findViewById(R.id.imageButtonNueve);
         datos = new ArrayList<>();
+        act = getActivity();
         MediaPlayer mediaPlayer = MediaPlayer.create(getActivity(), R.raw.everblue);
 
         this.impresora = v.findViewById(R.id.impresora);
@@ -367,8 +378,19 @@ public class fragment_viaje extends Fragment {
                 SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getContext());
                 SharedPreferences.Editor editor = settings.edit();
                 editor.putString("tipo_ventana","main");
-                editor.commit();
-                getActivity().startService(new Intent(getActivity(), Impresion.class));
+                editor.apply();
+                if(mBound) {
+                    Objects.requireNonNull(getActivity()).unbindService(connection);
+                    impresora.setTextColor(getResources().getColor(R.color.alarma));
+                    mBound = false;
+                }
+                if(!mBound) {
+
+                    Intent intent2 = new Intent(getContext(), MainActivity.class);
+                    getContext().startActivity(intent2);
+                    getActivity().finish();
+
+                }
             }
         });
 
@@ -1016,8 +1038,7 @@ public class fragment_viaje extends Fragment {
                 printNewLine();
 
                 outputStream.flush();
-                Intent intent2 = new Intent(getContext(), MainActivity.class);
-                getContext().startActivity(intent2);
+
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -1696,6 +1717,7 @@ public class fragment_viaje extends Fragment {
 
                     Intent intent2 = new Intent(context, MainViaje.class);
                     context.startActivity(intent2);
+                    getActivity().finish();
                     break;
                 case "2":
                     // Mostrar mensaje
@@ -1764,6 +1786,7 @@ public class fragment_viaje extends Fragment {
                 case "1":
                     Intent intent2 = new Intent(getContext(), MainActivity.class);
                     getContext().startActivity(intent2);
+                    getActivity().finish();
                     break;
                 case "2":
                     // Mostrar mensaje
@@ -2238,5 +2261,94 @@ public class fragment_viaje extends Fragment {
             e.printStackTrace();
             Log.e("PrintTools", "the file isn't exists");
         }
+    }
+
+    public void cargarImpresora(final Context context) {
+
+        String newURL = Constantes.GET_CONDUCTOR_BY_ID + "?conductor=" + ls_id_conductor;
+        Log.d(TAG,newURL);
+
+        // Realizar petición GET_BY_ID
+        VolleySingleton.getInstance(context).addToRequestQueue(
+                myRequest = new JsonObjectRequest(
+                        Request.Method.POST,
+                        newURL,
+                        null,
+                        new Response.Listener<JSONObject>() {
+
+                            @Override
+                            public void onResponse(JSONObject response) {
+                                // Procesar respuesta Json
+                                procesarRespuestaImpresora(response, context);
+                            }
+                        },
+                        new Response.ErrorListener() {
+                            @Override
+                            public void onErrorResponse(VolleyError error) {
+                                Log.d(TAG, "Error Volley parametro: " + error.getMessage());
+
+                            }
+                        }
+                )
+        );
+        myRequest.setRetryPolicy(new DefaultRetryPolicy(
+                50000,
+                5,//DefaultRetryPolicy.DEFAULT_MAX_RETRIES
+                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+
+    }
+
+    private void procesarRespuestaImpresora(JSONObject response, Context context) {
+
+        try {
+            // Obtener atributo "mensaje"
+            String mensaje = response.getString("estado");
+
+            switch (mensaje) {
+                case "1":
+                    JSONArray datos_parada = response.getJSONArray("conductor");
+
+                    for(int i = 0; i < datos_parada.length(); i++)
+                    {
+                        JSONObject object = datos_parada.getJSONObject(i);
+
+                        SharedPreferences settings1 = PreferenceManager.getDefaultSharedPreferences(context);
+
+                        SharedPreferences.Editor editor = settings1.edit();
+
+                        String l_impresora;
+
+                        l_impresora = object.getString("impresora");
+
+                        editor.putString("impresora",l_impresora);
+                        editor.apply();
+
+                        if(!l_impresora.equals("")) {
+
+                            editor.putString("tipo_ventana", "main");
+                            editor.apply();
+                            Intent intent = new Intent(context, Impresion.class);
+                            Objects.requireNonNull(context).startService(intent);
+
+                            context.bindService(intent, connection, Context.BIND_AUTO_CREATE);
+
+                        }else{
+
+                            Intent intent = new Intent(context, Impresion.class);
+                            Objects.requireNonNull(context).bindService(intent, connection, Context.BIND_AUTO_CREATE);
+                            Objects.requireNonNull(context).startService(intent);
+
+                        }
+
+                    }
+                    break;
+
+            }
+
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
     }
 }

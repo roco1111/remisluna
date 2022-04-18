@@ -68,6 +68,10 @@ public class Impresion extends Service {
         return bluetoothSocket;
     }
 
+    public BluetoothAdapter getBluetoothAdapter() {
+        return bluetoothAdapter;
+    }
+
     public IBinder onBind(Intent intent) {
         return binder;
     }
@@ -79,11 +83,12 @@ public class Impresion extends Service {
     }
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+        Log.d("startid", String.valueOf(startId));
         SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
         String l_impresora  = settings.getString("impresora","");
         String l_conductor = settings.getString("id","");
         if(!l_impresora.equals("")){
-            if (startId == 1) {
+                Log.d("startid_a", String.valueOf(startId));
                 dispositivoBluetooth = bluetoothAdapter.getRemoteDevice(l_impresora);
                 final Thread t = new Thread() {
                     @Override
@@ -110,10 +115,8 @@ public class Impresion extends Service {
 
                     }
                 };
-                t.start();
+            t.start();
 
-                return START_STICKY;
-            }
         }else {
             if (startId == 1) {
                 Log.d("Impresión", "Servicio iniciado...");
@@ -279,5 +282,13 @@ public class Impresion extends Service {
             e.printStackTrace();
         }
 
+    }
+    @Override
+    public boolean onUnbind(Intent intent) {
+        // All clients have unbound with unbindService()
+
+        cerrarConexion();
+
+        return false;
     }
 }

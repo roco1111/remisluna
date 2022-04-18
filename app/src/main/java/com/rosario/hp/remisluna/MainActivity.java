@@ -39,6 +39,7 @@ import com.android.volley.error.VolleyError;
 import com.android.volley.request.JsonObjectRequest;
 import com.rosario.hp.remisluna.Entidades.ayuda;
 import com.rosario.hp.remisluna.Fragment.fragment_principal;
+import com.rosario.hp.remisluna.Fragment.fragment_vacia;
 import com.rosario.hp.remisluna.include.Constantes;
 import com.rosario.hp.remisluna.include.PrinterCommands;
 import com.rosario.hp.remisluna.include.Utils;
@@ -82,17 +83,9 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public void onStart() {
         super.onStart();
-        // Bind to LocalService
-        //Intent intent = new Intent(getApplicationContext(), Impresion.class);
-        //getApplicationContext().bindService(intent, connection, Context.BIND_AUTO_CREATE);
     }
 
-    @Override
-    public void onStop() {
-        super.onStop();
-        //().unbindService(connection);
-        //mBound = false;
-    }
+
 
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
@@ -143,13 +136,15 @@ public class MainActivity extends AppCompatActivity {
         ls_id_conductor     = settings.getString("id","");
         Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(false);
         Objects.requireNonNull(getSupportActionBar()).setDisplayShowHomeEnabled(false);
-        Objects.requireNonNull(getSupportActionBar()).setTitle("Remisluna");
+        Objects.requireNonNull(getSupportActionBar()).setTitle(getResources().getString(R.string.app_name));
 
+        Fragment fragment = new fragment_vacia();
 
+        getSupportFragmentManager().beginTransaction()
+                .replace(R.id.main_content, fragment)
+                .commit();
 
         cargarDatos(getApplicationContext());
-
-
     }
 
     @Override
@@ -182,6 +177,11 @@ public class MainActivity extends AppCompatActivity {
                             @Override
                             public void onErrorResponse(VolleyError error) {
                                 Log.d(TAG, "Error Volley turno: " + error.getMessage());
+                                Fragment fragment = new fragment_principal();
+
+                                getSupportFragmentManager().beginTransaction()
+                                        .replace(R.id.main_content, fragment)
+                                        .commit();
 
                             }
                         }
@@ -215,12 +215,8 @@ public class MainActivity extends AppCompatActivity {
 
                     editor.commit();
 
-                    cargarViajes(context);
-                    Fragment fragment = new fragment_principal();
 
-                    getSupportFragmentManager().beginTransaction()
-                            .replace(R.id.main_content, fragment)
-                            .commit();
+                    cargarViajes(context);
 
                     break;
 
@@ -258,6 +254,11 @@ public class MainActivity extends AppCompatActivity {
                             @Override
                             public void onErrorResponse(VolleyError error) {
                                 Log.d(TAG, "Error Volley viaje curso: " + error.getMessage());
+                                Fragment fragment = new fragment_principal();
+
+                                getSupportFragmentManager().beginTransaction()
+                                        .replace(R.id.main_content, fragment)
+                                        .commit();
 
                             }
                         }
@@ -283,12 +284,22 @@ public class MainActivity extends AppCompatActivity {
                     JSONObject object = mensaje1.getJSONObject(0);
                     ls_vehiculo = object.getString("id_movil");
 
+                    SharedPreferences settings2 = PreferenceManager.getDefaultSharedPreferences(context);
+
+                    SharedPreferences.Editor editor2 = settings2.edit();
+
+                    editor2.putString("estado_conductor",object.getString("estado_conductor"));
+                    editor2.putString("estado_vehiculo",object.getString("estado_vehiculo"));
+                    editor2.apply();
+
+                    editor2.commit();
+
                     locationEnd();
 
                     Intent intent2 = new Intent(getApplicationContext(), MainViaje.class);
                     intent2.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK );
                     getApplicationContext().startActivity(intent2);
-
+                    finish();
                     break;
 
                 case "2":
@@ -330,6 +341,11 @@ public class MainActivity extends AppCompatActivity {
                             @Override
                             public void onErrorResponse(VolleyError error) {
                                 Log.d(TAG, "Error Volley viaje solicitado: " + error.getMessage());
+                                Fragment fragment = new fragment_principal();
+
+                                getSupportFragmentManager().beginTransaction()
+                                        .replace(R.id.main_content, fragment)
+                                        .commit();
 
                             }
                         }
@@ -355,13 +371,12 @@ public class MainActivity extends AppCompatActivity {
 
                     ls_vehiculo = object.getString("id_movil");
 
-                    /*
-                    if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                        ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION,}, 1000);
-                    } else {
-                        locationStart();
-                    }
-                     */
+
+                    fragment = new fragment_principal();
+
+                    getSupportFragmentManager().beginTransaction()
+                            .replace(R.id.main_content, fragment)
+                            .commit();
 
                     SharedPreferences settings1 = PreferenceManager.getDefaultSharedPreferences(context);
 
@@ -374,6 +389,8 @@ public class MainActivity extends AppCompatActivity {
                     ls_viaje = object.getString("id");
 
                     editor.putString("id_viaje",ls_viaje);
+                    editor.putString("estado_conductor",object.getString("estado_conductor"));
+                    editor.putString("estado_vehiculo",object.getString("estado_vehiculo"));
                     editor.apply();
 
                     editor.commit();
@@ -383,6 +400,7 @@ public class MainActivity extends AppCompatActivity {
                     Intent intent2 = new Intent(getApplicationContext(), MainViaje.class);
                     intent2.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK );
                     getApplicationContext().startActivity(intent2);
+                    finish();
 
                     break;
 
@@ -450,11 +468,18 @@ public class MainActivity extends AppCompatActivity {
 
                     SharedPreferences.Editor editor = settings1.edit();
 
-
+                    editor.putString("estado_conductor",object.getString("estado_conductor"));
+                    editor.putString("estado_vehiculo",object.getString("estado_vehiculo"));
                     editor.putString("vehiculo",ls_vehiculo);
                     editor.apply();
 
                     editor.commit();
+
+                    Fragment fragment = new fragment_principal();
+
+                    getSupportFragmentManager().beginTransaction()
+                            .replace(R.id.main_content, fragment)
+                            .commit();
 
                     if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
                         ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION,}, 1000);

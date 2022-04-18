@@ -1246,6 +1246,7 @@ public class fragment_viaje_iniciado extends Fragment {
                     Intent intent3 = new Intent(context, MainActivity.class);
                     intent3.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK );
                     context.startActivity(intent3);
+                    getActivity().finish();
                     break;
 
             }
