@@ -1,6 +1,7 @@
 package com.rosario.hp.remisluna;
 
 
+import android.Manifest;
 import android.app.IntentService;
 import android.app.Service;
 import android.bluetooth.BluetoothAdapter;
@@ -9,6 +10,7 @@ import android.bluetooth.BluetoothSocket;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.os.Binder;
 import android.os.Handler;
 import android.os.IBinder;
@@ -16,6 +18,9 @@ import android.os.Looper;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import android.widget.Toast;
+
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 
 import com.android.volley.Request;
 import com.android.volley.Response;
@@ -48,6 +53,7 @@ public class Impresion extends Service {
     private BluetoothAdapter bluetoothAdapter;
     private static final String TAG_DEBUG = "impresion";
     private final IBinder binder = new LocalBinder();
+    private Context context;
 
     public class LocalBinder extends Binder {
         public Impresion getService() {
@@ -76,32 +82,52 @@ public class Impresion extends Service {
         return binder;
     }
 
-    public void onCreate(){
+    public void onCreate() {
         super.onCreate();
         bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 
     }
+
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        Log.d("startid", String.valueOf(startId));
-        SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-        String l_impresora  = settings.getString("impresora","");
-        String l_conductor = settings.getString("id","");
-        if(!l_impresora.equals("")){
-                Log.d("startid_a", String.valueOf(startId));
-                dispositivoBluetooth = bluetoothAdapter.getRemoteDevice(l_impresora);
-                final Thread t = new Thread() {
-                    @Override
-                    public void run() {
-                        try {
-                            // Conectamos los dispositivos
 
-                            // Creamos un socket
+        Log.d("startid", String.valueOf(startId));
+        context = getApplicationContext();
+        SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        String l_impresora = settings.getString("impresora", "");
+        String l_conductor = settings.getString("id", "");
+        if (!l_impresora.equals("")) {
+            Log.d("startid_a", String.valueOf(startId));
+            dispositivoBluetooth = bluetoothAdapter.getRemoteDevice(l_impresora);
+            final Thread t = new Thread() {
+                @Override
+                public void run() {
+                    try {
+                        // Conectamos los dispositivos
+
+                        // Creamos un socket
+
+                        if (ContextCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
+                            // TODO: Consider calling
+                            //    ActivityCompat#requestPermissions
+                            // here to request the missing permissions, and then overriding
+                            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+                            //                                          int[] grantResults)
+                            // to handle the case where the user grants the permission. See the documentation
+                            // for ActivityCompat#requestPermissions for more details.
+                            //return;
+                        }
+
                             bluetoothSocket = dispositivoBluetooth.createRfcommSocketToServiceRecord(aplicacionUUID);
+
                             Log.d("impresora", "socket");
-                            bluetoothSocket.connect();// conectamos el socket
-                            outputStream = bluetoothSocket.getOutputStream();
-                            inputStream = bluetoothSocket.getInputStream();
+                            if(!bluetoothSocket.isConnected()) {
+                                bluetoothSocket.connect();// conectamos el socket
+                                outputStream = bluetoothSocket.getOutputStream();
+                                inputStream = bluetoothSocket.getInputStream();
+                            }
+
+
 
                             //empezarEscucharDatos();
 
@@ -109,6 +135,8 @@ public class Impresion extends Service {
                         } catch (IOException e) {
 
                             Log.e(TAG_DEBUG, "Error al conectar el dispositivo bluetooth");
+
+
 
                             showToast(getApplicationContext());
                         }
@@ -137,13 +165,28 @@ public class Impresion extends Service {
                     public void run() {
                         try {
                             // Conectamos los dispositivos
-
+                            if (ContextCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
+                                // TODO: Consider calling
+                                //    ActivityCompat#requestPermissions
+                                // here to request the missing permissions, and then overriding
+                                //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+                                //                                          int[] grantResults)
+                                // to handle the case where the user grants the permission. See the documentation
+                                // for ActivityCompat#requestPermissions for more details.
+                                //return;
+                            }
                             // Creamos un socket
+
                             bluetoothSocket = dispositivoBluetooth.createRfcommSocketToServiceRecord(aplicacionUUID);
+
                             Log.d("impresora","socket2");
-                            bluetoothSocket.connect();// conectamos el socket
-                            outputStream = bluetoothSocket.getOutputStream();
-                            inputStream = bluetoothSocket.getInputStream();
+                            if(!bluetoothSocket.isConnected()) {
+                                bluetoothSocket.connect();// conectamos el socket
+                                outputStream = bluetoothSocket.getOutputStream();
+                                inputStream = bluetoothSocket.getInputStream();
+                            }
+
+
 
                             //empezarEscucharDatos();
 
@@ -169,6 +212,11 @@ public class Impresion extends Service {
         handler.post(new Runnable() {
             public void run() {
                 Toast.makeText(ctx, "No se pudo conectar el dispositivo. Verifique si la impresora esta encendida", Toast.LENGTH_SHORT).show();
+                try {
+                    bluetoothSocket.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
         });
     }
@@ -182,7 +230,6 @@ public class Impresion extends Service {
 
 
         // Crear nuevo objeto Json basado en el mapa
-        JSONObject jobject = new JSONObject(map);
 
         StringBuilder encodedParams = new StringBuilder();
         try {

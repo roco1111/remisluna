@@ -85,8 +85,6 @@ public class MainActivity extends AppCompatActivity {
         super.onStart();
     }
 
-
-
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         // TODO Auto-generated method stub

@@ -168,7 +168,7 @@ public class fragment_principal extends Fragment {
         super.onPause();
 
         if(mBound) {
-            Objects.requireNonNull(getActivity()).unbindService(connection);
+            requireActivity().unbindService(connection);
 
             mBound = false;
         }
@@ -418,15 +418,15 @@ public class fragment_principal extends Fragment {
                 editor.putString("tipo_ventana","main");
                 editor.apply();
                 if(mBound) {
-                    Objects.requireNonNull(getActivity()).unbindService(connection);
+                    requireActivity().unbindService(connection);
                     impresora.setTextColor(getResources().getColor(R.color.alarma));
                     mBound = false;
                 }
                 if(!mBound) {
-
-                    Intent intent2 = new Intent(getContext(), MainActivity.class);
-                    getContext().startActivity(intent2);
-                    getActivity().finish();
+                    cargarImpresora(getContext());
+                    //Intent intent2 = new Intent(getContext(), MainViaje.class);
+                   // getContext().startActivity(intent2);
+                    //getActivity().finish();
 
                 }
             }
@@ -477,7 +477,7 @@ public class fragment_principal extends Fragment {
             }
         });
         feriado(getContext());
-
+        //cargarImpresora(getContext());
         return v;
     }
 
@@ -1501,15 +1501,15 @@ public class fragment_principal extends Fragment {
                                 editor.putString("tipo_ventana", "main");
                                 editor.apply();
                                 Intent intent = new Intent(context, Impresion.class);
-                                Objects.requireNonNull(context).startService(intent);
+                                requireContext().startService(intent);
 
                                 context.bindService(intent, connection, Context.BIND_AUTO_CREATE);
 
                         }else{
 
                                 Intent intent = new Intent(context, Impresion.class);
-                                Objects.requireNonNull(context).bindService(intent, connection, Context.BIND_AUTO_CREATE);
-                                Objects.requireNonNull(context).startService(intent);
+                                requireContext().bindService(intent, connection, Context.BIND_AUTO_CREATE);
+                                requireContext().startService(intent);
 
                         }
 
