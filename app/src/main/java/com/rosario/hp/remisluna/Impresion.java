@@ -15,6 +15,7 @@ import android.os.Binder;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
+import android.os.ParcelUuid;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import android.widget.Toast;
@@ -117,8 +118,9 @@ public class Impresion extends Service {
                             // for ActivityCompat#requestPermissions for more details.
                             //return;
                         }
-
-                            bluetoothSocket = dispositivoBluetooth.createRfcommSocketToServiceRecord(aplicacionUUID);
+                            ParcelUuid list[] = dispositivoBluetooth.getUuids();
+                            UUID  deviceUUID  = UUID.fromString(list[0].toString());
+                            bluetoothSocket = dispositivoBluetooth.createRfcommSocketToServiceRecord(deviceUUID);
 
                             Log.d("impresora", "socket");
                             if(!bluetoothSocket.isConnected()) {
@@ -177,7 +179,9 @@ public class Impresion extends Service {
                             }
                             // Creamos un socket
 
-                            bluetoothSocket = dispositivoBluetooth.createRfcommSocketToServiceRecord(aplicacionUUID);
+                            ParcelUuid list[] = dispositivoBluetooth.getUuids();
+                            UUID  deviceUUID  = UUID.fromString(list[0].toString());
+                            bluetoothSocket = dispositivoBluetooth.createRfcommSocketToServiceRecord(deviceUUID);
 
                             Log.d("impresora","socket2");
                             if(!bluetoothSocket.isConnected()) {

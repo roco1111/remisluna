@@ -150,6 +150,7 @@ public class fragment_viaje extends Fragment {
     private String chapa;
     private String patente;
     private Activity act;
+    private Context context;
 
     @Override
     public void onStart() {
@@ -228,6 +229,7 @@ public class fragment_viaje extends Fragment {
         this.boton_nueve = v.findViewById(R.id.imageButtonNueve);
         datos = new ArrayList<>();
         act = getActivity();
+        context = getContext();
         MediaPlayer mediaPlayer = MediaPlayer.create(getActivity(), R.raw.everblue);
 
         this.impresora = v.findViewById(R.id.impresora);
@@ -279,7 +281,7 @@ public class fragment_viaje extends Fragment {
             @Override
             public void onClick(View v) {
                 mediaPlayer.start();
-                anular_viaje();
+                anular_viaje(context);
 
             }
         });
@@ -1734,7 +1736,7 @@ public class fragment_viaje extends Fragment {
         }
     }
 
-    private void anular_viaje(){
+    private void anular_viaje(final Context context){
 
         String newURL = Constantes.ANULAR_VIAJE + "?id=" + id_viaje;
 
@@ -1749,7 +1751,7 @@ public class fragment_viaje extends Fragment {
                         new Response.Listener<JSONObject>() {
                             @Override
                             public void onResponse(JSONObject response) {
-                                procesarRespuestaActualizarAnular(response);
+                                procesarRespuestaActualizarAnular(response,context);
                             }
                         },
                         new Response.ErrorListener() {
@@ -1775,7 +1777,7 @@ public class fragment_viaje extends Fragment {
                 }
         );
     }
-    private void procesarRespuestaActualizarAnular(JSONObject response) {
+    private void procesarRespuestaActualizarAnular(JSONObject response, Context context) {
 
         try {
             // Obtener estado
@@ -1785,14 +1787,14 @@ public class fragment_viaje extends Fragment {
 
             switch (estado) {
                 case "1":
-                    Intent intent2 = new Intent(getContext(), MainActivity.class);
-                    getContext().startActivity(intent2);
+                    Intent intent2 = new Intent(context, MainActivity.class);
+                    context.startActivity(intent2);
                     getActivity().finish();
                     break;
                 case "2":
                     // Mostrar mensaje
                     Toast.makeText(
-                            getContext(),
+                            context,
                             mensaje,
                             Toast.LENGTH_LONG).show();
                     // Enviar código de falla
