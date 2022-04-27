@@ -4,18 +4,19 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/background"
+    android:orientation="vertical"
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
-    android:paddingBottom="@dimen/activity_vertical_margin"
-    android:background="@color/background"
-    android:orientation="horizontal">
+    android:paddingBottom="@dimen/activity_vertical_margin">
 
     <LinearLayout
         android:layout_width="0px"
         android:layout_height="0px"
         android:focusable="true"
         android:focusableInTouchMode="true">
-        <requestFocus/>
+
+        <requestFocus />
 
     </LinearLayout>
 
@@ -26,10 +27,11 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical">
+
         <ImageView
             android:id="@+id/imageView2"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_width="260dp"
+            android:layout_height="255dp"
             app:srcCompat="@drawable/inicio" />
 
 
@@ -37,8 +39,8 @@
             android:id="@+id/login_usuario_container"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_alignParentStart="true"
             android:layout_below="@+id/imageView2"
+            android:layout_alignParentStart="true"
             android:textColorHint="@color/purple_500"
             app:boxBackgroundColor="@color/background"
             app:passwordToggleTint="@color/purple_500">
@@ -47,9 +49,9 @@
                 android:id="@+id/editTextUsuario"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_alignParentLeft="true"
-                android:layout_alignParentStart="true"
                 android:layout_below="@+id/textView6"
+                android:layout_alignParentStart="true"
+                android:layout_alignParentLeft="true"
                 android:layout_marginTop="15dp"
                 android:ems="10"
                 android:hint="@string/mail_cliente"
@@ -63,26 +65,25 @@
         </com.google.android.material.textfield.TextInputLayout>
 
 
-
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/login_password_container"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_below="@+id/login_usuario_container"
             android:layout_alignParentStart="true"
             android:layout_marginTop="14dp"
-            android:layout_below="@+id/login_usuario_container"
             android:textColorHint="@color/purple_500"
+            app:boxBackgroundColor="@color/background"
             app:passwordToggleEnabled="true"
             app:passwordToggleTint="@color/purple_500"
-            app:boxBackgroundColor="@color/background"
             app:passwordToggleTintMode="src_in">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/editTextClave"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_alignParentLeft="true"
                 android:layout_alignParentStart="true"
+                android:layout_alignParentLeft="true"
                 android:ems="10"
                 android:hint="@string/clave_cliente"
 
@@ -97,22 +98,21 @@
             android:id="@+id/buttonIngreso"
             android:layout_width="@dimen/campos_width_medio"
             android:layout_height="@dimen/alto_imagen"
-            android:background="@android:color/transparent"
-            android:drawableTop="@drawable/ingreso_usuario"
             android:layout_below="@+id/login_password_container"
             android:layout_centerHorizontal="true"
             android:layout_marginTop="14dp"
+            android:background="@android:color/transparent"
+            android:drawableTop="@drawable/ingreso_usuario"
             tools:ignore="RtlHardcoded" />
-
 
 
         <TextView
             android:id="@+id/olvidaste"
             android:layout_width="wrap_content"
             android:layout_height="@dimen/campos_height"
-            android:layout_alignParentEnd="true"
-            android:layout_alignParentStart="true"
             android:layout_below="@+id/buttonIngreso"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentEnd="true"
             android:layout_centerVertical="true"
             android:layout_marginTop="14dp"
             android:text="@string/olvido_contraseña"

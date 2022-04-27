@@ -341,22 +341,9 @@ public class insertUsuario extends AppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
 
-        int id = item.getItemId();
         SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
         SharedPreferences.Editor editor = settings.edit();
         Intent intent;
-        switch (id) {
-
-            case R.id.menu_ayuda:
-
-                editor.putString("url", "https://remisluna.com.ar/remiseria/pagina_ayuda.php?id=10");
-                editor.apply();
-                intent = new Intent(getApplicationContext(), WebActivity.class);
-                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                getApplicationContext().startActivity(intent);
-                editor.commit();
-                break;
-            case R.id.menu_ayuda_app:
 
                 editor.putString("url", "https://remisluna.com.ar/remiseria/paginas_ayuda.php");
                 editor.apply();
@@ -364,30 +351,7 @@ public class insertUsuario extends AppCompatActivity {
                 intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 getApplicationContext().startActivity(intent);
                 editor.commit();
-                break;
-            case R.id.menu_app_impresa:
-                if(mBound) {
-                    cargarAyudas(getApplicationContext());
 
-                }else{
-                    Toast.makeText(
-                            getApplicationContext(),
-                            R.string.no_impresora,
-                            Toast.LENGTH_LONG).show();
-                }
-                break;
-            case R.id.menu_ayuda_impresa:
-                if(mBound) {
-                    cargarAyuda(getApplicationContext());
-
-                }else{
-                    Toast.makeText(
-                            getApplicationContext(),
-                            R.string.no_impresora,
-                            Toast.LENGTH_LONG).show();
-                }
-                break;
-        }
         return super.onOptionsItemSelected(item);
     }
 

@@ -20,6 +20,7 @@ import android.media.MediaPlayer;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
 import android.provider.Settings;
@@ -164,7 +165,7 @@ public class fragment_viaje extends Fragment {
         super.onPause();
 
         if(mBound) {
-            Objects.requireNonNull(getActivity()).unbindService(connection);
+            act.unbindService(connection);
 
             mBound = false;
         }
@@ -189,7 +190,7 @@ public class fragment_viaje extends Fragment {
             // We've bound to LocalService, cast the IBinder and get LocalService instance
             Impresion.LocalBinder binder = (Impresion.LocalBinder) service;
             impresion = binder.getService();
-            if(impresion.getbluetoothSocket() != null){
+            if(impresion.getOutputStream() != null){
                 impresora.setTextColor(act.getResources().getColor(R.color.colorPrimary));
                 mBound = true;
             }else{
@@ -203,13 +204,19 @@ public class fragment_viaje extends Fragment {
             impresora.setTextColor(getResources().getColor(R.color.alarma));
             mBound = false;
         }
+        @Override
+        public void onBindingDied (ComponentName arg0) {
+            impresora.setTextColor(getResources().getColor(R.color.alarma));
+            mBound = false;
+        }
     };
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              final Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.activity_viaje, container, false);
-        mLocationManager = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
+        act = getActivity();
+        mLocationManager = (LocationManager) act.getSystemService(Context.LOCATION_SERVICE);
 
         solicitante = v.findViewById(R.id.dato_solicitante);
         dato_salida = v.findViewById(R.id.dato_salida);
@@ -228,7 +235,7 @@ public class fragment_viaje extends Fragment {
         this.boton_ocho = v.findViewById(R.id.imageButtonOcho);
         this.boton_nueve = v.findViewById(R.id.imageButtonNueve);
         datos = new ArrayList<>();
-        act = getActivity();
+
         context = getContext();
         MediaPlayer mediaPlayer = MediaPlayer.create(getActivity(), R.raw.everblue);
 
@@ -258,18 +265,18 @@ public class fragment_viaje extends Fragment {
                 if(verificar_internet()) {
                     if (!mLocationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
                         Toast.makeText(
-                                getContext(),
+                                context,
                                 R.string.no_gps,
                                 Toast.LENGTH_LONG).show();
 
                     }else{
 
-                        iniciar_viaje(getContext());
+                        iniciar_viaje(context);
 
                     }
                 }else{
                     Toast.makeText(
-                            getContext(),
+                            context,
                             R.string.no_internet,
                             Toast.LENGTH_LONG).show();
                 }
@@ -305,7 +312,7 @@ public class fragment_viaje extends Fragment {
                     impresion_cero();
                 }else{
                     Toast.makeText(
-                            getContext(),
+                            context,
                             R.string.no_impresora,
                             Toast.LENGTH_LONG).show();
                 }
@@ -318,10 +325,10 @@ public class fragment_viaje extends Fragment {
             public void onClick(View v) {
                 mediaPlayer.start();
                 if (mBound) {
-                    datos_turno(getContext());
+                    datos_turno(context);
                 }else{
                     Toast.makeText(
-                            getContext(),
+                            context,
                             R.string.no_impresora,
                             Toast.LENGTH_LONG).show();
                 }
@@ -333,10 +340,10 @@ public class fragment_viaje extends Fragment {
             public void onClick(View v) {
                 mediaPlayer.start();
                 if(mBound) {
-                    cerrar_turno();
+                    cerrar_turno(context);
                 }else {
                     Toast.makeText(
-                            getContext(),
+                            context,
                             R.string.no_impresora,
                             Toast.LENGTH_LONG).show();
                 }
@@ -348,10 +355,10 @@ public class fragment_viaje extends Fragment {
             public void onClick(View v) {
                 mediaPlayer.start();
                 if(mBound) {
-                    cargarDatosRecaudacion();
+                    cargarDatosRecaudacion(context);
                 }else{
                     Toast.makeText(
-                            getContext(),
+                            context,
                             R.string.no_impresora,
                             Toast.LENGTH_LONG).show();
                 }
@@ -363,10 +370,10 @@ public class fragment_viaje extends Fragment {
             public void onClick(View v) {
                 mediaPlayer.start();
                 if(mBound) {
-                    datos_ultimos_viajes(getContext());
+                    datos_ultimos_viajes(context);
                 }else{
                     Toast.makeText(
-                            getContext(),
+                            context,
                             R.string.no_impresora,
                             Toast.LENGTH_LONG).show();
                 }
@@ -388,10 +395,9 @@ public class fragment_viaje extends Fragment {
                 }
                 if(!mBound) {
 
-                    //Intent intent2 = new Intent(getContext(), MainActivity.class);
-                    //getContext().startActivity(intent2);
-                    //getActivity().finish();
-
+                    Intent intent2 = new Intent(context, MainActivity.class);
+                    context.startActivity(intent2);
+                    getActivity().finish();
 
                 }
             }
@@ -403,10 +409,10 @@ public class fragment_viaje extends Fragment {
             public void onClick(View v) {
                 mediaPlayer.start();
                 if(mBound) {
-                    repetirTicket(getContext());
+                    repetirTicket(context);
                 }else{
                     Toast.makeText(
-                            getContext(),
+                            context,
                             R.string.no_impresora,
                             Toast.LENGTH_LONG).show();
                 }
@@ -417,8 +423,8 @@ public class fragment_viaje extends Fragment {
             @Override
             public void onClick(View v) {
                 mediaPlayer.start();
-                Intent intent2 = new Intent(getContext(), activity_preferencias.class);
-                getContext().startActivity(intent2);
+                Intent intent2 = new Intent(context, activity_preferencias.class);
+                context.startActivity(intent2);
             }
         });
 
@@ -426,8 +432,8 @@ public class fragment_viaje extends Fragment {
             @Override
             public void onClick(View v) {
                 mediaPlayer.start();
-                Intent intent2 = new Intent(getContext(), turnos_activity.class);
-                getContext().startActivity(intent2);
+                Intent intent2 = new Intent(context, turnos_activity.class);
+                context.startActivity(intent2);
             }
         });
 
@@ -435,8 +441,8 @@ public class fragment_viaje extends Fragment {
             @Override
             public void onClick(View v) {
                 mediaPlayer.start();
-                Intent intent2 = new Intent(getContext(), MainViaje.class);
-                getContext().startActivity(intent2);
+                Intent intent2 = new Intent(context, MainViaje.class);
+                context.startActivity(intent2);
             }
         });
 
@@ -463,7 +469,7 @@ public class fragment_viaje extends Fragment {
         Log.d(TAG,newURL);
 
         // Realizar petición GET_BY_ID
-        VolleySingleton.getInstance(getContext()).addToRequestQueue(
+        VolleySingleton.getInstance(context).addToRequestQueue(
                 myRequest = new JsonObjectRequest(
                         Request.Method.GET,
                         newURL,
@@ -509,7 +515,7 @@ public class fragment_viaje extends Fragment {
     }
 
     private boolean checkIfLocationOpened() {
-        String provider = Settings.Secure.getString(getContext().getContentResolver(), Settings.Secure.LOCATION_PROVIDERS_ALLOWED);
+        String provider = Settings.Secure.getString(context.getContentResolver(), Settings.Secure.LOCATION_PROVIDERS_ALLOWED);
         System.out.println("Provider contains=> " + provider);
         if (provider.contains("gps") || provider.contains("network")){
             return true;
@@ -725,7 +731,7 @@ public class fragment_viaje extends Fragment {
                         SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(context);
                         SharedPreferences.Editor editor = settings.edit();
                         editor.putString("nocturno",l_nocturno);
-                        editor.commit();
+                        editor.apply();
 
 
                         cargarDatos(context);
@@ -743,14 +749,14 @@ public class fragment_viaje extends Fragment {
 
     }
 
-    public void cargarDatosRecaudacion() {
+    public void cargarDatosRecaudacion( final Context context) {
 
         // Añadir parámetro a la URL del web service
         String newURL = Constantes.GET_TURNOS + "?conductor=" + ls_id_conductor;
         Log.d(TAG,newURL);
 
         // Realizar petición GET_BY_ID
-        VolleySingleton.getInstance(getContext()).addToRequestQueue(
+        VolleySingleton.getInstance(context).addToRequestQueue(
                 myRequest = new JsonObjectRequest(
                         Request.Method.POST,
                         newURL,
@@ -760,7 +766,7 @@ public class fragment_viaje extends Fragment {
                             @Override
                             public void onResponse(JSONObject response) {
                                 // Procesar respuesta Json
-                                procesarRespuestaRecaudacion(response);
+                                procesarRespuestaRecaudacion(response, context);
                             }
                         },
                         new Response.ErrorListener() {
@@ -779,7 +785,7 @@ public class fragment_viaje extends Fragment {
 
     }
 
-    private void procesarRespuestaRecaudacion(JSONObject response) {
+    private void procesarRespuestaRecaudacion(JSONObject response, Context context) {
         try {
             // Obtener atributo "estado"
             String estado = response.getString("estado");
@@ -834,7 +840,7 @@ public class fragment_viaje extends Fragment {
     protected void ticket_recaudacion( ArrayList<turno> turnos) {
         outputStream = impresion.getOutputStream();
         if(outputStream == null){
-            Toast.makeText(getContext(), "No se pudo conectar el dispositivo. Verifique si la impresora esta encendida", Toast.LENGTH_SHORT).show();
+            Toast.makeText(context, "No se pudo conectar el dispositivo. Verifique si la impresora esta encendida", Toast.LENGTH_SHORT).show();
         }else {
 
             //print command
@@ -901,7 +907,7 @@ public class fragment_viaje extends Fragment {
     }
 
     private Boolean verificar_internet(){
-        ConnectivityManager connectivityManager = (ConnectivityManager) getActivity().getSystemService(Context.CONNECTIVITY_SERVICE);
+        ConnectivityManager connectivityManager = (ConnectivityManager) act.getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
 
         if (networkInfo != null && networkInfo.isConnected()) {
@@ -913,13 +919,13 @@ public class fragment_viaje extends Fragment {
         }
     }
 
-    private void cerrar_turno(){
+    private void cerrar_turno(final  Context context){
 
         String newURL = Constantes.FIN_TURNO + "?id=" + ls_id_turno;
         Log.d(TAG,newURL);
 
         // Actualizar datos en el servidor
-        VolleySingleton.getInstance(getActivity()).addToRequestQueue(
+        VolleySingleton.getInstance(context).addToRequestQueue(
                 new JsonObjectRequest(
                         Request.Method.POST,
                         newURL,
@@ -927,7 +933,7 @@ public class fragment_viaje extends Fragment {
                         new Response.Listener<JSONObject>() {
                             @Override
                             public void onResponse(JSONObject response) {
-                                procesarRespuestaCerrarTurno(response);
+                                procesarRespuestaCerrarTurno(response, context);
                             }
                         },
                         new Response.ErrorListener() {
@@ -953,7 +959,7 @@ public class fragment_viaje extends Fragment {
                 }
         );
     }
-    private void procesarRespuestaCerrarTurno(JSONObject response) {
+    private void procesarRespuestaCerrarTurno(JSONObject response, Context context) {
 
         try {
             // Obtener estado
@@ -963,12 +969,12 @@ public class fragment_viaje extends Fragment {
 
             switch (estado) {
                 case "1":
-                    datos_turno(getContext());
+                    datos_turno(context);
                     break;
                 case "2":
                     // Mostrar mensaje
                     Toast.makeText(
-                            getContext(),
+                            context,
                             mensaje,
                             Toast.LENGTH_LONG).show();
                     // Enviar código de falla
@@ -983,7 +989,7 @@ public class fragment_viaje extends Fragment {
 
         outputStream = impresion.getOutputStream();
         if(outputStream == null){
-            Toast.makeText(getContext(), "No se pudo conectar el dispositivo. Verifique si la impresora esta encendida", Toast.LENGTH_SHORT).show();
+            Toast.makeText(context, "No se pudo conectar el dispositivo. Verifique si la impresora esta encendida", Toast.LENGTH_SHORT).show();
         }else {
 
             //print command
@@ -1049,17 +1055,17 @@ public class fragment_viaje extends Fragment {
 
     }
     public void showDialogImpresora(String title, String message) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
         builder.setTitle(title);
         builder.setMessage(message);
         builder.setPositiveButton("Si", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
-                SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getContext());
+                SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(context);
                 SharedPreferences.Editor editor = settings.edit();
                 editor.putString("tipo_ventana","main");
                 editor.commit();
-                getActivity().startService(new Intent(getActivity(), Impresion.class));
-                iniciar_viaje(getContext());
+                act.startService(new Intent(act, Impresion.class));
+                iniciar_viaje(context);
             }
         });
         builder.setNegativeButton("No", new DialogInterface.OnClickListener() {
@@ -1077,7 +1083,7 @@ public class fragment_viaje extends Fragment {
     }
 
     public void showDialogGPS(String title, String message) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
         builder.setTitle(title);
         builder.setMessage(message);
         builder.setPositiveButton("Si", new DialogInterface.OnClickListener() {
@@ -1231,7 +1237,7 @@ public class fragment_viaje extends Fragment {
                     datos_viajes_turno(context);
                 case "2":
                     Toast.makeText(
-                            getContext(),
+                            context,
                             mensaje,
                             Toast.LENGTH_LONG).show();
 
@@ -1334,7 +1340,7 @@ public class fragment_viaje extends Fragment {
 
         outputStream = impresion.getOutputStream();
         if(outputStream == null){
-            Toast.makeText(getContext(), "No se pudo conectar el dispositivo. Verifique si la impresora esta encendida", Toast.LENGTH_SHORT).show();
+            Toast.makeText(context, "No se pudo conectar el dispositivo. Verifique si la impresora esta encendida", Toast.LENGTH_SHORT).show();
         }else {
 
             //print command
@@ -1388,7 +1394,7 @@ public class fragment_viaje extends Fragment {
 
         outputStream = impresion.getOutputStream();
         if(outputStream == null){
-            Toast.makeText(getContext(), "No se pudo conectar el dispositivo. Verifique si la impresora esta encendida", Toast.LENGTH_SHORT).show();
+            Toast.makeText(context, "No se pudo conectar el dispositivo. Verifique si la impresora esta encendida", Toast.LENGTH_SHORT).show();
         }else {
 
             //print command
@@ -1447,20 +1453,20 @@ public class fragment_viaje extends Fragment {
                 printNewLine();
 
                 outputStream.flush();
-                iniciar_turno();
+                iniciar_turno(context);
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
     }
 
-    private void iniciar_turno(){
+    private void iniciar_turno(final Context context){
 
         String newURL = Constantes.ALTA_TURNO + "?id_conductor=" + ls_id_conductor;
         Log.d(TAG,newURL);
 
         // Actualizar datos en el servidor
-        VolleySingleton.getInstance(getActivity()).addToRequestQueue(
+        VolleySingleton.getInstance(context).addToRequestQueue(
                 new JsonObjectRequest(
                         Request.Method.POST,
                         newURL,
@@ -1468,7 +1474,7 @@ public class fragment_viaje extends Fragment {
                         new Response.Listener<JSONObject>() {
                             @Override
                             public void onResponse(JSONObject response) {
-                                procesarRespuestaActualizarAlta(response);
+                                procesarRespuestaActualizarAlta(response, context);
                             }
                         },
                         new Response.ErrorListener() {
@@ -1494,7 +1500,7 @@ public class fragment_viaje extends Fragment {
                 }
         );
     }
-    private void procesarRespuestaActualizarAlta(JSONObject response) {
+    private void procesarRespuestaActualizarAlta(JSONObject response, Context context) {
 
         try {
             // Obtener estado
@@ -1504,12 +1510,12 @@ public class fragment_viaje extends Fragment {
 
             switch (estado) {
                 case "1":
-                    cargarTurno(getContext());
+                    cargarTurno(context);
                     break;
                 case "2":
                     // Mostrar mensaje
                     Toast.makeText(
-                            getContext(),
+                            context,
                             mensaje,
                             Toast.LENGTH_LONG).show();
                     // Enviar código de falla
@@ -1576,9 +1582,6 @@ public class fragment_viaje extends Fragment {
                     editor.putString("id_turno_chofer",ls_id_turno);
                     editor.apply();
 
-                    editor.commit();
-
-                    //datos_turno(context);
 
                     break;
 
@@ -1672,7 +1675,7 @@ public class fragment_viaje extends Fragment {
         Log.d(TAG,newURL);
 
         // Actualizar datos en el servidor
-        VolleySingleton.getInstance(getActivity()).addToRequestQueue(
+        VolleySingleton.getInstance(context).addToRequestQueue(
                 new JsonObjectRequest(
                         Request.Method.GET,
                         newURL,
@@ -1720,7 +1723,7 @@ public class fragment_viaje extends Fragment {
 
                     Intent intent2 = new Intent(context, MainViaje.class);
                     context.startActivity(intent2);
-                    getActivity().finish();
+                    act.finish();
                     break;
                 case "2":
                     // Mostrar mensaje
@@ -1743,7 +1746,7 @@ public class fragment_viaje extends Fragment {
         Log.d(TAG,newURL);
 
         // Actualizar datos en el servidor
-        VolleySingleton.getInstance(getActivity()).addToRequestQueue(
+        VolleySingleton.getInstance(context).addToRequestQueue(
                 new JsonObjectRequest(
                         Request.Method.GET,
                         newURL,
@@ -1789,7 +1792,7 @@ public class fragment_viaje extends Fragment {
                 case "1":
                     Intent intent2 = new Intent(context, MainActivity.class);
                     context.startActivity(intent2);
-                    getActivity().finish();
+                    act.finish();
                     break;
                 case "2":
                     // Mostrar mensaje
@@ -1896,7 +1899,7 @@ public class fragment_viaje extends Fragment {
 
         outputStream = impresion.getOutputStream();
         if(outputStream == null){
-            Toast.makeText(getContext(), "No se pudo conectar el dispositivo. Verifique si la impresora esta encendida", Toast.LENGTH_SHORT).show();
+            Toast.makeText(context, "No se pudo conectar el dispositivo. Verifique si la impresora esta encendida", Toast.LENGTH_SHORT).show();
         }else {
 
             //print command
@@ -2070,7 +2073,7 @@ public class fragment_viaje extends Fragment {
 
                 case "2":
                     Toast.makeText(
-                            getContext(),
+                            context,
                             mensaje,
                             Toast.LENGTH_LONG).show();
 
@@ -2090,7 +2093,7 @@ public class fragment_viaje extends Fragment {
         outputStream = impresion.getOutputStream();
 
         if(outputStream == null){
-            Toast.makeText(getContext(), "No se pudo conectar el dispositivo. Verifique si la impresora esta encendida", Toast.LENGTH_SHORT).show();
+            Toast.makeText(context, "No se pudo conectar el dispositivo. Verifique si la impresora esta encendida", Toast.LENGTH_SHORT).show();
         }else {
 
             //print command
@@ -2324,22 +2327,21 @@ public class fragment_viaje extends Fragment {
                         l_impresora = object.getString("impresora");
 
                         editor.putString("impresora",l_impresora);
+                        editor.putString("tipo_ventana", "main");
                         editor.apply();
 
                         if(!l_impresora.equals("")) {
 
-                            editor.putString("tipo_ventana", "main");
-                            editor.apply();
-                            Intent intent = new Intent(context, Impresion.class);
-                            Objects.requireNonNull(context).startService(intent);
 
-                            context.bindService(intent, connection, Context.BIND_AUTO_CREATE);
+                            Intent intent = new Intent(context, Impresion.class);
+                            context.startService(intent);
+                            esperarYCerrar(1500, intent);
 
                         }else{
 
                             Intent intent = new Intent(context, Impresion.class);
-                            Objects.requireNonNull(context).bindService(intent, connection, Context.BIND_AUTO_CREATE);
-                            Objects.requireNonNull(context).startService(intent);
+                            context.bindService(intent, connection, Context.BIND_AUTO_CREATE);
+                            context.startService(intent);
 
                         }
 
@@ -2353,5 +2355,27 @@ public class fragment_viaje extends Fragment {
             e.printStackTrace();
         }
 
+    }
+
+    public void esperarYCerrar(int milisegundos, Intent intent) {
+        Handler handler = new Handler();
+        handler.postDelayed(new Runnable() {
+            public void run() {
+                // acciones que se ejecutan tras los milisegundos
+                bindApp(intent);
+            }
+        }, milisegundos);
+    }
+    public void bindApp(Intent intent) {
+        context.bindService(intent, connection, Context.BIND_AUTO_CREATE);
+        if(impresion.getOutputStream() != null){
+            impresora.setTextColor(getResources().getColor(R.color.colorPrimary));
+            mBound = true;
+        }else{
+            impresora.setTextColor(getResources().getColor(R.color.alarma));
+            mBound = false;
+
+        }
+        context.bindService(intent, connection, Context.BIND_AUTO_CREATE);
     }
 }

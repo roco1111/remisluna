@@ -1,11 +1,15 @@
 package com.rosario.hp.remisluna.Fragment;
 
 import android.Manifest;
+import android.app.Activity;
 import android.app.AlertDialog;
+import android.bluetooth.BluetoothDevice;
+import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -19,6 +23,7 @@ import android.media.MediaPlayer;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Handler;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
 import android.provider.Settings;
@@ -152,16 +157,18 @@ public class fragment_principal extends Fragment {
     private String patente;
     private String chofer_habilitado;
     private String movil_habilitado;
+    private Context context;
+    private Activity act;
+
+
 
     @Override
     public void onStart() {
         super.onStart();
         // Bind to LocalService
-        cargarImpresora(getContext());
+
 
     }
-
-
 
     @Override
     public void onPause() {
@@ -183,6 +190,7 @@ public class fragment_principal extends Fragment {
         }else{
             gps.setTextColor(getResources().getColor(R.color.alarma));
         }
+        cargarImpresora(getContext());
     }
 
     /** Defines callbacks for service binding, passed to bindService() */
@@ -192,14 +200,18 @@ public class fragment_principal extends Fragment {
         public void onServiceConnected(ComponentName className,
                                        IBinder service) {
             // We've bound to LocalService, cast the IBinder and get LocalService instance
+
             Impresion.LocalBinder binder = (Impresion.LocalBinder) service;
             impresion = binder.getService();
-            if(impresion.getbluetoothSocket() != null){
+            if(impresion.getOutputStream() != null){
                 impresora.setTextColor(getResources().getColor(R.color.colorPrimary));
                 mBound = true;
+                Log.d("impresora", "conectada");
             }else{
                 impresora.setTextColor(getResources().getColor(R.color.alarma));
                 mBound = false;
+
+                Log.d("impresora", "desconectada1");
             }
         }
 
@@ -208,7 +220,15 @@ public class fragment_principal extends Fragment {
 
             impresora.setTextColor(getResources().getColor(R.color.alarma));
             mBound = false;
+            Log.d("impresora", "desconectada");
         }
+        @Override
+        public void onBindingDied (ComponentName arg0) {
+            impresora.setTextColor(getResources().getColor(R.color.alarma));
+            mBound = false;
+            Log.d("impresora", "onBindingDied");
+        }
+
     };
 
 
@@ -217,8 +237,6 @@ public class fragment_principal extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              final Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.activity_principal, container, false);
-
-
         this.boton_cero = v.findViewById(R.id.imageButtonCero);
         this.boton_uno = v.findViewById(R.id.imageButtonUno);
         this.boton_dos = v.findViewById(R.id.imageButtonDos);
@@ -237,6 +255,8 @@ public class fragment_principal extends Fragment {
         this.gps = v.findViewById(R.id.gps);
         texto_tarifa = v.findViewById(R.id.tarifa);
         paradas = new ArrayList<>();
+        context = getContext();
+        act = getActivity();
         if(checkIfLocationOpened()){
             gps.setTextColor(getResources().getColor(R.color.colorPrimary));
         }else{
@@ -297,7 +317,7 @@ public class fragment_principal extends Fragment {
             public void onClick(View v) {
 
                 mediaPlayer.start();
-                viaje_automatico(getContext());
+                viaje_automatico(context);
 
             }
         });
@@ -307,7 +327,7 @@ public class fragment_principal extends Fragment {
             public void onClick(View v) {
 
                 mediaPlayer.start();
-                cargarIdVehiculo(getContext());
+                cargarIdVehiculo(context);
 
             }
         });
@@ -317,7 +337,7 @@ public class fragment_principal extends Fragment {
             public void onClick(View v) {
 
                 mediaPlayer.start();
-                cargarDatosRemiseria(getContext());
+                cargarDatosRemiseria(context);
 
             }
         });
@@ -339,7 +359,7 @@ public class fragment_principal extends Fragment {
                     impresion_cero();
                 }else{
                     Toast.makeText(
-                            getContext(),
+                            context,
                             R.string.no_impresora,
                             Toast.LENGTH_LONG).show();
                 }
@@ -352,10 +372,10 @@ public class fragment_principal extends Fragment {
             public void onClick(View v) {
                 mediaPlayer.start();
                 if (mBound) {
-                    datos_turno(getContext());
+                    datos_turno(context);
                 }else{
                     Toast.makeText(
-                            getContext(),
+                            context,
                             R.string.no_impresora,
                             Toast.LENGTH_LONG).show();
                 }
@@ -367,10 +387,10 @@ public class fragment_principal extends Fragment {
             public void onClick(View v) {
                 mediaPlayer.start();
                 if(mBound) {
-                    cerrar_turno();
+                    cerrar_turno(context);
                 }else {
                     Toast.makeText(
-                            getContext(),
+                            context,
                             R.string.no_impresora,
                             Toast.LENGTH_LONG).show();
                 }
@@ -382,10 +402,10 @@ public class fragment_principal extends Fragment {
             public void onClick(View v) {
                 mediaPlayer.start();
                 if(mBound) {
-                    cargarDatos();
+                    cargarDatos(context);
                 }else{
                     Toast.makeText(
-                            getContext(),
+                            context,
                             R.string.no_impresora,
                             Toast.LENGTH_LONG).show();
                 }
@@ -402,7 +422,7 @@ public class fragment_principal extends Fragment {
                     datos_ultimos_viajes(getContext());
                 }else{
                     Toast.makeText(
-                            getContext(),
+                            context,
                             R.string.no_impresora,
                             Toast.LENGTH_LONG).show();
                 }
@@ -418,14 +438,14 @@ public class fragment_principal extends Fragment {
                 editor.putString("tipo_ventana","main");
                 editor.apply();
                 if(mBound) {
-                    requireActivity().unbindService(connection);
+                    act.unbindService(connection);
                     impresora.setTextColor(getResources().getColor(R.color.alarma));
                     mBound = false;
                 }
                 if(!mBound) {
-                    cargarImpresora(getContext());
-                    //Intent intent2 = new Intent(getContext(), MainViaje.class);
-                   // getContext().startActivity(intent2);
+                    cargarImpresora(context);
+                    //Intent intent2 = new Intent(context, MainViaje.class);
+                    //context.startActivity(intent2);
                     //getActivity().finish();
 
                 }
@@ -438,10 +458,10 @@ public class fragment_principal extends Fragment {
             public void onClick(View v) {
                 mediaPlayer.start();
                 if(mBound) {
-                    boton_repetirTicket(getContext());
+                    boton_repetirTicket(context);
                 }else{
                     Toast.makeText(
-                            getContext(),
+                            context,
                             R.string.no_impresora,
                             Toast.LENGTH_LONG).show();
                 }
@@ -452,7 +472,7 @@ public class fragment_principal extends Fragment {
             @Override
             public void onClick(View v) {
                 mediaPlayer.start();
-                Intent intent2 = new Intent(getContext(), activity_preferencias.class);
+                Intent intent2 = new Intent(context, activity_preferencias.class);
                 getContext().startActivity(intent2);
             }
         });
@@ -461,7 +481,7 @@ public class fragment_principal extends Fragment {
             @Override
             public void onClick(View v) {
                 mediaPlayer.start();
-                Intent intent2 = new Intent(getContext(), turnos_activity.class);
+                Intent intent2 = new Intent(context, turnos_activity.class);
                 getContext().startActivity(intent2);
             }
         });
@@ -471,12 +491,12 @@ public class fragment_principal extends Fragment {
             public void onClick(View v) {
                 mediaPlayer.start();
 
-                Intent intent2 = new Intent(getContext(), MainViaje.class);
-                getContext().startActivity(intent2);
+                Intent intent2 = new Intent(context, MainViaje.class);
+                context.startActivity(intent2);
                 getActivity().finish();
             }
         });
-        feriado(getContext());
+        feriado(context);
         //cargarImpresora(getContext());
         return v;
     }
@@ -944,7 +964,7 @@ public class fragment_principal extends Fragment {
         outputStream = impresion.getOutputStream();
 
         if(outputStream == null){
-            Toast.makeText(getContext(), "No se pudo conectar el dispositivo. Verifique si la impresora esta encendida", Toast.LENGTH_SHORT).show();
+            Toast.makeText(context, "No se pudo conectar el dispositivo. Verifique si la impresora esta encendida", Toast.LENGTH_SHORT).show();
         }else {
 
             //print command
@@ -994,13 +1014,13 @@ public class fragment_principal extends Fragment {
         }
     }
 
-    private void cerrar_turno(){
+    private void cerrar_turno(final Context context){
 
         String newURL = Constantes.FIN_TURNO + "?id=" + ls_id_turno;
         Log.d(TAG,newURL);
 
         // Actualizar datos en el servidor
-        VolleySingleton.getInstance(getActivity()).addToRequestQueue(
+        VolleySingleton.getInstance(context).addToRequestQueue(
                 new JsonObjectRequest(
                         Request.Method.POST,
                         newURL,
@@ -1008,7 +1028,7 @@ public class fragment_principal extends Fragment {
                         new Response.Listener<JSONObject>() {
                             @Override
                             public void onResponse(JSONObject response) {
-                                procesarRespuestaCerrarTurno(response);
+                                procesarRespuestaCerrarTurno(response, context);
                             }
                         },
                         new Response.ErrorListener() {
@@ -1034,7 +1054,7 @@ public class fragment_principal extends Fragment {
                 }
         );
     }
-    private void procesarRespuestaCerrarTurno(JSONObject response) {
+    private void procesarRespuestaCerrarTurno(JSONObject response, Context context) {
 
         try {
             // Obtener estado
@@ -1044,12 +1064,12 @@ public class fragment_principal extends Fragment {
 
             switch (estado) {
                 case "1":
-                    datos_turno(getContext());
+                    datos_turno(context);
                     break;
                 case "2":
                     // Mostrar mensaje
                     Toast.makeText(
-                            getContext(),
+                            context,
                             mensaje,
                             Toast.LENGTH_LONG).show();
                     // Enviar código de falla
@@ -1060,13 +1080,13 @@ public class fragment_principal extends Fragment {
         }
     }
 
-    private void iniciar_turno(){
+    private void iniciar_turno(final Context context){
 
         String newURL = Constantes.ALTA_TURNO + "?id_conductor=" + ls_id_conductor;
         Log.d(TAG,newURL);
 
         // Actualizar datos en el servidor
-        VolleySingleton.getInstance(getActivity()).addToRequestQueue(
+        VolleySingleton.getInstance(context).addToRequestQueue(
                 new JsonObjectRequest(
                         Request.Method.POST,
                         newURL,
@@ -1074,7 +1094,7 @@ public class fragment_principal extends Fragment {
                         new Response.Listener<JSONObject>() {
                             @Override
                             public void onResponse(JSONObject response) {
-                                procesarRespuestaActualizar(response);
+                                procesarRespuestaActualizar(response, context);
                             }
                         },
                         new Response.ErrorListener() {
@@ -1100,7 +1120,7 @@ public class fragment_principal extends Fragment {
                 }
         );
     }
-    private void procesarRespuestaActualizar(JSONObject response) {
+    private void procesarRespuestaActualizar(JSONObject response, Context context) {
 
         try {
             // Obtener estado
@@ -1110,12 +1130,12 @@ public class fragment_principal extends Fragment {
 
             switch (estado) {
                 case "1":
-                    cargarTurno(getContext());
+                    cargarTurno(context);
                     break;
                 case "2":
                     // Mostrar mensaje
                     Toast.makeText(
-                            getContext(),
+                            context,
                             mensaje,
                             Toast.LENGTH_LONG).show();
                     // Enviar código de falla
@@ -1200,14 +1220,14 @@ public class fragment_principal extends Fragment {
 
     }
 
-    public void cargarDatos() {
+    public void cargarDatos(final Context context) {
 
         // Añadir parámetro a la URL del web service
         String newURL = Constantes.GET_TURNOS + "?conductor=" + ls_id_conductor;
         Log.d(TAG,newURL);
 
         // Realizar petición GET_BY_ID
-        VolleySingleton.getInstance(getContext()).addToRequestQueue(
+        VolleySingleton.getInstance(context).addToRequestQueue(
                 myRequest = new JsonObjectRequest(
                         Request.Method.POST,
                         newURL,
@@ -1494,22 +1514,23 @@ public class fragment_principal extends Fragment {
                         l_impresora = object.getString("impresora");
 
                         editor.putString("impresora",l_impresora);
+                        editor.putString("tipo_ventana", "main");
                         editor.apply();
 
                         if(!l_impresora.equals("")) {
 
-                                editor.putString("tipo_ventana", "main");
-                                editor.apply();
-                                Intent intent = new Intent(context, Impresion.class);
-                                requireContext().startService(intent);
 
-                                context.bindService(intent, connection, Context.BIND_AUTO_CREATE);
+                                Intent intent = new Intent(context, Impresion.class);
+                                context.startService(intent);
+                                esperarYCerrar(1500, intent);
+
+
 
                         }else{
 
                                 Intent intent = new Intent(context, Impresion.class);
-                                requireContext().bindService(intent, connection, Context.BIND_AUTO_CREATE);
-                                requireContext().startService(intent);
+                                context.bindService(intent, connection, Context.BIND_AUTO_CREATE);
+                                context.startService(intent);
 
                         }
 
@@ -1525,10 +1546,38 @@ public class fragment_principal extends Fragment {
 
     }
 
+    public void esperarYCerrar(int milisegundos, Intent intent) {
+        Handler handler = new Handler();
+        handler.postDelayed(new Runnable() {
+            public void run() {
+                // acciones que se ejecutan tras los milisegundos
+                bindApp(intent);
+            }
+        }, milisegundos);
+    }
+
+    /**
+     * Finaliza la aplicación
+     */
+    public void bindApp(Intent intent) {
+        Log.d("impresora", "bind");
+        context.bindService(intent, connection, Context.BIND_AUTO_CREATE);
+        if(impresion.getOutputStream() != null){
+            impresora.setTextColor(getResources().getColor(R.color.colorPrimary));
+            mBound = true;
+            Log.d("impresora", "conectada");
+        }else{
+            impresora.setTextColor(getResources().getColor(R.color.alarma));
+            mBound = false;
+
+            Log.d("impresora", "desconectada1");
+        }
+    }
+
     protected void ticket_recaudacion( ArrayList<turno> turnos) {
         outputStream = impresion.getOutputStream();
         if(outputStream == null){
-            Toast.makeText(getContext(), "No se pudo conectar el dispositivo. Verifique si la impresora esta encendida", Toast.LENGTH_SHORT).show();
+            Toast.makeText(context, "No se pudo conectar el dispositivo. Verifique si la impresora esta encendida", Toast.LENGTH_SHORT).show();
         }else {
             //print command
             try {
@@ -1598,7 +1647,7 @@ public class fragment_principal extends Fragment {
         outputStream = impresion.getOutputStream();
 
         if(outputStream == null){
-            Toast.makeText(getContext(), "No se pudo conectar el dispositivo. Verifique si la impresora esta encendida", Toast.LENGTH_SHORT).show();
+            Toast.makeText(context, "No se pudo conectar el dispositivo. Verifique si la impresora esta encendida", Toast.LENGTH_SHORT).show();
         }else {
 
             //print command
@@ -1657,7 +1706,7 @@ public class fragment_principal extends Fragment {
                 printNewLine();
 
                 outputStream.flush();
-                iniciar_turno();
+                iniciar_turno(context);
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -2123,7 +2172,7 @@ public class fragment_principal extends Fragment {
 
                 case "2":
                     Toast.makeText(
-                            getContext(),
+                            context,
                             mensaje,
                             Toast.LENGTH_LONG).show();
 
@@ -2143,7 +2192,7 @@ public class fragment_principal extends Fragment {
 
         outputStream = impresion.getOutputStream();
         if(outputStream == null){
-            Toast.makeText(getContext(), "No se pudo conectar el dispositivo. Verifique si la impresora esta encendida", Toast.LENGTH_SHORT).show();
+            Toast.makeText(context, "No se pudo conectar el dispositivo. Verifique si la impresora esta encendida", Toast.LENGTH_SHORT).show();
         }else {
 
             //print command
@@ -2331,7 +2380,7 @@ public class fragment_principal extends Fragment {
                     Intent intent = new Intent("android.intent.action.MAIN");
                     intent.setAction(Intent.ACTION_SEND);
                     intent.setType("text/plain");
-                    intent.putExtra(Intent.EXTRA_TEXT, "a");
+                    intent.putExtra(Intent.EXTRA_TEXT, "hola");
                     intent.putExtra("jid", telefono_base + "@s.whatsapp.net"); //numero telefonico sin prefijo "+"!
 
                     intent.setPackage("com.whatsapp");
@@ -2721,9 +2770,9 @@ public class fragment_principal extends Fragment {
             switch (estado) {
                 case "1":
 
-                    Intent intent2 = new Intent(getContext(), MainViaje.class);
-                    Objects.requireNonNull(getContext()).startActivity(intent2);
-                    Objects.requireNonNull(getActivity()).finish();
+                    Intent intent2 = new Intent(context, MainViaje.class);
+                    context.startActivity(intent2);
+                    act.finish();
                     break;
                 case "2":
                     // Mostrar mensaje

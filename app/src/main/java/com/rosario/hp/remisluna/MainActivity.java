@@ -1,20 +1,16 @@
 package com.rosario.hp.remisluna;
 
-import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.Fragment;
 
 import android.Manifest;
-import android.content.ComponentName;
+import android.bluetooth.BluetoothDevice;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
@@ -22,13 +18,12 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.location.LocationProvider;
 import android.os.Bundle;
-import android.os.IBinder;
 import android.preference.PreferenceManager;
 import android.provider.Settings;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Menu;
-import android.view.MenuItem;;
+import android.view.MenuItem;
 import android.view.WindowManager;
 import android.widget.Toast;
 
@@ -41,16 +36,13 @@ import com.rosario.hp.remisluna.Entidades.ayuda;
 import com.rosario.hp.remisluna.Fragment.fragment_principal;
 import com.rosario.hp.remisluna.Fragment.fragment_vacia;
 import com.rosario.hp.remisluna.include.Constantes;
-import com.rosario.hp.remisluna.include.PrinterCommands;
-import com.rosario.hp.remisluna.include.Utils;
 import com.rosario.hp.remisluna.include.VolleySingleton;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.IOException;;
-import java.io.OutputStream;
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
@@ -60,9 +52,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 
-import static com.rosario.hp.remisluna.include.Utils.stringABytes;
-
-
 public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = MainActivity.class.getSimpleName();
@@ -71,14 +60,8 @@ public class MainActivity extends AppCompatActivity {
     private JsonObjectRequest myRequest;
     String ls_vehiculo;
     private ArrayList<ayuda> ayudas;
-    private Impresion impresion;
-    private String ls_viaje;
-    boolean mBound = false;
-    private static OutputStream outputStream;
-    byte FONT_TYPE;
-    private static final long MIN_TIEMPO_ENTRE_UPDATES = 1000 * 12;
-    private static final long MIN_CAMBIO_DISTANCIA_PARA_UPDATES = 0;
     Localizacion Local;
+    public int rssi;
 
     @Override
     public void onStart() {
@@ -103,28 +86,9 @@ public class MainActivity extends AppCompatActivity {
         this.finish();
     }
 
-    /** Defines callbacks for service binding, passed to bindService() */
-    private ServiceConnection connection = new ServiceConnection() {
 
-        @Override
-        public void onServiceConnected(ComponentName className,
-                                       IBinder service) {
-            // We've bound to LocalService, cast the IBinder and get LocalService instance
-            Impresion.LocalBinder binder = (Impresion.LocalBinder) service;
-            Log.d("impresora","Main");
-            impresion = binder.getService();
-            if(impresion.getbluetoothSocket() != null){
-                mBound = true;
-            }
-        }
 
-        @Override
-        public void onServiceDisconnected(ComponentName arg0) {
-            mBound = false;
-        }
-    };
-
-    @Override
+     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main_basica);
@@ -211,9 +175,6 @@ public class MainActivity extends AppCompatActivity {
                     editor.putString("viajes_automaticos",object.getString("viajes_automaticos"));
                     editor.apply();
 
-                    editor.commit();
-
-
                     cargarViajes(context);
 
                     break;
@@ -226,6 +187,30 @@ public class MainActivity extends AppCompatActivity {
             e.printStackTrace();
         }
 
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.menu_principal, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+
+        SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        SharedPreferences.Editor editor = settings.edit();
+        Intent intent;
+
+        editor.putString("url", "https://remisluna.com.ar/remiseria/paginas_ayuda.php");
+        editor.apply();
+        intent = new Intent(getApplicationContext(), WebActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        getApplicationContext().startActivity(intent);
+        editor.commit();
+
+        return super.onOptionsItemSelected(item);
     }
 
     public void cargarViajes(final Context context) {
@@ -274,7 +259,6 @@ public class MainActivity extends AppCompatActivity {
         try {
             // Obtener atributo "mensaje"
             String mensaje = response.getString("estado");
-            Fragment fragment = null;
             switch (mensaje) {
                 case "1":
                     JSONArray mensaje1 = response.getJSONArray("viaje");
@@ -290,13 +274,11 @@ public class MainActivity extends AppCompatActivity {
                     editor2.putString("estado_vehiculo",object.getString("estado_vehiculo"));
                     editor2.apply();
 
-                    editor2.commit();
-
                     locationEnd();
 
-                    Intent intent2 = new Intent(getApplicationContext(), MainViaje.class);
+                    Intent intent2 = new Intent(context, MainViaje.class);
                     intent2.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK );
-                    getApplicationContext().startActivity(intent2);
+                    context.startActivity(intent2);
                     finish();
                     break;
 
@@ -361,7 +343,7 @@ public class MainActivity extends AppCompatActivity {
         try {
             // Obtener atributo "mensaje"
             String mensaje = response.getString("estado");
-            Fragment fragment = null;
+            Fragment fragment ;
             switch (mensaje) {
                 case "1":
                     JSONArray mensaje1 = response.getJSONArray("viaje");
@@ -395,7 +377,7 @@ public class MainActivity extends AppCompatActivity {
 
                     locationEnd();
 
-                    Intent intent2 = new Intent(getApplicationContext(), MainViaje.class);
+                    Intent intent2 = new Intent(context, MainViaje.class);
                     intent2.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK );
                     getApplicationContext().startActivity(intent2);
                     finish();
@@ -471,8 +453,6 @@ public class MainActivity extends AppCompatActivity {
                     editor.putString("vehiculo",ls_vehiculo);
                     editor.apply();
 
-                    editor.commit();
-
                     Fragment fragment = new fragment_principal();
 
                     getSupportFragmentManager().beginTransaction()
@@ -524,10 +504,10 @@ public class MainActivity extends AppCompatActivity {
 
     }
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode == 1000) {
             if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 locationStart();
-                return;
             }
         }
     }
@@ -539,9 +519,6 @@ public class MainActivity extends AppCompatActivity {
                 Geocoder geocoder = new Geocoder(this, Locale.getDefault());
                 List<Address> list = geocoder.getFromLocation(
                         loc.getLatitude(), loc.getLongitude(), 1);
-                if (!list.isEmpty()) {
-                    Address DirCalle = list.get(0);
-                }
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -640,13 +617,7 @@ public class MainActivity extends AppCompatActivity {
                                 procesarRespuestaActualizar(response);
                             }
                         },
-                        new Response.ErrorListener() {
-                            @Override
-                            public void onErrorResponse(VolleyError error) {
-                                Log.d(TAG, "Error inicio: " + error.getMessage());
-
-                            }
-                        }
+                        error -> Log.d(TAG, "Error inicio: " + error.getMessage())
 
                 ) {
                     @Override
@@ -671,15 +642,14 @@ public class MainActivity extends AppCompatActivity {
             // Obtener mensaje
             String mensaje = response.getString("mensaje");
 
-            switch (estado) {
-                case "2":
+            if (estado.equals("2")) {
+
                     // Mostrar mensaje
                     Toast.makeText(
                             getApplicationContext(),
                             mensaje,
                             Toast.LENGTH_LONG).show();
                     // Enviar código de falla
-                    break;
             }
         } catch (JSONException e) {
             e.printStackTrace();

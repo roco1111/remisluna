@@ -40,6 +40,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 public class Impresion extends Service {
@@ -55,6 +56,7 @@ public class Impresion extends Service {
     private static final String TAG_DEBUG = "impresion";
     private final IBinder binder = new LocalBinder();
     private Context context;
+    private UUID deviceUUID;
 
     public class LocalBinder extends Binder {
         public Impresion getService() {
@@ -91,7 +93,7 @@ public class Impresion extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-
+        bluetoothSocket = null;
         Log.d("startid", String.valueOf(startId));
         context = getApplicationContext();
         SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
@@ -99,44 +101,55 @@ public class Impresion extends Service {
         String l_conductor = settings.getString("id", "");
         if (!l_impresora.equals("")) {
             Log.d("startid_a", String.valueOf(startId));
-            dispositivoBluetooth = bluetoothAdapter.getRemoteDevice(l_impresora);
+            try {
+                dispositivoBluetooth = bluetoothAdapter.getRemoteDevice(l_impresora);
+            } catch (IllegalArgumentException exception) {
+                Log.w("imp", "Device not found with provided address.");
+                return START_NOT_STICKY;
+            }
             final Thread t = new Thread() {
                 @Override
                 public void run() {
                     try {
-                        // Conectamos los dispositivos
+                            // Conectamos los dispositivos
 
-                        // Creamos un socket
+                            // Creamos un socket
 
-                        if (ContextCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
-                            // TODO: Consider calling
-                            //    ActivityCompat#requestPermissions
-                            // here to request the missing permissions, and then overriding
-                            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-                            //                                          int[] grantResults)
-                            // to handle the case where the user grants the permission. See the documentation
-                            // for ActivityCompat#requestPermissions for more details.
-                            //return;
-                        }
-                            ParcelUuid list[] = dispositivoBluetooth.getUuids();
-                            UUID  deviceUUID  = UUID.fromString(list[0].toString());
-                            bluetoothSocket = dispositivoBluetooth.createRfcommSocketToServiceRecord(deviceUUID);
-
-                            Log.d("impresora", "socket");
-                            if(!bluetoothSocket.isConnected()) {
-                                bluetoothSocket.connect();// conectamos el socket
-                                outputStream = bluetoothSocket.getOutputStream();
-                                inputStream = bluetoothSocket.getInputStream();
+                            if (ContextCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
+                                // TODO: Consider calling
+                                //    ActivityCompat#requestPermissions
+                                // here to request the missing permissions, and then overriding
+                                //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+                                //                                          int[] grantResults)
+                                // to handle the case where the user grants the permission. See the documentation
+                                // for ActivityCompat#requestPermissions for more details.
+                                //return;
                             }
 
+                            ParcelUuid list[] = dispositivoBluetooth.getUuids();
+                            if (list != null) {
+                                deviceUUID = UUID.fromString(list[0].toString());
 
+                                bluetoothSocket = dispositivoBluetooth.createRfcommSocketToServiceRecord(deviceUUID);
 
-                            //empezarEscucharDatos();
+                                Log.d("impresora", "socket");
+                                int bond = dispositivoBluetooth.getBondState();
+                                if (!bluetoothSocket.isConnected() ) {
+                                    bluetoothSocket.connect();// conectamos el socket
+
+                                    outputStream = bluetoothSocket.getOutputStream();
+                                    Log.d("impresora", "outputStream");
+                                    inputStream = bluetoothSocket.getInputStream();
+                                    Log.d("impresora", "inputStream");
+                                }
+                            }else{
+                                showToastBlu(getApplicationContext());
+                            }
 
 
                         } catch (IOException e) {
 
-                            Log.e(TAG_DEBUG, "Error al conectar el dispositivo bluetooth");
+                            Log.e(TAG_DEBUG, "Error al conectar el dispositivo bluetooth " + e);
 
 
 
@@ -161,7 +174,12 @@ public class Impresion extends Service {
                 String Direccion;
                 Direccion = settings.getString("DireccionDispositivo", "");
                 guardar_impresora(Direccion,l_conductor,getApplicationContext());
-                dispositivoBluetooth = bluetoothAdapter.getRemoteDevice(Direccion);
+                try {
+                    dispositivoBluetooth = bluetoothAdapter.getRemoteDevice(l_impresora);
+                } catch (IllegalArgumentException exception) {
+                    Log.w("imp", "Device not found with provided address.");
+                    return START_NOT_STICKY;
+                }
                 final Thread t = new Thread() {
                     @Override
                     public void run() {
@@ -180,14 +198,18 @@ public class Impresion extends Service {
                             // Creamos un socket
 
                             ParcelUuid list[] = dispositivoBluetooth.getUuids();
-                            UUID  deviceUUID  = UUID.fromString(list[0].toString());
-                            bluetoothSocket = dispositivoBluetooth.createRfcommSocketToServiceRecord(deviceUUID);
+                            if (list != null) {
+                                deviceUUID = UUID.fromString(list[0].toString());
+                                bluetoothSocket = dispositivoBluetooth.createRfcommSocketToServiceRecord(deviceUUID);
 
-                            Log.d("impresora","socket2");
-                            if(!bluetoothSocket.isConnected()) {
-                                bluetoothSocket.connect();// conectamos el socket
-                                outputStream = bluetoothSocket.getOutputStream();
-                                inputStream = bluetoothSocket.getInputStream();
+                                Log.d("impresora", "socket2");
+                                if (!bluetoothSocket.isConnected()) {
+                                    bluetoothSocket.connect();// conectamos el socket
+                                    outputStream = bluetoothSocket.getOutputStream();
+                                    inputStream = bluetoothSocket.getInputStream();
+                                }
+                            }else{
+                                showToastBlu(getApplicationContext());
                             }
 
 
@@ -198,6 +220,8 @@ public class Impresion extends Service {
                         } catch (IOException e) {
 
                             Log.e(TAG_DEBUG, "Error al conectar el dispositivo bluetooth");
+                            showToast(getApplicationContext());
+
                             //Toast.makeText(getApplicationContext(), "No se pudo conectar el dispositivo", Toast.LENGTH_SHORT).show();
                         }
 
@@ -218,9 +242,20 @@ public class Impresion extends Service {
                 Toast.makeText(ctx, "No se pudo conectar el dispositivo. Verifique si la impresora esta encendida", Toast.LENGTH_SHORT).show();
                 try {
                     bluetoothSocket.close();
+                    Log.e(TAG_DEBUG, "cerrado");
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
+            }
+        });
+    }
+
+    private void showToastBlu(Context ctx) {
+        Handler handler = new Handler(Looper.getMainLooper());
+        handler.post(new Runnable() {
+            public void run() {
+                Toast.makeText(ctx, "Debe conectar el bluetooth", Toast.LENGTH_SHORT).show();
+
             }
         });
     }

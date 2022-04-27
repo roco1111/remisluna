@@ -104,7 +104,8 @@
         </activity>
         <activity
             android:name=".WebActivity"
-            android:screenOrientation="portrait">
+            android:screenOrientation="portrait"
+            android:usesCleartextTraffic="true">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".activity_preferencias" />

@@ -21,7 +21,6 @@ import com.rosario.hp.remisluna.Fragment.fragment_turno;
 public class MainViajes extends AppCompatActivity {
     private static final String TAG = MainViajes.class.getSimpleName();
     String ls_id_turno;
-    private JsonObjectRequest myRequest;
 
 
     @Override
