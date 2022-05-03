@@ -23,6 +23,7 @@ import android.widget.Toast;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
+import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.error.VolleyError;
@@ -30,6 +31,7 @@ import com.android.volley.request.JsonObjectRequest;
 import com.rosario.hp.remisluna.include.Constantes;
 import com.rosario.hp.remisluna.include.VolleySingleton;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -173,7 +175,7 @@ public class Impresion extends Service {
                 settings = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
                 String Direccion;
                 Direccion = settings.getString("DireccionDispositivo", "");
-                guardar_impresora(Direccion,l_conductor,getApplicationContext());
+                verificar_impresora(getApplicationContext(),Direccion,l_conductor);
                 try {
                     dispositivoBluetooth = bluetoothAdapter.getRemoteDevice(l_impresora);
                 } catch (IllegalArgumentException exception) {
@@ -258,6 +260,109 @@ public class Impresion extends Service {
 
             }
         });
+    }
+
+    public void verificar_impresora(final Context context, final String impresora, final String conductor) {
+
+        HashMap<String, String> map = new HashMap<>();// Mapeo previo
+
+        map.put("conductor", conductor);
+        map.put("impresora", impresora);
+
+        JSONObject jobject = new JSONObject(map);
+
+
+        // Depurando objeto Json...
+        Log.d("Impresora", jobject.toString());
+
+        StringBuilder encodedParams = new StringBuilder();
+        try {
+            for (Map.Entry<String, String> entry : map.entrySet()) {
+                encodedParams.append(URLEncoder.encode(entry.getKey(), "utf-8"));
+                encodedParams.append('=');
+                encodedParams.append(URLEncoder.encode(entry.getValue(), "utf-8"));
+                encodedParams.append('&');
+            }
+        } catch (UnsupportedEncodingException uee) {
+            throw new RuntimeException("Encoding not supported: " + "utf-8", uee);
+        }
+
+        encodedParams.setLength(Math.max(encodedParams.length() - 1, 0));
+
+        String newURL = Constantes.VERIFICAR_IMPRESORA + "?" + encodedParams;
+        Log.d("Impresora",newURL);
+
+        VolleySingleton.getInstance(context).addToRequestQueue(
+                new JsonObjectRequest(
+                        Request.Method.POST,
+                        newURL,
+                        null,
+                        new Response.Listener<JSONObject>() {
+                            @Override
+                            public void onResponse(JSONObject response) {
+                                procesarRespuestaImpresora(response, context, impresora, conductor);
+                            }
+                        },
+                        new Response.ErrorListener() {
+                            @Override
+                            public void onErrorResponse(VolleyError error) {
+                                Log.d("Impresión", "Error impresora: " + error.getMessage());
+
+                            }
+                        }
+
+                ) {
+                    @Override
+                    public Map<String, String> getHeaders() {
+                        Map<String, String> headers = new HashMap<>();
+                        headers.put("Content-Type", "application/json; charset=utf-8");
+                        return headers;
+                    }
+
+                    @Override
+                    public String getBodyContentType() {
+                        return "application/json; charset=utf-8" + getParamsEncoding();
+                    }
+                }
+        );
+
+    }
+
+    private void procesarRespuestaImpresora(JSONObject response, Context context,final String impresora, final String conductor ) {
+
+        try {
+            // Obtener atributo "mensaje"
+            String mensaje = response.getString("estado");
+
+            switch (mensaje) {
+                case "1":
+                    JSONArray datos_parada = response.getJSONArray("conductor");
+
+                    for(int i = 0; i < datos_parada.length(); i++)
+                    {
+                        JSONObject object = datos_parada.getJSONObject(i);
+
+                        String cantidad = object.getString("cantidad");
+
+                        if(cantidad.equals("0"))
+                        {
+                            guardar_impresora(impresora, conductor,context);
+                        }else{
+                            Toast.makeText(
+                                    context,
+                                    "La impresora ya fue asignada a otro chofer",
+                                    Toast.LENGTH_LONG).show();
+                        }
+                    }
+
+                    break;
+
+            }
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
     }
 
     private void guardar_impresora(String impresora, String conductor, final Context context){

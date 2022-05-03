@@ -157,7 +157,7 @@ public class fragment_viaje extends Fragment {
     public void onStart() {
         super.onStart();
         // Bind to LocalService
-        cargarImpresora(getContext());
+
     }
 
     @Override
@@ -179,6 +179,7 @@ public class fragment_viaje extends Fragment {
         }else{
             gps.setTextColor(getResources().getColor(R.color.alarma));
         }
+        cargarImpresora(getContext());
     }
 
     /** Defines callbacks for service binding, passed to bindService() */
@@ -190,11 +191,17 @@ public class fragment_viaje extends Fragment {
             // We've bound to LocalService, cast the IBinder and get LocalService instance
             Impresion.LocalBinder binder = (Impresion.LocalBinder) service;
             impresion = binder.getService();
-            if(impresion.getOutputStream() != null){
-                impresora.setTextColor(act.getResources().getColor(R.color.colorPrimary));
-                mBound = true;
+            if(impresion.getBluetoothAdapter() !=null) {
+                if (impresion.getOutputStream() != null) {
+                    impresora.setTextColor(context.getResources().getColor(R.color.colorPrimary));
+                    mBound = true;
+                } else {
+                    impresora.setTextColor(context.getResources().getColor(R.color.alarma));
+                    mBound = false;
+
+                }
             }else{
-                impresora.setTextColor(act.getResources().getColor(R.color.alarma));
+                impresora.setTextColor(context.getResources().getColor(R.color.alarma));
                 mBound = false;
             }
         }
@@ -2335,7 +2342,7 @@ public class fragment_viaje extends Fragment {
 
                             Intent intent = new Intent(context, Impresion.class);
                             context.startService(intent);
-                            esperarYCerrar(1500, intent);
+                            esperarYCerrar(1500, intent,context);
 
                         }else{
 
@@ -2357,24 +2364,34 @@ public class fragment_viaje extends Fragment {
 
     }
 
-    public void esperarYCerrar(int milisegundos, Intent intent) {
+    public void esperarYCerrar(int milisegundos, Intent intent, final Context context) {
         Handler handler = new Handler();
         handler.postDelayed(new Runnable() {
             public void run() {
                 // acciones que se ejecutan tras los milisegundos
-                bindApp(intent);
+                bindApp(intent, context);
             }
         }, milisegundos);
     }
-    public void bindApp(Intent intent) {
+    public void bindApp(Intent intent, Context context) {
         context.bindService(intent, connection, Context.BIND_AUTO_CREATE);
-        if(impresion.getOutputStream() != null){
-            impresora.setTextColor(getResources().getColor(R.color.colorPrimary));
-            mBound = true;
-        }else{
-            impresora.setTextColor(getResources().getColor(R.color.alarma));
-            mBound = false;
+        if(impresion != null) {
+            if (impresion.getBluetoothAdapter() != null) {
+                if (impresion.getOutputStream() != null) {
+                    impresora.setTextColor(context.getResources().getColor(R.color.colorPrimary));
+                    mBound = true;
+                } else {
+                    impresora.setTextColor(context.getResources().getColor(R.color.alarma));
+                    mBound = false;
 
+                }
+            } else {
+                impresora.setTextColor(context.getResources().getColor(R.color.alarma));
+                mBound = false;
+            }
+        }else{
+            impresora.setTextColor(context.getResources().getColor(R.color.alarma));
+            mBound = false;
         }
         context.bindService(intent, connection, Context.BIND_AUTO_CREATE);
     }

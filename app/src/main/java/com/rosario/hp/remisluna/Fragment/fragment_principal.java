@@ -203,15 +203,18 @@ public class fragment_principal extends Fragment {
 
             Impresion.LocalBinder binder = (Impresion.LocalBinder) service;
             impresion = binder.getService();
-            if(impresion.getOutputStream() != null){
-                impresora.setTextColor(getResources().getColor(R.color.colorPrimary));
-                mBound = true;
-                Log.d("impresora", "conectada");
-            }else{
-                impresora.setTextColor(getResources().getColor(R.color.alarma));
-                mBound = false;
+            if(impresion.getBluetoothAdapter() !=null) {
+                if (impresion.getOutputStream() != null) {
+                    impresora.setTextColor(context.getResources().getColor(R.color.colorPrimary));
+                    mBound = true;
+                } else {
+                    impresora.setTextColor(context.getResources().getColor(R.color.alarma));
+                    mBound = false;
 
-                Log.d("impresora", "desconectada1");
+                }
+            }else{
+                impresora.setTextColor(context.getResources().getColor(R.color.alarma));
+                mBound = false;
             }
         }
 
@@ -1202,8 +1205,6 @@ public class fragment_principal extends Fragment {
                     editor.putString("id_turno_chofer",ls_id_turno);
                     editor.apply();
 
-                    editor.commit();
-
                     //datos_turno(context);
 
                     break;
@@ -1522,7 +1523,7 @@ public class fragment_principal extends Fragment {
 
                                 Intent intent = new Intent(context, Impresion.class);
                                 context.startService(intent);
-                                esperarYCerrar(1500, intent);
+                                esperarYCerrar(1500, intent, context);
 
 
 
@@ -1546,12 +1547,12 @@ public class fragment_principal extends Fragment {
 
     }
 
-    public void esperarYCerrar(int milisegundos, Intent intent) {
+    public void esperarYCerrar(int milisegundos, Intent intent, final Context context) {
         Handler handler = new Handler();
         handler.postDelayed(new Runnable() {
             public void run() {
                 // acciones que se ejecutan tras los milisegundos
-                bindApp(intent);
+                bindApp(intent, context);
             }
         }, milisegundos);
     }
@@ -1559,18 +1560,21 @@ public class fragment_principal extends Fragment {
     /**
      * Finaliza la aplicación
      */
-    public void bindApp(Intent intent) {
+    public void bindApp(Intent intent, Context context) {
         Log.d("impresora", "bind");
         context.bindService(intent, connection, Context.BIND_AUTO_CREATE);
-        if(impresion.getOutputStream() != null){
-            impresora.setTextColor(getResources().getColor(R.color.colorPrimary));
-            mBound = true;
-            Log.d("impresora", "conectada");
-        }else{
-            impresora.setTextColor(getResources().getColor(R.color.alarma));
-            mBound = false;
+        if(impresion.getBluetoothAdapter() !=null) {
+            if (impresion.getOutputStream() != null) {
+                impresora.setTextColor(context.getResources().getColor(R.color.colorPrimary));
+                mBound = true;
+            } else {
+                impresora.setTextColor(context.getResources().getColor(R.color.alarma));
+                mBound = false;
 
-            Log.d("impresora", "desconectada1");
+            }
+        }else{
+            impresora.setTextColor(context.getResources().getColor(R.color.alarma));
+            mBound = false;
         }
     }
 

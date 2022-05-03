@@ -399,7 +399,7 @@ public class fragment_viaje_iniciado extends Fragment {
                             ficha++;
                             valor_ficha = Double.parseDouble(importe_ficha);
                             precio_ficha = precio_ficha + valor_ficha ;
-                            precio_ficha = Double.parseDouble(getTwoDecimals(precio_ficha));
+                            precio_ficha = getValor(getTwoDecimals(precio_ficha));
                             cuadras++;
                             kms.setText( String.valueOf(cuadras));
                             tiempo_viaje.setText( "00:00");
@@ -408,7 +408,7 @@ public class fragment_viaje_iniciado extends Fragment {
                             espera++;
                             valor_ficha = Double.parseDouble(importe_espera);
                             precio_espera = precio_espera + valor_ficha ;
-                            precio_espera = Double.parseDouble(getTwoDecimals(precio_espera));
+                            precio_espera = getValor(getTwoDecimals(precio_espera));
                             ficha_espera.setText( String.valueOf(precio_espera));
                             tiempo_viaje.setText( "00:00");
                             break;
@@ -440,7 +440,7 @@ public class fragment_viaje_iniciado extends Fragment {
                     if(valor_ficha > 0.00){
                         precio_total = precio_total + valor_ficha ;
 
-                        precio_total = Double.parseDouble(getTwoDecimals(precio_total));
+                        precio_total = getValor(getTwoDecimals(precio_total));
 
                         importe.setText(String.valueOf(precio_total));
 
@@ -1771,6 +1771,13 @@ public class fragment_viaje_iniciado extends Fragment {
         } catch (JSONException e) {
             e.printStackTrace();
         }
+    }
+
+    public double getValor(String texto){
+        if(texto.contains(",")){
+            return Double.parseDouble(texto.replace(",", ".").trim());
+        }
+        return Double.parseDouble(texto.trim());
     }
 
 

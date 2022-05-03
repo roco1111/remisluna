@@ -60,4 +60,6 @@ public class Constantes {
     public static final String GET_REMISERIA = "https://" + IP + PUERTO_HOST + "/obtener_remiseria.php";
     public static final String GET_TOLERANCIA = "https://" + IP + PUERTO_HOST + "/obtener_tolerancia.php";
 
+        public static final String VERIFICAR_IMPRESORA = "https://" + IP + PUERTO_HOST + "/verificar_impresora.php";
+
 }

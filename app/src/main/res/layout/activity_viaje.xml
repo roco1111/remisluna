@@ -74,15 +74,15 @@
             android:id="@+id/precio"
             android:layout_width="wrap_content"
             android:layout_height="@dimen/tamanio_campo_numero_chico"
-            android:text="@string/cero_pesos"
             android:layout_below="@id/id_datos_superior"
-            android:textAlignment="center"
-
             android:layout_centerHorizontal="true"
-            android:textColor="@color/colorPrimary"
-            android:textStyle="bold"
             android:fontFamily="@font/digital"
-            android:textSize="@dimen/tamanio_numero_chico" />
+
+            android:text="@string/cero_pesos"
+            android:textAlignment="center"
+            android:textColor="@color/colorPrimary"
+            android:textSize="@dimen/tamanio_numero_chico"
+            android:textStyle="bold" />
 
         <RelativeLayout
             android:id="@+id/id_datos_inferior"
@@ -221,6 +221,7 @@
                 android:layout_width="@dimen/ancho_boton_grande"
                 android:layout_height="@dimen/alto_boton"
                 android:layout_alignParentStart="true"
+                android:layout_marginStart="-26dp"
                 android:background="@android:color/transparent"
                 android:drawableTop="@drawable/iniciar_viaje"
                 tools:ignore="RtlHardcoded" />
@@ -230,6 +231,7 @@
                 android:layout_width="@dimen/ancho_boton_grande"
                 android:layout_height="@dimen/alto_boton"
                 android:layout_alignParentEnd="true"
+                android:layout_marginEnd="-13dp"
                 android:background="@android:color/transparent"
                 android:drawableTop="@drawable/anular_viaje"
                 tools:ignore="RtlHardcoded" />
@@ -241,7 +243,7 @@
         android:layout_height="wrap_content"
         android:layout_below="@id/id_botones"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="@dimen/margin_start"
+        android:layout_marginTop="@dimen/margin_boton"
         android:orientation="horizontal">
 
         <ImageButton
@@ -277,7 +279,7 @@
         android:layout_height="wrap_content"
         android:layout_below="@id/id_teclado_sup"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="@dimen/margin_start"
+        android:layout_marginTop="@dimen/margin_boton"
         android:orientation="horizontal">
 
         <ImageButton
@@ -313,7 +315,7 @@
         android:layout_height="wrap_content"
         android:layout_below="@id/id_teclado_medio"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="@dimen/margin_start"
+        android:layout_marginTop="@dimen/margin_boton"
         android:orientation="horizontal">
 
         <ImageButton

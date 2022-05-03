@@ -552,7 +552,7 @@ public class ServicioGeolocalizacion extends Service implements Runnable {
             if(l_tipo == 1) {//fichas
 
                 distancia_acumulada += distance;
-                distancia_acumulada = Double.valueOf(getTwoDecimals(distancia_acumulada));
+                distancia_acumulada = getValor(getTwoDecimals(distancia_acumulada));
                 if (distancia_acumulada >= l_metros_ficha) {
                     tiempo_acumulado = 0L;
                     distancia_acumulada = distancia_acumulada - l_metros_ficha;
@@ -646,6 +646,13 @@ public class ServicioGeolocalizacion extends Service implements Runnable {
     private static String getTwoDecimals(double value){
         DecimalFormat df = new DecimalFormat("0.00");
         return df.format(value);
+    }
+
+    public double getValor(String texto){
+        if(texto.contains(",")){
+            return Double.parseDouble(texto.replace(",", ".").trim());
+        }
+        return Double.parseDouble(texto.trim());
     }
 
 
