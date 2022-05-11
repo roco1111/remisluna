@@ -9,8 +9,8 @@ android {
         applicationId "com.rosario.hp.remisluna"
         minSdkVersion 19
         targetSdkVersion 31
-        versionCode 25
-        versionName "1.24"
+        versionCode 26
+        versionName "1.25"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         multiDexEnabled true
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
@@ -64,6 +64,7 @@ android {
     lint {
         checkReleaseBuilds false
     }
+    namespace 'com.rosario.hp.remisluna'
 }
 
 

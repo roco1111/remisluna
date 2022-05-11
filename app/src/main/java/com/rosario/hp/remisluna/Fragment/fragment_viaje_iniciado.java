@@ -103,17 +103,13 @@ public class fragment_viaje_iniciado extends Fragment {
     private Double precio_espera = 0.00;
     private Double precio_bajada= 0.00;
     private Integer id_trayecto = 0;
-    private static OutputStream outputStream;
-    private Impresion impresion;
-    boolean mBound = false;
     private LocationManager mLocationManager;
     boolean lb_ticket;
     private Double l_porcentaje;
     boolean cronometroActivo;
-    boolean lb_espera = false;
-    private Handler escribirenUI;
     private Calendar c;
     private String l_hora_desde;
+    private String l_hora_hasta;
     private String getMyTime_desde;
     private String getMyTime_hasta;
     private Long tiempo_acumulado = 0L;
@@ -167,6 +163,19 @@ public class fragment_viaje_iniciado extends Fragment {
         ls_id_conductor     = settings.getString("id","");
         id_turno            = settings.getString("id_turno_chofer","");
         ls_remiseria     = settings.getString("remiseria","");
+        l_porcentaje = Double.parseDouble(settings.getString("porcentaje","0"));
+        l_hora_desde = settings.getString("tarifa_desde","");
+        l_hora_hasta= settings.getString("tarifa_hasta","");
+        ls_es_feriado = settings.getString("feriado","");
+
+        String l_hoy;
+
+        c = Calendar.getInstance();
+        SimpleDateFormat shoy = new SimpleDateFormat("MM/dd/yyyy");
+        l_hoy = shoy.format(c.getTime());
+        getMyTime_desde = l_hoy + ' ' + l_hora_desde;
+        getMyTime_hasta = l_hoy + ' ' + l_hora_hasta;
+
         MediaPlayer mediaPlayer = MediaPlayer.create(getActivity(), R.raw.doorbell);
 
         this.sin_ticket.setOnClickListener(new View.OnClickListener() {
@@ -200,8 +209,7 @@ public class fragment_viaje_iniciado extends Fragment {
                 alarma_viaje();
             }
         });
-
-        feriado();
+        cargarDatos(getContext());
 
         return v;
     }
@@ -239,57 +247,6 @@ public class fragment_viaje_iniciado extends Fragment {
         DecimalFormat df = new DecimalFormat("0.00");
         return df.format(value);
     }
-
-    public void feriado(){
-        String newURL = Constantes.GET_FERIADO ;
-        Log.d(TAG,newURL);
-
-        // Realizar petición GET_BY_ID
-        VolleySingleton.getInstance(getContext()).addToRequestQueue(
-                myRequest = new JsonObjectRequest(
-                        Request.Method.GET,
-                        newURL,
-                        null,
-                        new Response.Listener<JSONObject>() {
-
-                            @Override
-                            public void onResponse(JSONObject response) {
-                                // Procesar respuesta Json
-
-                                procesarRespuestaFeriado(response);
-
-                            }
-                        },
-                        new Response.ErrorListener() {
-                            @Override
-                            public void onErrorResponse(VolleyError error) {
-                                Log.d(TAG, "Error Volley viaje: " + error.getMessage());
-
-                            }
-                        }
-                )
-        );
-        myRequest.setRetryPolicy(new DefaultRetryPolicy(
-                50000,
-                5,//DefaultRetryPolicy.DEFAULT_MAX_RETRIES
-                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
-
-    }
-
-    private void procesarRespuestaFeriado(JSONObject response) {
-
-        try {
-            // Obtener atributo "mensaje"
-            ls_es_feriado= response.getString("feriado");
-
-            cargarDatos(getContext());
-
-
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-    }
-
 
     public void cargarTarifa(final Context context, final String[] tokens) {
 
@@ -687,286 +644,6 @@ public class fragment_viaje_iniciado extends Fragment {
         }
     }
 
-    public void cargarParametro(final Context context) {
-
-        HashMap<String, String> map = new HashMap<>();// Mapeo previo
-
-        map.put("parametro", "10");
-        map.put("remiseria", ls_remiseria);
-
-        JSONObject jobject = new JSONObject(map);
-
-
-        // Depurando objeto Json...
-        Log.d(TAG, jobject.toString());
-
-        StringBuilder encodedParams = new StringBuilder();
-        try {
-            for (Map.Entry<String, String> entry : map.entrySet()) {
-                encodedParams.append(URLEncoder.encode(entry.getKey(), "utf-8"));
-                encodedParams.append('=');
-                encodedParams.append(URLEncoder.encode(entry.getValue(), "utf-8"));
-                encodedParams.append('&');
-            }
-        } catch (UnsupportedEncodingException uee) {
-            throw new RuntimeException("Encoding not supported: " + "utf-8", uee);
-        }
-
-        encodedParams.setLength(Math.max(encodedParams.length() - 1, 0));
-
-        // Añadir parámetro a la URL del web service
-        String newURL = Constantes.GET_ID_PARAMETRO + "?" + encodedParams;
-        Log.d(TAG,newURL);
-
-        // Realizar petición GET_BY_ID
-        VolleySingleton.getInstance(context).addToRequestQueue(
-                myRequest = new JsonObjectRequest(
-                        Request.Method.POST,
-                        newURL,
-                        null,
-                        new Response.Listener<JSONObject>() {
-
-                            @Override
-                            public void onResponse(JSONObject response) {
-                                // Procesar respuesta Json
-                                procesarRespuestaParametro(response, context);
-                            }
-                        },
-                        new Response.ErrorListener() {
-                            @Override
-                            public void onErrorResponse(VolleyError error) {
-                                Log.d(TAG, "Error Volley viaje: " + error.getMessage());
-
-                            }
-                        }
-                )
-        );
-        myRequest.setRetryPolicy(new DefaultRetryPolicy(
-                50000,
-                5,//DefaultRetryPolicy.DEFAULT_MAX_RETRIES
-                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
-
-    }
-
-    private void procesarRespuestaParametro(JSONObject response, Context context) {
-
-        try {
-            // Obtener atributo "mensaje"
-            String mensaje = response.getString("estado");
-
-            switch (mensaje) {
-                case "1":
-                    JSONArray datos_parametro = response.getJSONArray("parametro");
-
-                    for(int i = 0; i < datos_parametro.length(); i++)
-                    {JSONObject object = datos_parametro.getJSONObject(i);
-
-                        l_porcentaje = Double.parseDouble(object.getString("valor"));
-
-                    }
-                    cargarParametroTarifaDesde(context);
-
-                    break;
-
-
-            }
-            cronometroActivo = true;
-           // run_espera();
-
-
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-
-    }
-
-    public void cargarParametroTarifaDesde(final Context context) {
-
-        HashMap<String, String> map = new HashMap<>();// Mapeo previo
-
-        map.put("parametro", "11");
-        map.put("remiseria", ls_remiseria);
-
-        JSONObject jobject = new JSONObject(map);
-
-
-        // Depurando objeto Json...
-        Log.d(TAG, jobject.toString());
-
-        StringBuilder encodedParams = new StringBuilder();
-        try {
-            for (Map.Entry<String, String> entry : map.entrySet()) {
-                encodedParams.append(URLEncoder.encode(entry.getKey(), "utf-8"));
-                encodedParams.append('=');
-                encodedParams.append(URLEncoder.encode(entry.getValue(), "utf-8"));
-                encodedParams.append('&');
-            }
-        } catch (UnsupportedEncodingException uee) {
-            throw new RuntimeException("Encoding not supported: " + "utf-8", uee);
-        }
-
-        encodedParams.setLength(Math.max(encodedParams.length() - 1, 0));
-
-        // Añadir parámetro a la URL del web service
-        String newURL = Constantes.GET_ID_PARAMETRO + "?" + encodedParams;
-        Log.d(TAG,newURL);
-
-        // Realizar petición GET_BY_ID
-        VolleySingleton.getInstance(context).addToRequestQueue(
-                myRequest = new JsonObjectRequest(
-                        Request.Method.POST,
-                        newURL,
-                        null,
-                        new Response.Listener<JSONObject>() {
-
-                            @Override
-                            public void onResponse(JSONObject response) {
-                                // Procesar respuesta Json
-                                procesarRespuestaParametroDesde(response, context);
-                            }
-                        },
-                        new Response.ErrorListener() {
-                            @Override
-                            public void onErrorResponse(VolleyError error) {
-                                Log.d(TAG, "Error Volley parametro: " + error.getMessage());
-
-                            }
-                        }
-                )
-        );
-        myRequest.setRetryPolicy(new DefaultRetryPolicy(
-                50000,
-                5,//DefaultRetryPolicy.DEFAULT_MAX_RETRIES
-                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
-
-    }
-
-    private void procesarRespuestaParametroDesde(JSONObject response, Context context) {
-
-        try {
-            // Obtener atributo "mensaje"
-            String mensaje = response.getString("estado");
-
-            switch (mensaje) {
-                case "1":
-                    JSONArray datos_parametro = response.getJSONArray("parametro");
-
-                    for(int i = 0; i < datos_parametro.length(); i++)
-                    {JSONObject object = datos_parametro.getJSONObject(i);
-
-                        l_hora_desde = object.getString("valor");
-                        cargarParametroTarifaHasta(context);
-
-                    }
-
-                    break;
-
-            }
-
-
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-
-    }
-
-    public void cargarParametroTarifaHasta(final Context context) {
-
-        HashMap<String, String> map = new HashMap<>();// Mapeo previo
-
-        map.put("parametro", "12");
-        map.put("remiseria", ls_remiseria);
-
-        JSONObject jobject = new JSONObject(map);
-
-
-        // Depurando objeto Json...
-        Log.d(TAG, jobject.toString());
-
-        StringBuilder encodedParams = new StringBuilder();
-        try {
-            for (Map.Entry<String, String> entry : map.entrySet()) {
-                encodedParams.append(URLEncoder.encode(entry.getKey(), "utf-8"));
-                encodedParams.append('=');
-                encodedParams.append(URLEncoder.encode(entry.getValue(), "utf-8"));
-                encodedParams.append('&');
-            }
-        } catch (UnsupportedEncodingException uee) {
-            throw new RuntimeException("Encoding not supported: " + "utf-8", uee);
-        }
-
-        encodedParams.setLength(Math.max(encodedParams.length() - 1, 0));
-
-        // Añadir parámetro a la URL del web service
-        String newURL = Constantes.GET_ID_PARAMETRO + "?" + encodedParams;
-        Log.d(TAG,newURL);
-
-        // Realizar petición GET_BY_ID
-        VolleySingleton.getInstance(context).addToRequestQueue(
-                myRequest = new JsonObjectRequest(
-                        Request.Method.POST,
-                        newURL,
-                        null,
-                        new Response.Listener<JSONObject>() {
-
-                            @Override
-                            public void onResponse(JSONObject response) {
-                                // Procesar respuesta Json
-                                procesarRespuestaParametroHasta(response, context);
-                            }
-                        },
-                        new Response.ErrorListener() {
-                            @Override
-                            public void onErrorResponse(VolleyError error) {
-                                Log.d(TAG, "Error Volley parametro: " + error.getMessage());
-
-                            }
-                        }
-                )
-        );
-        myRequest.setRetryPolicy(new DefaultRetryPolicy(
-                50000,
-                5,//DefaultRetryPolicy.DEFAULT_MAX_RETRIES
-                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
-
-    }
-
-    private void procesarRespuestaParametroHasta(JSONObject response, Context context) {
-
-        try {
-            // Obtener atributo "mensaje"
-            String mensaje = response.getString("estado");
-
-            switch (mensaje) {
-                case "1":
-                    JSONArray datos_parametro = response.getJSONArray("parametro");
-
-                    for(int i = 0; i < datos_parametro.length(); i++)
-                    {JSONObject object = datos_parametro.getJSONObject(i);
-                        String l_hora_hasta, l_hoy;
-
-                        l_hora_hasta = object.getString("valor");
-
-                        c = Calendar.getInstance();
-                        SimpleDateFormat shoy = new SimpleDateFormat("MM/dd/yyyy");
-                        l_hoy = shoy.format(c.getTime());
-                        getMyTime_desde = l_hoy + ' ' + l_hora_desde;
-                        getMyTime_hasta = l_hoy + ' ' + l_hora_hasta;
-
-                    }
-
-                    break;
-
-            }
-
-
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-
-    }
-
-
     public void cargarDatos(final Context context) {
 
         // Añadir parámetro a la URL del web service
@@ -1071,8 +748,7 @@ public class fragment_viaje_iniciado extends Fragment {
 
                     }
                     importe.setText(String.valueOf(precio_total));
-
-                    cargarParametro(context);
+                    cronometroActivo = true;
 
                     break;
 

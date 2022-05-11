@@ -3,10 +3,9 @@ package com.rosario.hp.remisluna;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
 
 import android.Manifest;
-import android.bluetooth.BluetoothDevice;
-import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -61,11 +60,12 @@ public class MainActivity extends AppCompatActivity {
     String ls_vehiculo;
     private ArrayList<ayuda> ayudas;
     Localizacion Local;
-    public int rssi;
+    private static FragmentManager fragmentManager;
 
     @Override
     public void onStart() {
         super.onStart();
+        fragmentManager = getSupportFragmentManager();
     }
 
     @Override
@@ -100,9 +100,11 @@ public class MainActivity extends AppCompatActivity {
         Objects.requireNonNull(getSupportActionBar()).setDisplayShowHomeEnabled(false);
         Objects.requireNonNull(getSupportActionBar()).setTitle(getResources().getString(R.string.app_name));
 
+         fragmentManager = getSupportFragmentManager();
+
         Fragment fragment = new fragment_vacia();
 
-        getSupportFragmentManager().beginTransaction()
+         fragmentManager.beginTransaction()
                 .replace(R.id.main_content, fragment)
                 .commit();
 
@@ -141,7 +143,7 @@ public class MainActivity extends AppCompatActivity {
                                 Log.d(TAG, "Error Volley turno: " + error.getMessage());
                                 Fragment fragment = new fragment_principal();
 
-                                getSupportFragmentManager().beginTransaction()
+                                fragmentManager.beginTransaction()
                                         .replace(R.id.main_content, fragment)
                                         .commit();
 
@@ -277,7 +279,6 @@ public class MainActivity extends AppCompatActivity {
         intent = new Intent(getApplicationContext(), WebActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         getApplicationContext().startActivity(intent);
-        editor.commit();
 
         return super.onOptionsItemSelected(item);
     }
@@ -308,7 +309,7 @@ public class MainActivity extends AppCompatActivity {
                                 Log.d(TAG, "Error Volley viaje curso: " + error.getMessage());
                                 Fragment fragment = new fragment_principal();
 
-                                getSupportFragmentManager().beginTransaction()
+                                fragmentManager.beginTransaction()
                                         .replace(R.id.main_content, fragment)
                                         .commit();
 
@@ -392,7 +393,7 @@ public class MainActivity extends AppCompatActivity {
                                 Log.d(TAG, "Error Volley viaje solicitado: " + error.getMessage());
                                 Fragment fragment = new fragment_principal();
 
-                                getSupportFragmentManager().beginTransaction()
+                                fragmentManager.beginTransaction()
                                         .replace(R.id.main_content, fragment)
                                         .commit();
 
@@ -423,7 +424,7 @@ public class MainActivity extends AppCompatActivity {
 
                     fragment = new fragment_principal();
 
-                    getSupportFragmentManager().beginTransaction()
+                    fragmentManager.beginTransaction()
                             .replace(R.id.main_content, fragment)
                             .commit();
 
@@ -446,7 +447,7 @@ public class MainActivity extends AppCompatActivity {
 
                     Intent intent2 = new Intent(context, MainViaje.class);
                     intent2.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK );
-                    getApplicationContext().startActivity(intent2);
+                    context.startActivity(intent2);
                     finish();
 
                     break;
@@ -522,7 +523,7 @@ public class MainActivity extends AppCompatActivity {
 
                     Fragment fragment = new fragment_principal();
 
-                    getSupportFragmentManager().beginTransaction()
+                    fragmentManager.beginTransaction()
                             .replace(R.id.main_content, fragment)
                             .commit();
 

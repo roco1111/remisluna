@@ -49,7 +49,6 @@ import com.rosario.hp.remisluna.Entidades.parada;
 import com.rosario.hp.remisluna.Entidades.turno;
 import com.rosario.hp.remisluna.Entidades.viaje;
 import com.rosario.hp.remisluna.Impresion;
-import com.rosario.hp.remisluna.MainActivity;
 import com.rosario.hp.remisluna.MainViaje;
 import com.rosario.hp.remisluna.R;
 import com.rosario.hp.remisluna.activity_preferencias;
@@ -447,10 +446,6 @@ public class fragment_principal extends Fragment {
                 }
                 if(!mBound) {
                     cargarImpresora(context);
-                    //Intent intent2 = new Intent(context, MainViaje.class);
-                    //context.startActivity(intent2);
-                    //getActivity().finish();
-
                 }
             }
         });
@@ -476,7 +471,7 @@ public class fragment_principal extends Fragment {
             public void onClick(View v) {
                 mediaPlayer.start();
                 Intent intent2 = new Intent(context, activity_preferencias.class);
-                getContext().startActivity(intent2);
+                context.startActivity(intent2);
             }
         });
 
@@ -485,7 +480,7 @@ public class fragment_principal extends Fragment {
             public void onClick(View v) {
                 mediaPlayer.start();
                 Intent intent2 = new Intent(context, turnos_activity.class);
-                getContext().startActivity(intent2);
+                context.startActivity(intent2);
             }
         });
 
@@ -496,7 +491,7 @@ public class fragment_principal extends Fragment {
 
                 Intent intent2 = new Intent(context, MainViaje.class);
                 context.startActivity(intent2);
-                getActivity().finish();
+                act.finish();
             }
         });
         feriado(context);

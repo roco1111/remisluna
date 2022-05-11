@@ -20,14 +20,13 @@ import android.preference.PreferenceManager;
 import android.provider.Settings;
 import android.util.Log;
 import android.view.KeyEvent;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.WindowManager;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
 
 import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.Request;
@@ -35,13 +34,9 @@ import com.android.volley.Response;
 import com.android.volley.error.VolleyError;
 import com.android.volley.request.JsonObjectRequest;
 import com.rosario.hp.remisluna.Entidades.ayuda;
-import com.rosario.hp.remisluna.Fragment.fragment_principal;
 import com.rosario.hp.remisluna.Fragment.fragment_viaje;
 import com.rosario.hp.remisluna.Fragment.fragment_viaje_iniciado;
-import com.rosario.hp.remisluna.Fragment.login;
 import com.rosario.hp.remisluna.include.Constantes;
-import com.rosario.hp.remisluna.include.PrinterCommands;
-import com.rosario.hp.remisluna.include.Utils;
 import com.rosario.hp.remisluna.include.VolleySingleton;
 
 import org.json.JSONArray;
@@ -77,10 +72,12 @@ public class MainViaje extends AppCompatActivity {
     private Impresion impresion;
     private static final long MIN_TIEMPO_ENTRE_UPDATES = 1000 * 12;
     private static final long MIN_CAMBIO_DISTANCIA_PARA_UPDATES = 0;
+    private static FragmentManager fragmentManager;
 
     @Override
     protected void onStart() {
         super.onStart();
+        fragmentManager = getSupportFragmentManager();
         // Bind to LocalService
         //Intent intent = new Intent(this, Impresion.class);
         //bindService(intent, connection, Context.BIND_AUTO_CREATE);
@@ -124,10 +121,11 @@ public class MainViaje extends AppCompatActivity {
         Objects.requireNonNull(getSupportActionBar()).setDisplayShowHomeEnabled(false);
         Objects.requireNonNull(getSupportActionBar()).setTitle("Viaje Asignado");
         i_pasadas = 0;
+        fragmentManager = getSupportFragmentManager();
         Fragment fragment = new fragment_viaje();
 
 
-        getSupportFragmentManager().beginTransaction()
+        fragmentManager.beginTransaction()
                 .replace(R.id.main_content, fragment)
                 .commit();
 
@@ -219,7 +217,7 @@ public class MainViaje extends AppCompatActivity {
                     id_trayecto = 0;
                     ls_viaje = object.getString("id");
 
-                    getSupportFragmentManager().beginTransaction()
+                    fragmentManager.beginTransaction()
                             .replace(R.id.main_content, fragment)
                             .commit();
 
@@ -307,7 +305,7 @@ public class MainViaje extends AppCompatActivity {
                     fragment = new fragment_viaje();
 
 
-                    getSupportFragmentManager().beginTransaction()
+                    fragmentManager.beginTransaction()
                             .replace(R.id.main_content, fragment)
                             .commit();
                     habilitar_gps();
