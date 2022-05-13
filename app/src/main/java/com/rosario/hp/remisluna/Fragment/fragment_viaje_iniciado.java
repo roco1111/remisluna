@@ -748,6 +748,7 @@ public class fragment_viaje_iniciado extends Fragment {
 
                     }
                     importe.setText(String.valueOf(precio_total));
+                    ls_precio = String.format(Locale.GERMANY,"%.2f",precio_total);
                     cronometroActivo = true;
 
                     break;

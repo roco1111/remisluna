@@ -346,15 +346,9 @@ public class fragment_viaje extends Fragment {
         this.boton_dos.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mediaPlayer.start();
-                if(mBound) {
-                    cerrar_turno(context);
-                }else {
-                    Toast.makeText(
-                            context,
-                            R.string.no_impresora,
-                            Toast.LENGTH_LONG).show();
-                }
+
+                cerrar_turno(context);
+
             }
         });
 
@@ -1087,7 +1081,15 @@ public class fragment_viaje extends Fragment {
 
             switch (estado) {
                 case "1":
-                    datos_turno(context);
+                    Toast.makeText(
+                    context,
+                    "Turno Finalizado",
+                    Toast.LENGTH_LONG).show();
+                    if(mBound) {
+                        datos_turno(context);
+                    }else{
+                        iniciar_turno(context);
+                    }
                     break;
                 case "2":
                     // Mostrar mensaje
@@ -1171,57 +1173,6 @@ public class fragment_viaje extends Fragment {
             }
         }
 
-    }
-    public void showDialogImpresora(String title, String message) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(context);
-        builder.setTitle(title);
-        builder.setMessage(message);
-        builder.setPositiveButton("Si", new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int id) {
-                SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(context);
-                SharedPreferences.Editor editor = settings.edit();
-                editor.putString("tipo_ventana","main");
-                editor.commit();
-                act.startService(new Intent(act, Impresion.class));
-                iniciar_viaje(context);
-            }
-        });
-        builder.setNegativeButton("No", new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int id) {
-
-                dialog.cancel();
-                iniciar_viaje(getContext());
-            }
-        });
-
-        AlertDialog dialog = builder.create();
-        dialog.show();
-        dialog.setCancelable(false);
-        dialog.setCanceledOnTouchOutside(false);
-    }
-
-    public void showDialogGPS(String title, String message) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(context);
-        builder.setTitle(title);
-        builder.setMessage(message);
-        builder.setPositiveButton("Si", new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int id) {
-
-                Intent settingsIntent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
-                startActivity(settingsIntent);
-
-            }
-        });
-        builder.setNegativeButton("No", new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int id) {
-                dialog.cancel();
-            }
-        });
-
-        AlertDialog dialog = builder.create();
-        dialog.show();
-        dialog.setCancelable(false);
-        dialog.setCanceledOnTouchOutside(false);
     }
 
     public void cargarDatos(final Context context) {
@@ -1732,7 +1683,11 @@ public class fragment_viaje extends Fragment {
                     if(latitud_salida == null){
                         latitud_salida = "0";
                     }
-                } } }
+                }else{
+                    longitud_salida = "0";
+                    latitud_salida = "0";
+                }
+            } }
         catch (IOException e)
         {
             e.printStackTrace();
@@ -1751,7 +1706,11 @@ public class fragment_viaje extends Fragment {
                     if(latitud_destino == null){
                         latitud_destino = "0";
                     }
-                } } }
+                }else{
+                    longitud_destino = "0";
+                    latitud_destino = "0";
+                }
+            } }
         catch (IOException e)
         {
             e.printStackTrace();
@@ -1762,11 +1721,11 @@ public class fragment_viaje extends Fragment {
     private void iniciar_viaje(final Context context){
 
         Location location_salida = new Location("salida");
-        location_salida.setLatitude(Double.parseDouble(latitud_salida));  //latitud
-        location_salida.setLongitude(Double.parseDouble(longitud_salida)); //longitud
+        location_salida.setLatitude(getValor(latitud_salida));  //latitud
+        location_salida.setLongitude(getValor(longitud_salida)); //longitud
         Location location_destino = new Location("destino");
-        location_destino.setLatitude(Double.parseDouble(latitud_destino));  //latitud
-        location_destino.setLongitude(Double.parseDouble(longitud_destino)); //longitud
+        location_destino.setLatitude(getValor(latitud_destino));  //latitud
+        location_destino.setLongitude(getValor(longitud_destino)); //longitud
         double distance = location_salida.distanceTo(location_destino) / 100;
         distancia = String.valueOf(distance);
 
@@ -2807,5 +2766,11 @@ public class fragment_viaje extends Fragment {
             mBound = false;
         }
         context.bindService(intent, connection, Context.BIND_AUTO_CREATE);
+    }
+    public double getValor(String texto){
+        if(texto.contains(",")){
+            return Double.parseDouble(texto.replace(",", ".").trim());
+        }
+        return Double.parseDouble(texto.trim());
     }
 }

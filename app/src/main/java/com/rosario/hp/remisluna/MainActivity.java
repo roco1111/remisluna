@@ -102,7 +102,7 @@ public class MainActivity extends AppCompatActivity {
 
          fragmentManager = getSupportFragmentManager();
 
-        Fragment fragment = new fragment_vacia();
+        Fragment fragment = new fragment_principal();
 
          fragmentManager.beginTransaction()
                 .replace(R.id.main_content, fragment)
@@ -141,12 +141,13 @@ public class MainActivity extends AppCompatActivity {
                             @Override
                             public void onErrorResponse(VolleyError error) {
                                 Log.d(TAG, "Error Volley turno: " + error.getMessage());
+                                /*
                                 Fragment fragment = new fragment_principal();
 
                                 fragmentManager.beginTransaction()
                                         .replace(R.id.main_content, fragment)
                                         .commit();
-
+                            */
                             }
                         }
                 )
@@ -307,12 +308,13 @@ public class MainActivity extends AppCompatActivity {
                             @Override
                             public void onErrorResponse(VolleyError error) {
                                 Log.d(TAG, "Error Volley viaje curso: " + error.getMessage());
+                                /*
                                 Fragment fragment = new fragment_principal();
 
                                 fragmentManager.beginTransaction()
                                         .replace(R.id.main_content, fragment)
                                         .commit();
-
+                            */
                             }
                         }
                 )
@@ -391,12 +393,13 @@ public class MainActivity extends AppCompatActivity {
                             @Override
                             public void onErrorResponse(VolleyError error) {
                                 Log.d(TAG, "Error Volley viaje solicitado: " + error.getMessage());
+                                /*
                                 Fragment fragment = new fragment_principal();
 
                                 fragmentManager.beginTransaction()
                                         .replace(R.id.main_content, fragment)
                                         .commit();
-
+                                */
                             }
                         }
                 )
@@ -421,13 +424,13 @@ public class MainActivity extends AppCompatActivity {
 
                     ls_vehiculo = object.getString("id_movil");
 
-
+                    /*
                     fragment = new fragment_principal();
 
                     fragmentManager.beginTransaction()
                             .replace(R.id.main_content, fragment)
                             .commit();
-
+                    */
                     SharedPreferences settings1 = PreferenceManager.getDefaultSharedPreferences(context);
 
                     SharedPreferences.Editor editor = settings1.edit();
@@ -520,13 +523,13 @@ public class MainActivity extends AppCompatActivity {
                     editor.putString("estado_vehiculo",object.getString("estado_vehiculo"));
                     editor.putString("vehiculo",ls_vehiculo);
                     editor.apply();
-
+                    /*
                     Fragment fragment = new fragment_principal();
 
                     fragmentManager.beginTransaction()
                             .replace(R.id.main_content, fragment)
                             .commit();
-
+                    */
                     if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
                         ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION,}, 1000);
 
