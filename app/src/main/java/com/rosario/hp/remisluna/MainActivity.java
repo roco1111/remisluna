@@ -83,6 +83,7 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
+        locationEnd();
         this.finish();
     }
 
@@ -552,6 +553,7 @@ public class MainActivity extends AppCompatActivity {
         LocationManager mlocManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         if(Local != null) {
             mlocManager.removeUpdates(Local);
+            Log.d("servicio","terminó");
         }
     }
 
@@ -572,7 +574,7 @@ public class MainActivity extends AppCompatActivity {
 
         mlocManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, (LocationListener) Local);
         mlocManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, (LocationListener) Local);
-
+        Log.d("servicio","inició");
     }
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);

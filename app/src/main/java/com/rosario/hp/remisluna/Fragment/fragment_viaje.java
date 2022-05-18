@@ -3,6 +3,7 @@ package com.rosario.hp.remisluna.Fragment;
 import android.Manifest;
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -153,6 +154,7 @@ public class fragment_viaje extends Fragment {
     private Activity act;
     private Context context;
     private String l_porcentaje;
+    ProgressDialog progress1;
 
     @Override
     public void onStart() {
@@ -447,8 +449,8 @@ public class fragment_viaje extends Fragment {
                 context.startActivity(intent2);
             }
         });
-
-        feriado(getContext());
+        progress1 = ProgressDialog.show(context, "Recuperando Datos", "Por favor, espere..", true);
+        feriado(context);
         return v;
     }
 
@@ -489,7 +491,8 @@ public class fragment_viaje extends Fragment {
                         new Response.ErrorListener() {
                             @Override
                             public void onErrorResponse(VolleyError error) {
-                                Log.d(TAG, "Error Volley viaje: " + error.getMessage());
+                                Log.d(TAG, "Error Volley feriado: " + error.getMessage());
+                                progress1.dismiss();
 
                             }
                         }
@@ -578,7 +581,8 @@ public class fragment_viaje extends Fragment {
                         new Response.ErrorListener() {
                             @Override
                             public void onErrorResponse(VolleyError error) {
-                                Log.d(TAG, "Error Volley viaje: " + error.getMessage());
+                                Log.d(TAG, "Error Volley parámetro: " + error.getMessage());
+                                progress1.dismiss();
 
                             }
                         }
@@ -614,6 +618,9 @@ public class fragment_viaje extends Fragment {
 
                     cargarParametroTarifaDesde(context);
 
+                    break;
+                case "2":
+                    progress1.dismiss();
                     break;
 
 
@@ -676,7 +683,8 @@ public class fragment_viaje extends Fragment {
                         new Response.ErrorListener() {
                             @Override
                             public void onErrorResponse(VolleyError error) {
-                                Log.d(TAG, "Error Volley viaje: " + error.getMessage());
+                                Log.d(TAG, "Error Volley tarifa desde: " + error.getMessage());
+                                progress1.dismiss();
 
                             }
                         }
@@ -713,6 +721,9 @@ public class fragment_viaje extends Fragment {
 
                     }
 
+                    break;
+                case "2":
+                    progress1.dismiss();
                     break;
 
             }
@@ -772,7 +783,8 @@ public class fragment_viaje extends Fragment {
                         new Response.ErrorListener() {
                             @Override
                             public void onErrorResponse(VolleyError error) {
-                                Log.d(TAG, "Error Volley viaje: " + error.getMessage());
+                                Log.d(TAG, "Error Volley tarifa hasta: " + error.getMessage());
+                                progress1.dismiss();
 
                             }
                         }
@@ -850,6 +862,9 @@ public class fragment_viaje extends Fragment {
 
                     }
 
+                    break;
+                case "2":
+                    progress1.dismiss();
                     break;
 
             }
@@ -1198,7 +1213,8 @@ public class fragment_viaje extends Fragment {
                         new Response.ErrorListener() {
                             @Override
                             public void onErrorResponse(VolleyError error) {
-                                Log.d(TAG, "Error Volley viaje: " + error.getMessage());
+                                Log.d(TAG, "Error Volley carga datos: " + error.getMessage());
+                                progress1.dismiss();
 
                             }
                         }
@@ -1231,11 +1247,12 @@ public class fragment_viaje extends Fragment {
                     salida_coordenada = object.getString("salida_coordenadas");
                     destino_coordenada = object.getString("destino_coordenadas");
                     id_movil = object.getString("id_movil");
+                    progress1.dismiss();
                     actualizar_coordenadas(context);
                     break;
 
                 case "2":
-
+                    progress1.dismiss();
                     break;
 
             }
@@ -2103,6 +2120,11 @@ public class fragment_viaje extends Fragment {
                     editor.putInt("metros_ficha",l_metros_ficha);
 
                     editor.apply();
+                    if(mBound) {
+                        act.unbindService(connection);
+
+                        mBound = false;
+                    }
                     Intent intent2 = new Intent(context, MainViaje.class);
                     context.startActivity(intent2);
                     act.finish();
@@ -2768,8 +2790,12 @@ public class fragment_viaje extends Fragment {
         context.bindService(intent, connection, Context.BIND_AUTO_CREATE);
     }
     public double getValor(String texto){
-        if(texto.contains(",")){
-            return Double.parseDouble(texto.replace(",", ".").trim());
+        if(texto == null){
+            return 0.00;
+        }else {
+            if (texto.contains(",")) {
+                return Double.parseDouble(texto.replace(",", ".").trim());
+            }
         }
         return Double.parseDouble(texto.trim());
     }

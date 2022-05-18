@@ -34,6 +34,7 @@ import com.android.volley.Response;
 import com.android.volley.error.VolleyError;
 import com.android.volley.request.JsonObjectRequest;
 import com.rosario.hp.remisluna.Entidades.ayuda;
+import com.rosario.hp.remisluna.Fragment.fragment_vacia;
 import com.rosario.hp.remisluna.Fragment.fragment_viaje;
 import com.rosario.hp.remisluna.Fragment.fragment_viaje_iniciado;
 import com.rosario.hp.remisluna.include.Constantes;
@@ -122,7 +123,7 @@ public class MainViaje extends AppCompatActivity {
         Objects.requireNonNull(getSupportActionBar()).setTitle("Viaje Asignado");
         i_pasadas = 0;
         fragmentManager = getSupportFragmentManager();
-        Fragment fragment = new fragment_viaje();
+        Fragment fragment = new fragment_vacia();
 
 
         fragmentManager.beginTransaction()

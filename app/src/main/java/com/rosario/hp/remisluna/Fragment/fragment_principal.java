@@ -49,6 +49,7 @@ import com.rosario.hp.remisluna.Entidades.parada;
 import com.rosario.hp.remisluna.Entidades.turno;
 import com.rosario.hp.remisluna.Entidades.viaje;
 import com.rosario.hp.remisluna.Impresion;
+import com.rosario.hp.remisluna.MainActivity;
 import com.rosario.hp.remisluna.MainViaje;
 import com.rosario.hp.remisluna.R;
 import com.rosario.hp.remisluna.activity_preferencias;
@@ -388,14 +389,9 @@ public class fragment_principal extends Fragment {
             @Override
             public void onClick(View v) {
                 mediaPlayer.start();
-                if(mBound) {
-                    cerrar_turno(context);
-                }else {
-                    Toast.makeText(
-                            context,
-                            R.string.no_impresora,
-                            Toast.LENGTH_LONG).show();
-                }
+
+                cerrar_turno(context);
+
             }
         });
 
@@ -1062,7 +1058,15 @@ public class fragment_principal extends Fragment {
 
             switch (estado) {
                 case "1":
-                    datos_turno(context);
+                    Toast.makeText(
+                    context,
+                    "Turno Finalizado",
+                    Toast.LENGTH_LONG).show();
+                    if(mBound) {
+                        datos_turno(context);
+                    }else{
+                        iniciar_turno(context);
+                    }
                     break;
                 case "2":
                     // Mostrar mensaje
@@ -2771,6 +2775,7 @@ public class fragment_principal extends Fragment {
 
                     Intent intent2 = new Intent(context, MainViaje.class);
                     context.startActivity(intent2);
+                    ((MainActivity)getActivity()).locationEnd();
                     act.finish();
                     break;
                 case "2":

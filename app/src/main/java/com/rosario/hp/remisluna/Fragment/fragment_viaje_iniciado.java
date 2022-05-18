@@ -1,5 +1,6 @@
 package com.rosario.hp.remisluna.Fragment;
 
+import android.app.Activity;
 import android.app.ActivityManager;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
@@ -120,18 +121,20 @@ public class fragment_viaje_iniciado extends Fragment {
     private Double ldb_porcentaje_titular;
     private String ls_remiseria;
     private String ls_es_feriado;
+    private Activity act;
+    private Context context;
 
     @Override
     public void onPause() {
         if(isMyServiceRunning(ServicioGeolocalizacion.class)) {
-            getActivity().unregisterReceiver(onBroadcast);
+            act.unregisterReceiver(onBroadcast);
         }
         super.onPause();
     }
 
     @Override
     public void onResume() {
-        getActivity().registerReceiver(onBroadcast, new IntentFilter("key"));
+        act.registerReceiver(onBroadcast, new IntentFilter("key"));
         super.onResume();
     }
 
@@ -140,9 +143,12 @@ public class fragment_viaje_iniciado extends Fragment {
                              final Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.activity_viaje_iniciado, container, false);
 
-        getActivity().startService(new Intent(getActivity(),ServicioGeolocalizacion.class));
+        act = getActivity();
+
+        act.startService(new Intent(getActivity(),ServicioGeolocalizacion.class));
+        context = getContext();
         //((MainActivity) getActivity()).locationEnd();
-        mLocationManager = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
+        mLocationManager = (LocationManager) act.getSystemService(Context.LOCATION_SERVICE);
         id_viaje = v.findViewById(R.id.dato_viaje);
         solicitante = v.findViewById(R.id.dato_solicitante);
         dato_salida = v.findViewById(R.id.dato_salida);
@@ -159,7 +165,7 @@ public class fragment_viaje_iniciado extends Fragment {
         sdf = new SimpleDateFormat("MM/dd/yyyy HH:mm");
         lb_viaje_terminado = false;
 
-        SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getContext());
+        SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(context);
         ls_id_conductor     = settings.getString("id","");
         id_turno            = settings.getString("id_turno_chofer","");
         ls_remiseria     = settings.getString("remiseria","");
@@ -176,7 +182,7 @@ public class fragment_viaje_iniciado extends Fragment {
         getMyTime_desde = l_hoy + ' ' + l_hora_desde;
         getMyTime_hasta = l_hoy + ' ' + l_hora_hasta;
 
-        MediaPlayer mediaPlayer = MediaPlayer.create(getActivity(), R.raw.doorbell);
+        MediaPlayer mediaPlayer = MediaPlayer.create(act, R.raw.doorbell);
 
         this.sin_ticket.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -185,12 +191,12 @@ public class fragment_viaje_iniciado extends Fragment {
                 lb_viaje_terminado = true;
                 mediaPlayer.start();
                 if(isMyServiceRunning(ServicioGeolocalizacion.class)) {
-                    getActivity().unregisterReceiver(onBroadcast);
-                    getActivity().stopService(new Intent(getActivity(), ServicioGeolocalizacion.class));
+                    act.unregisterReceiver(onBroadcast);
+                    act.stopService(new Intent(act, ServicioGeolocalizacion.class));
                     Log.d("Servicio","Servicio detenido");
                 }
 
-                cargarDatosVehiculo(getContext()); }
+                cargarDatosVehiculo(context); }
 
         });
 
@@ -198,7 +204,7 @@ public class fragment_viaje_iniciado extends Fragment {
             @Override
             public void onClick(View v) {
                 mediaPlayer.start();
-                suspender_viaje();
+                suspender_viaje(context);
             }
         });
 
@@ -206,10 +212,10 @@ public class fragment_viaje_iniciado extends Fragment {
             @Override
             public void onClick(View v) {
                 mediaPlayer.start();
-                alarma_viaje();
+                alarma_viaje(context);
             }
         });
-        cargarDatos(getContext());
+        cargarDatos(context);
 
         return v;
     }
@@ -335,7 +341,7 @@ public class fragment_viaje_iniciado extends Fragment {
                     SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getContext());
                     SharedPreferences.Editor editor = settings.edit();
                     editor.putString("nocturno",l_nocturno);
-                    editor.commit();
+                    editor.apply();
                     if(l_nocturno.equals("0")) {
                         importe_bajada = object.getString("importe_bajada");
                         importe_ficha = object.getString("importe_ficha");
@@ -410,7 +416,7 @@ public class fragment_viaje_iniciado extends Fragment {
                     latitud = tokens[0];
                     longitud = tokens[1];
                     if(!lb_viaje_terminado) {
-                        guardar_trayectoria(latitud, longitud);
+                        guardar_trayectoria(latitud, longitud, context);
                     }
 
                     break;
@@ -426,7 +432,7 @@ public class fragment_viaje_iniciado extends Fragment {
     }
 
 
-    private void guardar_trayectoria(final String latitud, final String longitud){
+    private void guardar_trayectoria(final String latitud, final String longitud, final Context context){
 
         HashMap<String, String> map = new HashMap<>();// Mapeo previo
         id_trayecto++;
@@ -459,7 +465,7 @@ public class fragment_viaje_iniciado extends Fragment {
         String newURL = Constantes.INSERTAR_TRAYECTORIA + "?" + encodedParams;
         Log.d(TAG,newURL);
         // Actualizar datos en el servidor
-        VolleySingleton.getInstance(getContext()).addToRequestQueue(
+        VolleySingleton.getInstance(context).addToRequestQueue(
                 new JsonObjectRequest(
                         Request.Method.POST,
                         newURL,
@@ -468,7 +474,7 @@ public class fragment_viaje_iniciado extends Fragment {
                             @Override
                             public void onResponse(JSONObject response) {
                                 if(!lb_viaje_terminado) {
-                                    procesarRespuestaActualizarUbicacion(response, latitud, longitud);
+                                    procesarRespuestaActualizarUbicacion(response, latitud, longitud, context);
                                 }
                             }
                         },
@@ -476,7 +482,7 @@ public class fragment_viaje_iniciado extends Fragment {
                             @Override
                             public void onErrorResponse(VolleyError error) {
                                 Log.d(TAG, "Error trayectoria: " + error.getMessage());
-                                actualizar_viaje(latitud, longitud);
+                                actualizar_viaje(latitud, longitud, context);
 
                             }
                         }
@@ -496,7 +502,7 @@ public class fragment_viaje_iniciado extends Fragment {
                 }
         );
     }
-    private void procesarRespuestaActualizarUbicacion(JSONObject response, String latitud, String longitud) {
+    private void procesarRespuestaActualizarUbicacion(JSONObject response, String latitud, String longitud, final Context context) {
 
         try {
             // Obtener estado
@@ -515,19 +521,19 @@ public class fragment_viaje_iniciado extends Fragment {
                             Log.d("Servicio", "Servicio detenido 2");
 
                         }
-                        cargarDatosVehiculo(getContext());
+                        cargarDatosVehiculo(context);
                     }else {
-                        actualizar_viaje(latitud, longitud);
+                        actualizar_viaje(latitud, longitud, context);
                     }
 
                     break;
                 case "2":
                     // Mostrar mensaje
                     Toast.makeText(
-                            getContext(),
+                            context,
                             mensaje,
                             Toast.LENGTH_LONG).show();
-                    actualizar_viaje(latitud, longitud);
+                    actualizar_viaje(latitud, longitud, context);
                     // Enviar código de falla
                     break;
             }
@@ -536,7 +542,7 @@ public class fragment_viaje_iniciado extends Fragment {
         }
     }
 
-    private void actualizar_viaje(final String latitud, final String longitud){
+    private void actualizar_viaje(final String latitud, final String longitud, final Context context){
 
         String ls_viaje = id_viaje.getText().toString();
 
@@ -581,7 +587,7 @@ public class fragment_viaje_iniciado extends Fragment {
         Log.d("act viaje",newURL);
 
         // Actualizar datos en el servidor
-        VolleySingleton.getInstance(getActivity()).addToRequestQueue(
+        VolleySingleton.getInstance(context).addToRequestQueue(
                 new JsonObjectRequest(
                         Request.Method.POST,
                         newURL,
@@ -589,7 +595,7 @@ public class fragment_viaje_iniciado extends Fragment {
                         new Response.Listener<JSONObject>() {
                             @Override
                             public void onResponse(JSONObject response) {
-                                procesarRespuestaActualizarViaje(response, latitud, longitud);
+                                procesarRespuestaActualizarViaje(response, latitud, longitud, context);
                             }
                         },
                         new Response.ErrorListener() {
@@ -615,7 +621,7 @@ public class fragment_viaje_iniciado extends Fragment {
                 }
         );
     }
-    private void procesarRespuestaActualizarViaje(JSONObject response, String latitud, String longitud) {
+    private void procesarRespuestaActualizarViaje(JSONObject response, String latitud, String longitud, Context context) {
 
         try {
             // Obtener estado
@@ -627,12 +633,12 @@ public class fragment_viaje_iniciado extends Fragment {
                 case "1":
                     String Text = "Lat = "+ latitud + "\n Long = " + longitud;
                     Log.d("ubicación_iniciado",Text);
-                    guardar_ubicacion(latitud, longitud);
+                    guardar_ubicacion(latitud, longitud, context);
                     break;
                 case "2":
                     // Mostrar mensaje
                     Toast.makeText(
-                            getContext(),
+                            context,
                             mensaje,
                             Toast.LENGTH_LONG).show();
                     // Enviar código de falla
@@ -911,7 +917,7 @@ public class fragment_viaje_iniciado extends Fragment {
                     editor.putString("id_viaje",ls_viaje);
                     editor.apply();
 
-                    editor.commit();
+                    editor.apply();
                     Intent intent2 = new Intent(context, MainViaje.class);
                     intent2.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK );
                     context.startActivity(intent2);
@@ -923,7 +929,7 @@ public class fragment_viaje_iniciado extends Fragment {
                     Intent intent3 = new Intent(context, MainActivity.class);
                     intent3.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK );
                     context.startActivity(intent3);
-                    getActivity().finish();
+                    act.finish();
                     break;
 
             }
@@ -986,7 +992,7 @@ public class fragment_viaje_iniciado extends Fragment {
                     l_latitud_destino = object.getString("latitud");
                     l_longitud_destino = object.getString("longitud");
 
-                    terminar_viaje();
+                    terminar_viaje(context);
 
                     break;
 
@@ -1008,7 +1014,7 @@ public class fragment_viaje_iniciado extends Fragment {
 
     }
 
-    private void terminar_viaje(){
+    private void terminar_viaje(final Context context){
 
         String ls_viaje = id_viaje.getText().toString();
 
@@ -1070,7 +1076,7 @@ public class fragment_viaje_iniciado extends Fragment {
         Log.d("viaje",newURL);
 
         // Actualizar datos en el servidor
-        VolleySingleton.getInstance(getActivity()).addToRequestQueue(
+        VolleySingleton.getInstance(context).addToRequestQueue(
                 new JsonObjectRequest(
                         Request.Method.POST,
                         newURL,
@@ -1078,7 +1084,7 @@ public class fragment_viaje_iniciado extends Fragment {
                         new Response.Listener<JSONObject>() {
                             @Override
                             public void onResponse(JSONObject response) {
-                                procesarRespuestaActualizar(response);
+                                procesarRespuestaActualizar(response, context);
                             }
                         },
                         new Response.ErrorListener() {
@@ -1104,7 +1110,7 @@ public class fragment_viaje_iniciado extends Fragment {
                 }
         );
     }
-    private void procesarRespuestaActualizar(JSONObject response) {
+    private void procesarRespuestaActualizar(JSONObject response, Context context) {
 
         try {
             // Obtener estado
@@ -1114,13 +1120,13 @@ public class fragment_viaje_iniciado extends Fragment {
 
             switch (estado) {
                 case "1":
-                    actualizar_turno();
+                    actualizar_turno(context);
 
                     break;
                 case "2":
                     // Mostrar mensaje
                     Toast.makeText(
-                            getContext(),
+                            context,
                             mensaje,
                             Toast.LENGTH_LONG).show();
                     // Enviar código de falla
@@ -1131,7 +1137,7 @@ public class fragment_viaje_iniciado extends Fragment {
         }
     }
 
-    private void actualizar_turno(){
+    private void actualizar_turno(final Context context){
 
 
         HashMap<String, String> map = new HashMap<>();// Mapeo previo
@@ -1163,7 +1169,7 @@ public class fragment_viaje_iniciado extends Fragment {
         String newURL = Constantes.UPDATE_TURNO + "?" + encodedParams;
         Log.d(TAG,newURL);
                 // Actualizar datos en el servidor
-        VolleySingleton.getInstance(getActivity()).addToRequestQueue(
+        VolleySingleton.getInstance(context).addToRequestQueue(
                 new JsonObjectRequest(
                         Request.Method.GET,
                         newURL,
@@ -1171,7 +1177,7 @@ public class fragment_viaje_iniciado extends Fragment {
                         new Response.Listener<JSONObject>() {
                             @Override
                             public void onResponse(JSONObject response) {
-                                procesarRespuestaActualizarTurno(response);
+                                procesarRespuestaActualizarTurno(response, context);
                             }
                         },
                         new Response.ErrorListener() {
@@ -1197,7 +1203,7 @@ public class fragment_viaje_iniciado extends Fragment {
                 }
         );
     }
-    private void procesarRespuestaActualizarTurno(JSONObject response) {
+    private void procesarRespuestaActualizarTurno(JSONObject response, Context context) {
 
         try {
             // Obtener estado
@@ -1207,12 +1213,12 @@ public class fragment_viaje_iniciado extends Fragment {
 
             switch (estado) {
                 case "1":
-                    cargarDatosFinal( getContext());
+                    cargarDatosFinal( context);
                     break;
                 case "2":
                     // Mostrar mensaje
                     Toast.makeText(
-                            getContext(),
+                            context,
                             mensaje,
                             Toast.LENGTH_LONG).show();
                     // Enviar código de falla
@@ -1223,14 +1229,14 @@ public class fragment_viaje_iniciado extends Fragment {
         }
     }
 
-    private void suspender_viaje(){
+    private void suspender_viaje(final Context context){
 
         String ls_viaje = id_viaje.getText().toString();
 
         String newURL = Constantes.SUSPENDER_VIAJE + "?id=" + ls_viaje;
 
         // Actualizar datos en el servidor
-        VolleySingleton.getInstance(getActivity()).addToRequestQueue(
+        VolleySingleton.getInstance(context).addToRequestQueue(
                 new JsonObjectRequest(
                         Request.Method.GET,
                         newURL,
@@ -1238,7 +1244,7 @@ public class fragment_viaje_iniciado extends Fragment {
                         new Response.Listener<JSONObject>() {
                             @Override
                             public void onResponse(JSONObject response) {
-                                procesarRespuestaActualizarSuspender(response);
+                                procesarRespuestaActualizarSuspender(response, context);
                             }
                         },
                         new Response.ErrorListener() {
@@ -1264,7 +1270,7 @@ public class fragment_viaje_iniciado extends Fragment {
                 }
         );
     }
-    private void procesarRespuestaActualizarSuspender(JSONObject response) {
+    private void procesarRespuestaActualizarSuspender(JSONObject response, Context context) {
 
         try {
             // Obtener estado
@@ -1275,12 +1281,12 @@ public class fragment_viaje_iniciado extends Fragment {
             switch (estado) {
                 case "1":
                     Intent intent2 = new Intent(getContext(), MainViaje.class);
-                    getContext().startActivity(intent2);
+                    context.startActivity(intent2);
                     break;
                 case "2":
                     // Mostrar mensaje
                     Toast.makeText(
-                            getContext(),
+                            context,
                             mensaje,
                             Toast.LENGTH_LONG).show();
                     // Enviar código de falla
@@ -1291,14 +1297,14 @@ public class fragment_viaje_iniciado extends Fragment {
         }
     }
 
-    private void alarma_viaje(){
+    private void alarma_viaje(final Context context){
 
         String ls_viaje = id_viaje.getText().toString();
 
         String newURL = Constantes.ALARMA_VIAJE + "?id=" + ls_viaje;
 
         // Actualizar datos en el servidor
-        VolleySingleton.getInstance(getActivity()).addToRequestQueue(
+        VolleySingleton.getInstance(context).addToRequestQueue(
                 new JsonObjectRequest(
                         Request.Method.GET,
                         newURL,
@@ -1306,7 +1312,7 @@ public class fragment_viaje_iniciado extends Fragment {
                         new Response.Listener<JSONObject>() {
                             @Override
                             public void onResponse(JSONObject response) {
-                                procesarRespuestaActualizarAlarma(response);
+                                procesarRespuestaActualizarAlarma(response, context);
                             }
                         },
                         new Response.ErrorListener() {
@@ -1332,7 +1338,7 @@ public class fragment_viaje_iniciado extends Fragment {
                 }
         );
     }
-    private void procesarRespuestaActualizarAlarma(JSONObject response) {
+    private void procesarRespuestaActualizarAlarma(JSONObject response, Context context) {
 
         try {
             // Obtener estado
@@ -1342,13 +1348,13 @@ public class fragment_viaje_iniciado extends Fragment {
 
             switch (estado) {
                 case "1":
-                    Intent intent2 = new Intent(getContext(), MainViaje.class);
-                    getContext().startActivity(intent2);
+                    Intent intent2 = new Intent(context, MainViaje.class);
+                    context.startActivity(intent2);
                     break;
                 case "2":
                     // Mostrar mensaje
                     Toast.makeText(
-                            getContext(),
+                            context,
                             mensaje,
                             Toast.LENGTH_LONG).show();
                     // Enviar código de falla
@@ -1360,7 +1366,7 @@ public class fragment_viaje_iniciado extends Fragment {
     }
 
 
-    private void guardar_ubicacion(String latitud, String longitud){
+    private void guardar_ubicacion(String latitud, String longitud,final Context context){
 
         HashMap<String, String> map = new HashMap<>();// Mapeo previo
 
@@ -1393,7 +1399,7 @@ public class fragment_viaje_iniciado extends Fragment {
         String newURL = Constantes.UPDATE_UBICACION + "?" + encodedParams;
 
         // Actualizar datos en el servidor
-        VolleySingleton.getInstance(getContext()).addToRequestQueue(
+        VolleySingleton.getInstance(context).addToRequestQueue(
                 new JsonObjectRequest(
                         Request.Method.GET,
                         newURL,
@@ -1401,7 +1407,7 @@ public class fragment_viaje_iniciado extends Fragment {
                         new Response.Listener<JSONObject>() {
                             @Override
                             public void onResponse(JSONObject response) {
-                                procesarRespuestaActualizarPosicion(response);
+                                procesarRespuestaActualizarPosicion(response, context);
                             }
                         },
                         new Response.ErrorListener() {
@@ -1427,7 +1433,7 @@ public class fragment_viaje_iniciado extends Fragment {
                 }
         );
     }
-    private void procesarRespuestaActualizarPosicion(JSONObject response) {
+    private void procesarRespuestaActualizarPosicion(JSONObject response, Context context) {
 
         try {
             // Obtener estado
@@ -1439,7 +1445,7 @@ public class fragment_viaje_iniciado extends Fragment {
                 case "2":
                     // Mostrar mensaje
                     Toast.makeText(
-                            getContext(),
+                            context,
                             mensaje,
                             Toast.LENGTH_LONG).show();
                     // Enviar código de falla
@@ -1451,8 +1457,12 @@ public class fragment_viaje_iniciado extends Fragment {
     }
 
     public double getValor(String texto){
-        if(texto.contains(",")){
-            return Double.parseDouble(texto.replace(",", ".").trim());
+        if(texto == null){
+            return 0.00;
+        }else {
+            if (texto.contains(",")) {
+                return Double.parseDouble(texto.replace(",", ".").trim());
+            }
         }
         return Double.parseDouble(texto.trim());
     }
