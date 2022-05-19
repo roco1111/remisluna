@@ -123,6 +123,7 @@ public class fragment_viaje_iniciado extends Fragment {
     private String ls_es_feriado;
     private Activity act;
     private Context context;
+    private Long l_tolerancia_tope;
 
     @Override
     public void onPause() {
@@ -173,6 +174,7 @@ public class fragment_viaje_iniciado extends Fragment {
         l_hora_desde = settings.getString("tarifa_desde","");
         l_hora_hasta= settings.getString("tarifa_hasta","");
         ls_es_feriado = settings.getString("feriado","");
+        l_tolerancia_tope = settings.getLong("tolerancia_tope",0L);
 
         String l_hoy;
 
@@ -394,7 +396,15 @@ public class fragment_viaje_iniciado extends Fragment {
                             break;
                         case "5"://termino tolerancia
                             tiempo_viaje.setText( "00:00");
-                            valor_ficha = 0.00;
+                            if (l_tolerancia_tope == 0L){
+                                valor_ficha = 0.00;
+                            }else {
+                                valor_ficha = Double.parseDouble(importe_espera);
+                                precio_espera = precio_espera + valor_ficha;
+                                precio_espera = getValor(getTwoDecimals(precio_espera));
+                                ficha_espera.setText( String.valueOf(precio_espera));
+                            }
+
                             tipo_espera = 1;
                             tiempo_viaje.setTextColor(getResources().getColor(R.color.colorPrimary));
                             break;
