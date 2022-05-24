@@ -78,7 +78,7 @@ import static com.rosario.hp.remisluna.include.Utils.stringABytes;
 
 public class fragment_viaje extends Fragment {
     private JsonObjectRequest myRequest;
-    private static final String TAG = login.class.getSimpleName();
+    private static final String TAG = fragment_viaje.class.getSimpleName();
     private String ls_id_conductor;
     private TextView solicitante;
     private TextView dato_salida;
@@ -128,7 +128,7 @@ public class fragment_viaje extends Fragment {
     private String longitud_salida;
     private String latitud_destino;
     private String longitud_destino;
-    private String distancia;
+    private String distancia = "0";
     private String salida_coordenada;
     private String destino_coordenada;
 
@@ -1743,9 +1743,14 @@ public class fragment_viaje extends Fragment {
         Location location_destino = new Location("destino");
         location_destino.setLatitude(getValor(latitud_destino));  //latitud
         location_destino.setLongitude(getValor(longitud_destino)); //longitud
-        double distance = location_salida.distanceTo(location_destino) / 100;
-        distancia = String.valueOf(distance);
 
+        double distance = location_salida.distanceTo(location_destino) / 100;
+        try {
+            distancia = String.valueOf(distance);
+        } catch (Exception e) {
+            distancia = "0";
+            e.printStackTrace();
+        }
 
         HashMap<String, String> map = new HashMap<>();// Mapeo previo
 

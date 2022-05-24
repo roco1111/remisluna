@@ -1,10 +1,8 @@
 package com.rosario.hp.remisluna;
 
 import android.Manifest;
-import android.app.AlertDialog;
 import android.app.Service;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -22,31 +20,20 @@ import android.os.Message;
 import android.preference.PreferenceManager;
 import android.provider.Settings;
 import android.util.Log;
-import android.view.View;
+
 import android.widget.Toast;
 
 import androidx.core.app.ActivityCompat;
 
-import com.android.volley.DefaultRetryPolicy;
-import com.android.volley.Request;
-import com.android.volley.Response;
-import com.android.volley.error.VolleyError;
 import com.android.volley.request.JsonObjectRequest;
 import com.rosario.hp.remisluna.Fragment.login;
-import com.rosario.hp.remisluna.include.Constantes;
-import com.rosario.hp.remisluna.include.VolleySingleton;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
+
 import java.text.DecimalFormat;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
+
 
 /**
  *
@@ -82,8 +69,9 @@ public class ServicioGeolocalizacion extends Service implements Runnable {
     private Integer l_metros_ficha;
     private String l_tiempo;
     private Integer l_tipo;
-    private String ls_remiseria;
-    
+    private boolean lb_diferencia;
+    private boolean lb_tolerancia = true;
+
 
     @Override
     public void onCreate() {
@@ -101,93 +89,13 @@ public class ServicioGeolocalizacion extends Service implements Runnable {
         l_tolerancia_tope = settings.getLong("tolerancia_tope",0L);
         l_tiempo_espera = settings.getLong("tiempo_espera",0L);
         l_metros_ficha = settings.getInt("metros_ficha",0);
-        cargarDatos(getApplicationContext());
+        salida_coordenada = settings.getString("salida_coordenada","");
+        tiempo_tolerancia = settings.getLong("tiempo_tolerancia",0);
+        tiempo_acumulado = settings.getLong("tiempo_acumulado",0);
+        lb_tolerancia = settings.getBoolean("boolean_tolerancia",true);
         mLocationListener = new MyLocationListener();
         mLocationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-        ls_remiseria     = settings.getString("remiseria","");
-
-    }
-
-    public void cargarDatos(final Context context) {
-
-        // Añadir parámetro a la URL del web service
-        String newURL = Constantes.GET_VIAJE_EN_CURSO + "?conductor=" + ls_id_conductor;
-        Log.d(TAG,newURL);
-
-        // Realizar petición GET_BY_ID
-        VolleySingleton.getInstance(context).addToRequestQueue(
-                myRequest = new JsonObjectRequest(
-                        Request.Method.POST,
-                        newURL,
-                        null,
-                        new Response.Listener<JSONObject>() {
-
-                            @Override
-                            public void onResponse(JSONObject response) {
-                                // Procesar respuesta Json
-                                procesarRespuesta(response, context);
-                            }
-                        },
-                        new Response.ErrorListener() {
-                            @Override
-                            public void onErrorResponse(VolleyError error) {
-                                Log.d(TAG, "Error Volley viaje: " + error.getMessage());
-
-                            }
-                        }
-                )
-        );
-        myRequest.setRetryPolicy(new DefaultRetryPolicy(
-                50000,
-                5,//DefaultRetryPolicy.DEFAULT_MAX_RETRIES
-                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
-
-    }
-
-    private void procesarRespuesta(JSONObject response, Context context) {
-
-        try {
-            // Obtener atributo "mensaje"
-            String mensaje = response.getString("estado");
-
-            switch (mensaje) {
-                case "1":
-                    // Obtener objeto "cliente"
-                    JSONArray mensaje1 = response.getJSONArray("viaje");
-
-                    JSONObject object = mensaje1.getJSONObject(0);
-                    //Parsear objeto
-
-                    salida_coordenada = object.getString("salida_coordenadas");
-
-                    if(!object.getString("tiempo_tolerancia").equals("null")) {
-
-                        tiempo_tolerancia = Long.parseLong(object.getString("tiempo_tolerancia"));
-
-                    }
-
-                    if(!object.getString("tiempo_acumulado").equals("null")) {
-
-                        tiempo_acumulado = Long.parseLong(object.getString("tiempo_acumulado"));
-
-                    }
-
-                    if(object.getString("tipo_espera").equals("0")){
-                        lb_torerancia = true;
-                    }else{
-                        lb_torerancia = false;
-                    }
-
-                    actualizar_coordenadas();
-
-                    break;
-
-            }
-
-
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
+        actualizar_coordenadas();
 
     }
 
@@ -272,11 +180,12 @@ public class ServicioGeolocalizacion extends Service implements Runnable {
             latitud_inicial = latitud;
             longitud_inicial = longitud;
 
-            if(distance > 83){
+            if(distance > 28){
+                l_inicio = System.currentTimeMillis();
                 return;
             }
 
-            if(distance > 6) {
+            if(distance > 1.5) {
                 l_tipo = 1;
             }else{
                 l_tipo = 2;
@@ -287,6 +196,7 @@ public class ServicioGeolocalizacion extends Service implements Runnable {
 
             if(l_tipo == 1) {//fichas
 
+                l_inicio = System.currentTimeMillis();
                 distancia_acumulada += distance;
                 distancia_acumulada = getValor(getTwoDecimals(distancia_acumulada));
                 if (distancia_acumulada >= l_metros_ficha) {
@@ -299,11 +209,11 @@ public class ServicioGeolocalizacion extends Service implements Runnable {
                 }
                 l_inicio = System.currentTimeMillis();
             }else if (l_tipo == 2){
-                distancia_acumulada = 0;
+                //distancia_acumulada = 0;
                 l_final = System.currentTimeMillis();
                 l_diferencia = l_final - l_inicio;
                 if(l_diferencia < 0) {
-                    Log.d("diferencia negativa", "ok");
+                    l_diferencia = 0L;
                 }
                 l_inicio = l_final;
                 if(lb_torerancia){
@@ -409,8 +319,8 @@ public class ServicioGeolocalizacion extends Service implements Runnable {
                 Toast.makeText(getApplicationContext(), "Error con GPS", Toast.LENGTH_LONG).show();
                 return;
             }
-            mLocationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 5000, 0, mLocationListener);
-            mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 5000, 0, mLocationListener);
+            mLocationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 1000, 0, mLocationListener);
+            mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000, 0, mLocationListener);
             Looper.loop();
             Looper.myLooper().quit();
         } else {

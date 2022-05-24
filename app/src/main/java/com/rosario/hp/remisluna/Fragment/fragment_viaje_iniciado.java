@@ -3,21 +3,14 @@ package com.rosario.hp.remisluna.Fragment;
 import android.app.Activity;
 import android.app.ActivityManager;
 import android.content.BroadcastReceiver;
-import android.content.ComponentName;
 
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.ServiceConnection;
 import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.location.LocationManager;
 import android.media.MediaPlayer;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.IBinder;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -33,23 +26,19 @@ import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.error.VolleyError;
+import com.android.volley.misc.AsyncTask;
 import com.android.volley.request.JsonObjectRequest;
-import com.rosario.hp.remisluna.Impresion;
 import com.rosario.hp.remisluna.MainActivity;
 import com.rosario.hp.remisluna.MainViaje;
 import com.rosario.hp.remisluna.R;
 import com.rosario.hp.remisluna.ServicioGeolocalizacion;
+import com.rosario.hp.remisluna.ServicioGeolocalizacion_metros;
 import com.rosario.hp.remisluna.include.Constantes;
-import com.rosario.hp.remisluna.include.PrinterCommands;
-import com.rosario.hp.remisluna.include.Utils;
 import com.rosario.hp.remisluna.include.VolleySingleton;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import java.io.IOException;
-import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.text.DecimalFormat;
@@ -124,12 +113,17 @@ public class fragment_viaje_iniciado extends Fragment {
     private Activity act;
     private Context context;
     private Long l_tolerancia_tope;
+    private Boolean lb_torerancia;
+    private String salida_coordenada;
+    private Iniciar_servicio_tiempo Iniciar_servicio_tiempo;
+    private Iniciar_servicio_metros Iniciar_servicio_metros;
 
     @Override
     public void onPause() {
         if(isMyServiceRunning(ServicioGeolocalizacion.class)) {
             act.unregisterReceiver(onBroadcast);
         }
+
         super.onPause();
     }
 
@@ -146,7 +140,6 @@ public class fragment_viaje_iniciado extends Fragment {
 
         act = getActivity();
 
-        act.startService(new Intent(getActivity(),ServicioGeolocalizacion.class));
         context = getContext();
         //((MainActivity) getActivity()).locationEnd();
         mLocationManager = (LocationManager) act.getSystemService(Context.LOCATION_SERVICE);
@@ -195,6 +188,7 @@ public class fragment_viaje_iniciado extends Fragment {
                 if(isMyServiceRunning(ServicioGeolocalizacion.class)) {
                     act.unregisterReceiver(onBroadcast);
                     act.stopService(new Intent(act, ServicioGeolocalizacion.class));
+                    //act.stopService(new Intent(act, ServicioGeolocalizacion_metros.class));
                     Log.d("Servicio","Servicio detenido");
                 }
 
@@ -238,6 +232,7 @@ public class fragment_viaje_iniciado extends Fragment {
 
         @Override
         public void onReceive(Context ctxt, Intent i) {
+            Log.d("Servicio","Servicio recibido");
             if(!lb_viaje_terminado) {
                 String datos = i.getStringExtra("coordenadas");//obtenemos las coordenadas envidas del servicioGeolocalizaci—n
                 String[] tokens = datos.split(";");//separamos por token
@@ -247,9 +242,9 @@ public class fragment_viaje_iniciado extends Fragment {
                 Log.d("Servicio","Servicio detenido");
             }
 
-
         }
     };
+
 
     private static String getTwoDecimals(double value){
         DecimalFormat df = new DecimalFormat("0.00");
@@ -526,8 +521,10 @@ public class fragment_viaje_iniciado extends Fragment {
 
 
                         if (isMyServiceRunning(ServicioGeolocalizacion.class)) {
-                            getActivity().unregisterReceiver(onBroadcast);
-                            getActivity().stopService(new Intent(getActivity(), ServicioGeolocalizacion.class));
+                            act.unregisterReceiver(onBroadcast);
+                            act.stopService(new Intent(act, ServicioGeolocalizacion.class));
+
+                            //act.stopService(new Intent(act, ServicioGeolocalizacion_metros.class));
                             Log.d("Servicio", "Servicio detenido 2");
 
                         }
@@ -767,6 +764,38 @@ public class fragment_viaje_iniciado extends Fragment {
                     ls_precio = String.format(Locale.GERMANY,"%.2f",precio_total);
                     cronometroActivo = true;
 
+                    salida_coordenada = object.getString("salida_coordenadas");
+
+                    if(!object.getString("tiempo_tolerancia").equals("null")) {
+
+                        tiempo_tolerancia = Long.parseLong(object.getString("tiempo_tolerancia"));
+
+                    }
+
+                    if(!object.getString("tiempo_acumulado").equals("null")) {
+
+                        tiempo_acumulado = Long.parseLong(object.getString("tiempo_acumulado"));
+
+                    }
+
+                    if(object.getString("tipo_espera").equals("0")){
+                        lb_torerancia = true;
+                    }else{
+                        lb_torerancia = false;
+                    }
+
+                    SharedPreferences.Editor editor = settings.edit();
+                    editor.putBoolean("boolean_tolerancia",lb_torerancia);
+                    editor.putLong("tiempo_acumulado",tiempo_acumulado);
+                    editor.putLong("tiempo_tolerancia",tiempo_tolerancia);
+                    editor.putString("salida_coordenada",salida_coordenada);
+
+                    editor.apply();
+
+                    Iniciar_servicio_tiempo = new Iniciar_servicio_tiempo();
+                    Iniciar_servicio_tiempo.execute();
+
+
                     break;
 
                 case "2":
@@ -785,6 +814,42 @@ public class fragment_viaje_iniciado extends Fragment {
             e.printStackTrace();
         }
 
+    }
+
+    private class Iniciar_servicio_tiempo extends AsyncTask<Void, Integer, Integer> {
+        protected Integer doInBackground(Void... params ) {
+
+            act.startService(new Intent(act,ServicioGeolocalizacion.class));
+            //Iniciar_servicio_metros = new Iniciar_servicio_metros();
+            //Iniciar_servicio_metros.execute();
+            return 0;
+        }
+
+        protected void onProgressUpdate(Integer... progress) {
+
+        }
+
+        protected void onPostExecute(Long result) {
+
+
+        }
+    }
+
+    private class Iniciar_servicio_metros extends AsyncTask<Void, Integer, Integer> {
+        protected Integer doInBackground(Void... params ) {
+            Log.d("servicio", "paso metros");
+            act.startService(new Intent(act,ServicioGeolocalizacion_metros.class));
+            return 0;
+        }
+
+        protected void onProgressUpdate(Integer... progress) {
+
+        }
+
+        protected void onPostExecute(Long result) {
+
+
+        }
     }
 
 

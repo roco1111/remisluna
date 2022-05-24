@@ -590,8 +590,14 @@ public class MainActivity extends AppCompatActivity {
         if (loc.getLatitude() != 0.0 && loc.getLongitude() != 0.0) {
             try {
                 Geocoder geocoder = new Geocoder(this, Locale.getDefault());
+                String result = null;
                 List<Address> list = geocoder.getFromLocation(
                         loc.getLatitude(), loc.getLongitude(), 1);
+                if (list != null && list.size() > 0) {
+                    Address address = list.get(0);
+                    // sending back first address line and locality
+                    result = address.getAddressLine(0) + ", " + address.getLocality();
+                }
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -618,7 +624,7 @@ public class MainActivity extends AppCompatActivity {
             guardar_ubicacion(latitud, longitud);
             String Text = "Lat = "+ loc.getLatitude() + "\n Long = " + loc.getLongitude();
             Log.d("ubicación",Text);
-            setLocation(loc);
+            //setLocation(loc);
         }
         @Override
         public void onProviderDisabled(String provider) {
