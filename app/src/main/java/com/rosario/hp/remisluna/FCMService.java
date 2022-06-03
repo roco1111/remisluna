@@ -1,5 +1,6 @@
 package com.rosario.hp.remisluna;
 
+import android.app.Activity;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -8,20 +9,21 @@ import android.content.Intent;
 import android.media.RingtoneManager;
 import android.net.Uri;
 
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
 
 public class FCMService extends FirebaseMessagingService {
 
     private static final String TAG = "MyFirebaseMsgService";
     private String titulo;
     private String texto;
+    private Activity act;
 
 
     @Override
@@ -33,7 +35,8 @@ public class FCMService extends FirebaseMessagingService {
     }
 
     private void sendNewPromoBroadcast(RemoteMessage remoteMessage) {
-        Intent intent = new Intent(MainViaje.ACTION_NOTIFY_NEW_PROMO);
+
+        Intent intent = new Intent(MainActivity.ACTION_NOTIFY_NEW_PROMO);
         titulo = remoteMessage.getData().get("title");
         texto = remoteMessage.getData().get("body");
 

@@ -48,6 +48,8 @@ public class viajeAdapter extends RecyclerView.Adapter<viajeAdapter.HolderTurno>
 
         holder.hora.setText( viajes.get(position).getFecha() + " " + viajes.get(position).getHora_inicio());
 
+        holder.recibo.setText(viajes.get(position).getNro_recibo());
+
         switch (viajes.get(position).getEstado()){
             case "3":
                 holder.indicador.setImageDrawable(context.getResources().getDrawable(R.drawable.terminado));
@@ -79,6 +81,7 @@ public class viajeAdapter extends RecyclerView.Adapter<viajeAdapter.HolderTurno>
         public TextView destino;
         public TextView hora;
         public TextView importe;
+        public TextView recibo;
         public ImageView indicador;
         public ItemClickListener7 listener;
         public HolderTurno(View v, ItemClickListener7 listener) {
@@ -117,8 +120,6 @@ public class viajeAdapter extends RecyclerView.Adapter<viajeAdapter.HolderTurno>
 
         editor.putString("id_viaje",viajes.get(position).getId());
         editor.apply();
-
-        editor.commit();
     }
 }
 

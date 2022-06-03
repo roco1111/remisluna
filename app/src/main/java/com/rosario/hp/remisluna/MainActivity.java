@@ -54,6 +54,7 @@ import java.util.Objects;
 public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = MainActivity.class.getSimpleName();
+    public static final String ACTION_NOTIFY_NEW_PROMO = "NOTIFY_NEW_PROMO";
 
     String ls_id_conductor;
     private JsonObjectRequest myRequest;
@@ -79,6 +80,11 @@ public class MainActivity extends AppCompatActivity {
         }
             return super.onKeyDown(keyCode, event);
 
+    }
+    @Override
+    protected void onStop() {
+        super.onStop();
+        Log.d(TAG,"se cerro");
     }
 
     @Override
@@ -343,6 +349,7 @@ public class MainActivity extends AppCompatActivity {
 
                     SharedPreferences.Editor editor2 = settings2.edit();
 
+                    editor2.putString("id_viaje",object.getString("id"));
                     editor2.putString("estado_conductor",object.getString("estado_conductor"));
                     editor2.putString("estado_vehiculo",object.getString("estado_vehiculo"));
                     editor2.apply();

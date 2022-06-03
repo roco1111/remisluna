@@ -117,7 +117,7 @@ public class SplashScreenActivity extends Activity {
             SharedPreferences.Editor editor = preferenciasapp.edit();
             editor.putBoolean("aplicacioninstalada", true);
             editor.apply();
-            editor.commit();
+            editor.apply();
         }
     }
     @Override

@@ -117,6 +117,8 @@ public class fragment_viaje_iniciado extends Fragment {
     private String salida_coordenada;
     private Iniciar_servicio_tiempo Iniciar_servicio_tiempo;
     private Iniciar_servicio_metros Iniciar_servicio_metros;
+    private String l_nro_recibo;
+    private String l_recibo_parametro;
 
     @Override
     public void onPause() {
@@ -225,8 +227,6 @@ public class fragment_viaje_iniciado extends Fragment {
         }
         return false;
     }
-
-
 
     private BroadcastReceiver onBroadcast = new BroadcastReceiver() {
 
@@ -362,7 +362,16 @@ public class fragment_viaje_iniciado extends Fragment {
                             precio_ficha = getValor(getTwoDecimals(precio_ficha));
                             cuadras++;
                             kms.setText( String.valueOf(cuadras));
-                            tiempo_viaje.setText( "00:00");
+                            String ls_es_tolerancia;
+                            ls_es_tolerancia = tokens[3];
+                            if(ls_es_tolerancia.equals("NO")) {
+                                tiempo_viaje.setText("00:00");
+                            }else{
+                                ls_tiempo = tokens[4];
+                                tiempo_tolerancia = Long.parseLong(tokens[5]);
+                                tiempo_viaje.setText( ls_tiempo);
+                                tiempo_viaje.setTextColor(getResources().getColor(R.color.suspender));
+                            }
                             break;
                         case "2"://espera
                             espera++;
@@ -848,7 +857,6 @@ public class fragment_viaje_iniciado extends Fragment {
 
         protected void onPostExecute(Long result) {
 
-
         }
     }
 
@@ -1067,7 +1075,7 @@ public class fragment_viaje_iniciado extends Fragment {
                     l_latitud_destino = object.getString("latitud");
                     l_longitud_destino = object.getString("longitud");
 
-                    terminar_viaje(context);
+                    obtenerRecibo(context);
 
                     break;
 
@@ -1088,6 +1096,209 @@ public class fragment_viaje_iniciado extends Fragment {
         }
 
     }
+
+    public void obtenerRecibo(final Context context) {
+
+        HashMap<String, String> map = new HashMap<>();// Mapeo previo
+
+        map.put("parametro", "8");
+        map.put("remiseria", ls_remiseria);
+
+        JSONObject jobject = new JSONObject(map);
+
+
+        // Depurando objeto Json...
+        Log.d(TAG, jobject.toString());
+
+        StringBuilder encodedParams = new StringBuilder();
+        try {
+            for (Map.Entry<String, String> entry : map.entrySet()) {
+                encodedParams.append(URLEncoder.encode(entry.getKey(), "utf-8"));
+                encodedParams.append('=');
+                encodedParams.append(URLEncoder.encode(entry.getValue(), "utf-8"));
+                encodedParams.append('&');
+            }
+        } catch (UnsupportedEncodingException uee) {
+            throw new RuntimeException("Encoding not supported: " + "utf-8", uee);
+        }
+
+        encodedParams.setLength(Math.max(encodedParams.length() - 1, 0));
+
+        // Añadir parámetro a la URL del web service
+        String newURL = Constantes.GET_ID_PARAMETRO + "?" + encodedParams;
+        Log.d(TAG,newURL);
+
+        // Realizar petición GET_BY_ID
+        VolleySingleton.getInstance(context).addToRequestQueue(
+                myRequest = new JsonObjectRequest(
+                        Request.Method.POST,
+                        newURL,
+                        null,
+                        new Response.Listener<JSONObject>() {
+
+                            @Override
+                            public void onResponse(JSONObject response) {
+                                // Procesar respuesta Json
+                                procesarRespuestaParametro(response, context);
+                            }
+                        },
+                        new Response.ErrorListener() {
+                            @Override
+                            public void onErrorResponse(VolleyError error) {
+                                Log.d(TAG, "Error Volley parámetro: " + error.getMessage());
+
+                            }
+                        }
+                )
+        );
+        myRequest.setRetryPolicy(new DefaultRetryPolicy(
+                50000,
+                5,//DefaultRetryPolicy.DEFAULT_MAX_RETRIES
+                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+
+    }
+
+    private void procesarRespuestaParametro(JSONObject response, Context context) {
+
+        try {
+            // Obtener atributo "mensaje"
+            String mensaje = response.getString("estado");
+
+            switch (mensaje) {
+                case "1":
+                    JSONArray datos_parametro = response.getJSONArray("parametro");
+
+                    for(int i = 0; i < datos_parametro.length(); i++)
+                    {JSONObject object = datos_parametro.getJSONObject(i);
+
+                        l_nro_recibo = object.getString("valor");
+
+                    }
+                    Integer l_recibo;
+
+                    l_recibo = Integer.parseInt(l_nro_recibo) + 1;
+
+                    l_recibo_parametro = String.valueOf(l_recibo);
+
+                    l_nro_recibo = "00000000" + l_recibo_parametro;
+
+                    l_nro_recibo = l_nro_recibo.substring(l_nro_recibo.length() - 8);
+
+                    actualizar_recibo(context);
+
+                    break;
+                case "2":
+                    String mensaje2 = response.getString("mensaje");
+                    Toast.makeText(
+                            context,
+                            mensaje2,
+                            Toast.LENGTH_LONG).show();
+                    break;
+
+
+            }
+
+            // run_espera();
+
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    private void actualizar_recibo(final Context context){
+
+
+        HashMap<String, String> map = new HashMap<>();// Mapeo previo
+
+        map.put("parametro", "8");
+        map.put("remiseria", ls_remiseria);
+        map.put("valor", l_recibo_parametro);
+
+        JSONObject jobject = new JSONObject(map);
+
+        // Depurando objeto Json...
+        Log.d(TAG, jobject.toString());
+
+        StringBuilder encodedParams = new StringBuilder();
+        try {
+            for (Map.Entry<String, String> entry : map.entrySet()) {
+                encodedParams.append(URLEncoder.encode(entry.getKey(), "utf-8"));
+                encodedParams.append('=');
+                encodedParams.append(URLEncoder.encode(entry.getValue(), "utf-8")).toString();
+                encodedParams.append('&');
+            }
+        } catch (UnsupportedEncodingException uee) {
+            throw new RuntimeException("Encoding not supported: " + "utf-8", uee);
+        }
+
+        encodedParams.setLength(Math.max(encodedParams.length() - 1, 0));
+
+
+        String newURL = Constantes.UPDATE_PARAMETRO + "?" + encodedParams;
+        Log.d(TAG,newURL);
+        // Actualizar datos en el servidor
+        VolleySingleton.getInstance(context).addToRequestQueue(
+                new JsonObjectRequest(
+                        Request.Method.GET,
+                        newURL,
+                        null,
+                        new Response.Listener<JSONObject>() {
+                            @Override
+                            public void onResponse(JSONObject response) {
+                                procesarRespuestaActualizarRecibo(response, context);
+                            }
+                        },
+                        new Response.ErrorListener() {
+                            @Override
+                            public void onErrorResponse(VolleyError error) {
+                                Log.d(TAG, "Error Turno: " + error.getMessage());
+
+                            }
+                        }
+
+                ) {
+                    @Override
+                    public Map<String, String> getHeaders() {
+                        Map<String, String> headers = new HashMap<>();
+                        headers.put("Content-Type", "application/json; charset=utf-8");
+                        return headers;
+                    }
+
+                    @Override
+                    public String getBodyContentType() {
+                        return "application/json; charset=utf-8" + getParamsEncoding();
+                    }
+                }
+        );
+    }
+    private void procesarRespuestaActualizarRecibo(JSONObject response, Context context) {
+
+        try {
+            // Obtener estado
+            String estado = response.getString("estado");
+            // Obtener mensaje
+            String mensaje = response.getString("mensaje");
+
+            switch (estado) {
+                case "1":
+                    terminar_viaje( context);
+                    break;
+                case "2":
+                    // Mostrar mensaje
+                    Toast.makeText(
+                            context,
+                            mensaje,
+                            Toast.LENGTH_LONG).show();
+                    // Enviar código de falla
+                    break;
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+
 
     private void terminar_viaje(final Context context){
 
@@ -1122,6 +1333,7 @@ public class fragment_viaje_iniciado extends Fragment {
         map.put("fichas", String.valueOf(ficha));
         map.put("fichas_espera", String.valueOf(espera));
         map.put("importe_fichas", String.valueOf(precio_ficha));
+        map.put("nro_recibo", l_nro_recibo);
         map.put("importe_titular", String.valueOf(descuento_titular));
 
 

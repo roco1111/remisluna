@@ -43,23 +43,39 @@
             android:paddingStart="30dp"
             android:src="@drawable/terminado" />
     </RelativeLayout>
-
+    <RelativeLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/lay_destino"
+        android:layout_below="@id/id_lugar"
+        android:orientation="horizontal">
         <TextView
             android:id="@+id/destino"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+
             android:layout_alignParentStart="true"
             android:layout_alignParentLeft="true"
-            android:layout_below="@id/id_lugar"
-            android:textStyle="bold"
+            android:text="TextView"
             android:textSize="@dimen/tamanio_texto"
-            android:text="TextView" />
+            android:textStyle="bold" />
+        <TextView
+            android:id="@+id/recibo"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentRight="true"
+            android:text="TextView"
+            android:textSize="@dimen/tamanio_texto"
+            android:textStyle="bold" />
+    </RelativeLayout>
 
         <RelativeLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
             android:id="@+id/id_hora"
-            android:layout_below="@id/destino"
+            android:layout_below="@id/lay_destino"
             android:orientation="horizontal">
         <TextView
             android:id="@+id/hora"

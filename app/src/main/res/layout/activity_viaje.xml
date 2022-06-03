@@ -364,6 +364,15 @@
             android:background="@drawable/selector_cero"
             android:scaleType="fitXY" />
 
+        <ImageButton
+            android:id="@+id/imageWa"
+            android:layout_width="@dimen/ancho_boton"
+            android:layout_height="@dimen/ancho_boton"
+            android:layout_marginStart="@dimen/campos_height"
+            android:layout_toEndOf="@id/imageButtonCero"
+            android:background="@drawable/selector_whatsapp"
+            android:scaleType="fitXY" />
+
 
     </RelativeLayout>
 

@@ -59,6 +59,7 @@
     <string name="esperando">esperando...</string>
     <string name="nro_movil">Nro Móvil: </string>
     <string name="nro_viaje">Nro Viaje</string>
+    <string name="nro_recibo">Nro Recibo</string>
     <string name="nro_viaje2">Viaje</string>
     <string name="solicitante">Solicitante</string>
     <string name="documento">DNI</string>

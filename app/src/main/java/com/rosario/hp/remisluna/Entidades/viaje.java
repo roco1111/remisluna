@@ -17,6 +17,7 @@ public class viaje {
     String tiempo;
     String fichas_espera;
     String importe_fichas;
+    String nro_recibo;
 
     public String getId() {
         return id;
@@ -40,6 +41,14 @@ public class viaje {
 
     public String getEspera() {
         return espera;
+    }
+
+    public String getNro_recibo() {
+        return nro_recibo;
+    }
+
+    public void setNro_recibo(String nro_recibo) {
+        this.nro_recibo = nro_recibo;
     }
 
     public void setEspera(String espera) {

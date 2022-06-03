@@ -42,7 +42,6 @@ import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.error.VolleyError;
 import com.android.volley.request.JsonObjectRequest;
-import com.rosario.hp.remisluna.Entidades.parada;
 import com.rosario.hp.remisluna.Entidades.turno;
 import com.rosario.hp.remisluna.Entidades.viaje;
 import com.rosario.hp.remisluna.Impresion;
@@ -85,6 +84,7 @@ public class fragment_viaje extends Fragment {
     private TextView destino;
     private TextView texto_tarifa;
     private String id_viaje;
+    private String telefono_base;
 
     private ImageButton boton_cero;
     private ImageButton boton_uno;
@@ -96,6 +96,7 @@ public class fragment_viaje extends Fragment {
     private ImageButton boton_siete;
     private ImageButton boton_ocho;
     private ImageButton boton_nueve;
+    private ImageButton boton_whatsapp;
 
 
     private String recaudacion;
@@ -155,6 +156,7 @@ public class fragment_viaje extends Fragment {
     private Context context;
     private String l_porcentaje;
     ProgressDialog progress1;
+    private String nro_recibo;
 
     @Override
     public void onStart() {
@@ -244,10 +246,11 @@ public class fragment_viaje extends Fragment {
         this.boton_siete = v.findViewById(R.id.imageButtonSiete);
         this.boton_ocho = v.findViewById(R.id.imageButtonOcho);
         this.boton_nueve = v.findViewById(R.id.imageButtonNueve);
+        this.boton_whatsapp = v.findViewById(R.id.imageWa);
         datos = new ArrayList<>();
 
         context = getContext();
-        MediaPlayer mediaPlayer = MediaPlayer.create(getActivity(), R.raw.everblue);
+        MediaPlayer mediaPlayer = MediaPlayer.create(act, R.raw.everblue);
 
         this.impresora = v.findViewById(R.id.impresora);
         if(mBound) {
@@ -290,6 +293,16 @@ public class fragment_viaje extends Fragment {
                             R.string.no_internet,
                             Toast.LENGTH_LONG).show();
                 }
+
+            }
+        });
+
+        this.boton_whatsapp.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                mediaPlayer.start();
+                cargarDatosRemiseria(context);
 
             }
         });
@@ -393,15 +406,13 @@ public class fragment_viaje extends Fragment {
                 editor.putString("tipo_ventana","main");
                 editor.apply();
                 if(mBound) {
-                    requireActivity().unbindService(connection);
+                    act.unbindService(connection);
                     impresora.setTextColor(getResources().getColor(R.color.alarma));
                     mBound = false;
                 }
                 if(!mBound) {
 
-                    Intent intent2 = new Intent(context, MainActivity.class);
-                    context.startActivity(intent2);
-                    getActivity().finish();
+                    cargarImpresora(context);
 
                 }
             }
@@ -455,17 +466,92 @@ public class fragment_viaje extends Fragment {
     }
 
     private void habilitar_gps(){
-        LocationManager mlocManager = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
+        LocationManager mlocManager = (LocationManager) act.getSystemService(Context.LOCATION_SERVICE);
 
         final boolean gpsEnabled = mlocManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
         if (!gpsEnabled) {
             Intent settingsIntent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
             startActivity(settingsIntent);
         }
-        if (ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.ACCESS_FINE_LOCATION,}, 1000);
+        if (ActivityCompat.checkSelfPermission(act, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(act, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(act, new String[]{Manifest.permission.ACCESS_FINE_LOCATION,}, 1000);
             return;
         }
+    }
+
+    public void cargarDatosRemiseria(final Context context) {
+
+        // Añadir parámetro a la URL del web service
+        String newURL = Constantes.GET_REMISERIA + "?remiseria=" + ls_remiseria;
+        Log.d(TAG,newURL);
+
+        // Realizar petición GET_BY_ID
+        VolleySingleton.getInstance(context).addToRequestQueue(
+                myRequest = new JsonObjectRequest(
+                        Request.Method.POST,
+                        newURL,
+                        null,
+                        new Response.Listener<JSONObject>() {
+
+                            @Override
+                            public void onResponse(JSONObject response) {
+                                // Procesar respuesta Json
+                                procesarRespuesta_remiseria(response, context);
+                            }
+                        },
+                        new Response.ErrorListener() {
+                            @Override
+                            public void onErrorResponse(VolleyError error) {
+                                Log.d(TAG, "Error Volley viaje: " + error.getMessage());
+
+                            }
+                        }
+                )
+        );
+        myRequest.setRetryPolicy(new DefaultRetryPolicy(
+                50000,
+                5,//DefaultRetryPolicy.DEFAULT_MAX_RETRIES
+                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+
+    }
+
+    private void procesarRespuesta_remiseria(JSONObject response, Context context) {
+
+        try {
+            // Obtener atributo "mensaje"
+            String mensaje = response.getString("estado");
+
+            switch (mensaje) {
+                case "1":
+                    // Obtener objeto "cliente"
+                    JSONArray mensaje1 = response.getJSONArray("remiseria");
+
+                    JSONObject object = mensaje1.getJSONObject(0);
+                    //Parsear objeto
+
+                    telefono_base = object.getString("TELEFONO_BASE");
+                    Intent intent = new Intent("android.intent.action.MAIN");
+                    intent.setAction(Intent.ACTION_SEND);
+                    intent.setType("text/plain");
+                    intent.putExtra(Intent.EXTRA_TEXT, "hola");
+                    intent.putExtra("jid", telefono_base + "@s.whatsapp.net"); //numero telefonico sin prefijo "+"!
+
+                    intent.setPackage("com.whatsapp");
+                    startActivity(intent);
+
+                    break;
+
+                case "2":
+
+                    break;
+
+            }
+
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
     }
 
     public void feriado(final Context context){
@@ -1737,12 +1823,16 @@ public class fragment_viaje extends Fragment {
 
     private void iniciar_viaje(final Context context){
 
+        latitud_salida = String.valueOf(getValor(latitud_salida));
+        longitud_salida = String.valueOf(getValor(longitud_salida));
+        latitud_destino = String.valueOf(getValor(latitud_destino));
+        longitud_destino = String.valueOf(getValor(longitud_destino));
         Location location_salida = new Location("salida");
-        location_salida.setLatitude(getValor(latitud_salida));  //latitud
-        location_salida.setLongitude(getValor(longitud_salida)); //longitud
+        location_salida.setLatitude(Double.parseDouble(latitud_salida));  //latitud
+        location_salida.setLongitude(Double.parseDouble(longitud_salida)); //longitud
         Location location_destino = new Location("destino");
-        location_destino.setLatitude(getValor(latitud_destino));  //latitud
-        location_destino.setLongitude(getValor(longitud_destino)); //longitud
+        location_destino.setLatitude(Double.parseDouble(latitud_destino));  //latitud
+        location_destino.setLongitude(Double.parseDouble(longitud_destino)); //longitud
 
         double distance = location_salida.distanceTo(location_destino) / 100;
         try {
@@ -2474,6 +2564,7 @@ public class fragment_viaje extends Fragment {
                     movil_ultimo = object.getString("movil");
                     chapa = object.getString("chapa");
                     patente = object.getString("patente");
+                    nro_recibo = object.getString("nro_recibo");
 
                     repetirTicket();
 
@@ -2522,6 +2613,8 @@ public class fragment_viaje extends Fragment {
                 printCustom(getResources().getString(R.string.telefono), 1, 1);
                 printNewLine();
                 printText(getResources().getString(R.string.recibo)); // total 32 char in a single line
+                printNewLine();
+                printText("Nro Recibo: " + nro_recibo ); // total 32 char in a single line
                 printNewLine();
                 printText(stringABytes(getResources().getString(R.string.servicio)));
                 printNewLine();
@@ -2773,8 +2866,9 @@ public class fragment_viaje extends Fragment {
         }, milisegundos);
     }
     public void bindApp(Intent intent, Context context) {
+        Log.d("impresora", "bind");
         context.bindService(intent, connection, Context.BIND_AUTO_CREATE);
-        if(impresion != null) {
+        if (impresion != null) {
             if (impresion.getBluetoothAdapter() != null) {
                 if (impresion.getOutputStream() != null) {
                     impresora.setTextColor(context.getResources().getColor(R.color.colorPrimary));
@@ -2792,7 +2886,6 @@ public class fragment_viaje extends Fragment {
             impresora.setTextColor(context.getResources().getColor(R.color.alarma));
             mBound = false;
         }
-        context.bindService(intent, connection, Context.BIND_AUTO_CREATE);
     }
     public double getValor(String texto){
         if(texto == null){

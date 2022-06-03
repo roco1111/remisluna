@@ -84,6 +84,7 @@ public class fragment_datos_viaje extends Fragment{
     private ArrayList<viaje> viaje = new ArrayList<>();
     private static OutputStream outputStream;
     byte FONT_TYPE;
+    private String nro_recibo;
 
     @Override
     public void onStart() {
@@ -142,6 +143,7 @@ public class fragment_datos_viaje extends Fragment{
         espera = v.findViewById(R.id.dato_espera);
         total = v.findViewById(R.id.dato_total);
         descuento = v.findViewById(R.id.dato_descuento);
+
 
         SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getContext());
         ls_id_viaje     = settings.getString("id_viaje","");
@@ -215,7 +217,7 @@ public class fragment_datos_viaje extends Fragment{
                     //Parsear objeto
 
                     fecha.setText(object.getString("fecha"));
-                    nro_viaje.setText(object.getString("id"));
+                    nro_viaje.setText(object.getString("nro_recibo"));
                     solicitante.setText(object.getString("solicitante"));
                     documento.setText(object.getString("nro_documento"));
                     salida.setText(object.getString("salida"));
@@ -268,6 +270,8 @@ public class fragment_datos_viaje extends Fragment{
                     nombre_remiseria = object.getString("remiseria");
                     bajada = object.getString("bajada");
                     importe_fichas = object.getString("importe_fichas");
+                    nro_recibo = object.getString("nro_recibo");
+
                     if(object.getString("estado").equals("4")){
                         suspension.setVisibility(View.VISIBLE);
                     }else{
@@ -317,6 +321,8 @@ public class fragment_datos_viaje extends Fragment{
             printCustom ("Tel. Queja: " + telefono_queja,1,1);
             printNewLine();
             printText(getResources().getString(R.string.recibo)); // total 32 char in a single line
+            printNewLine();
+            printText("Nro Recibo: " + nro_recibo ); // total 32 char in a single line
             printNewLine();
             printText(stringABytes(getResources().getString(R.string.servicio) + ' ' + localidad_abreviada));
             printNewLine();

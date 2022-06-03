@@ -159,7 +159,7 @@ public class fragment_principal extends Fragment {
     private String movil_habilitado;
     private Context context;
     private Activity act;
-
+    private String nro_recibo;
 
 
     @Override
@@ -2170,6 +2170,7 @@ public class fragment_principal extends Fragment {
                     nombre_remiseria = object.getString("remiseria");
                     chapa = object.getString("chapa");
                     patente = object.getString("patente");
+                    nro_recibo = object.getString("nro_recibo");
 
                     repetirTicket();
 
@@ -2219,6 +2220,8 @@ public class fragment_principal extends Fragment {
                 printCustom("Tel. Queja: " + telefono_queja, 1, 1);
                 printNewLine();
                 printText(getResources().getString(R.string.recibo)); // total 32 char in a single line
+                printNewLine();
+                printText("Nro Recibo: " + nro_recibo ); // total 32 char in a single line
                 printNewLine();
                 printText(stringABytes(getResources().getString(R.string.servicio) + ' ' + localidad_abreviada));
                 printNewLine();
@@ -2775,7 +2778,7 @@ public class fragment_principal extends Fragment {
 
                     Intent intent2 = new Intent(context, MainViaje.class);
                     context.startActivity(intent2);
-                    ((MainActivity)getActivity()).locationEnd();
+                    ((MainActivity)getContext()).locationEnd();
                     act.finish();
                     break;
                 case "2":

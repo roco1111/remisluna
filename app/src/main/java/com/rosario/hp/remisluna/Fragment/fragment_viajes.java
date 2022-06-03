@@ -179,6 +179,10 @@ public class fragment_viajes extends Fragment {
 
                         via.setEstado(estado_viaje);
 
+                        String nro_recibo = object.getString("nro_recibo");
+
+                        via.setNro_recibo(nro_recibo);
+
                         datos.add(via);
 
                     }

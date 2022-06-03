@@ -202,10 +202,35 @@ public class ServicioGeolocalizacion extends Service implements Runnable {
                 if (distancia_acumulada >= l_metros_ficha) {
                     tiempo_acumulado = 0L;
                     distancia_acumulada = distancia_acumulada - l_metros_ficha;
+                    String l_tolerancia;
+
+                    if(lb_torerancia){
+                        l_tolerancia = "SI";
+                    }else{
+                        l_tolerancia = "NO";
+                    }
+
+                    if(tiempo_tolerancia / 60000 >= 1){
+                        minutos = Integer.parseInt(String.valueOf(tiempo_tolerancia)) / 60000;
+                        if(tiempo_tolerancia % 60000 > 0){
+                            resto = Integer.parseInt(String.valueOf(tiempo_tolerancia)) % 60000;
+                            segundos = resto / 1000;
+                        }
+                    }else{
+                        minutos = 0;
+                        segundos = Integer.parseInt(String.valueOf(tiempo_tolerancia)) / 1000;
+                    }
+                    String min="", seg="";
+                    if (minutos < 10) min = "0" + minutos.toString();
+                    else min = minutos.toString();
+                    if (segundos < 10) seg = "0" + segundos.toString();
+                    else seg = segundos.toString();
+
+                    l_tiempo = min + ":" + seg;
 
                     getApplicationContext().sendBroadcast(
                             new Intent("key").putExtra("coordenadas", latitud + ";"
-                                    + longitud + ";" + 1 + ""));
+                                    + longitud + ";" + 1 + ";" + l_tolerancia + ";"+ l_tiempo + ";"+ String.valueOf(tiempo_tolerancia)));
                 }
                 l_inicio = System.currentTimeMillis();
             }else if (l_tipo == 2){
