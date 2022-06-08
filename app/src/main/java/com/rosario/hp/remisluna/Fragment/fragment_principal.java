@@ -2,7 +2,6 @@ package com.rosario.hp.remisluna.Fragment;
 
 import android.Manifest;
 import android.app.Activity;
-import android.app.AlertDialog;
 import android.bluetooth.BluetoothDevice;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
@@ -36,6 +35,7 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
@@ -45,12 +45,14 @@ import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.error.VolleyError;
 import com.android.volley.request.JsonObjectRequest;
+import com.google.firebase.auth.FirebaseAuth;
 import com.rosario.hp.remisluna.Entidades.parada;
 import com.rosario.hp.remisluna.Entidades.turno;
 import com.rosario.hp.remisluna.Entidades.viaje;
 import com.rosario.hp.remisluna.Impresion;
 import com.rosario.hp.remisluna.MainActivity;
 import com.rosario.hp.remisluna.MainViaje;
+import com.rosario.hp.remisluna.Main_Login;
 import com.rosario.hp.remisluna.R;
 import com.rosario.hp.remisluna.activity_preferencias;
 import com.rosario.hp.remisluna.include.Constantes;
@@ -125,6 +127,7 @@ public class fragment_principal extends Fragment {
     private String kms;
     private String fecha;
     private String hora_inicio;
+    private String hora_fin;
     private String estado;
     private ArrayList<viaje> viajes = new ArrayList<>();
     private static OutputStream outputStream;
@@ -160,7 +163,7 @@ public class fragment_principal extends Fragment {
     private Context context;
     private Activity act;
     private String nro_recibo;
-
+    private TextView turno;
 
     @Override
     public void onStart() {
@@ -256,6 +259,7 @@ public class fragment_principal extends Fragment {
         this.boton_automatico = v.findViewById(R.id.imageautomatico);
         this.txt_parada = v.findViewById(R.id.parada);
         this.gps = v.findViewById(R.id.gps);
+        this.turno = v.findViewById(R.id.turno);
         texto_tarifa = v.findViewById(R.id.tarifa);
         paradas = new ArrayList<>();
         context = getContext();
@@ -276,8 +280,6 @@ public class fragment_principal extends Fragment {
         movil_habilitado = settings.getString("estado_vehiculo","");
         chofer_habilitado = settings.getString("estado_conductor","");
 
-        this.boton_uno.setEnabled(false);
-        this.boton_uno.setBackground(getResources().getDrawable(R.drawable.uno_gris));
         if(viajes_automaticos.equals("0")){
             this.boton_automatico.setVisibility(View.GONE);
         }else{
@@ -287,31 +289,39 @@ public class fragment_principal extends Fragment {
         if(movil_habilitado.equals("1") && chofer_habilitado.equals("1"))
         {
             this.boton_uno.setEnabled(true);
-            this.boton_uno.setBackground(getResources().getDrawable(R.drawable.selector_uno));
+            this.boton_uno.setBackground(act.getResources().getDrawable(R.drawable.selector_uno));
             this.boton_dos.setEnabled(true);
-            this.boton_dos.setBackground(getResources().getDrawable(R.drawable.selector_dos));
+            this.boton_dos.setBackground(act.getResources().getDrawable(R.drawable.selector_dos));
             this.boton_tres.setEnabled(true);
-            this.boton_tres.setBackground(getResources().getDrawable(R.drawable.selector_tres));
+            this.boton_tres.setBackground(act.getResources().getDrawable(R.drawable.selector_tres));
             this.boton_cuatro.setEnabled(true);
-            this.boton_cuatro.setBackground(getResources().getDrawable(R.drawable.selector_cuatro));
+            this.boton_cuatro.setBackground(act.getResources().getDrawable(R.drawable.selector_cuatro));
             this.boton_seis.setEnabled(true);
-            this.boton_seis.setBackground(getResources().getDrawable(R.drawable.selector_seis));
+            this.boton_seis.setBackground(act.getResources().getDrawable(R.drawable.selector_seis));
             this.boton_parada.setEnabled(true);
-            this.boton_parada.setBackground(getResources().getDrawable(R.drawable.selector_parada));
+            this.boton_parada.setBackground(act.getResources().getDrawable(R.drawable.selector_parada));
 
         }else{
             this.boton_uno.setEnabled(false);
-            this.boton_uno.setBackground(getResources().getDrawable(R.drawable.uno_gris));
+            this.boton_uno.setBackground(act.getResources().getDrawable(R.drawable.uno_gris));
             this.boton_dos.setEnabled(false);
-            this.boton_dos.setBackground(getResources().getDrawable(R.drawable.dos_gris));
+            this.boton_dos.setBackground(act.getResources().getDrawable(R.drawable.dos_gris));
             this.boton_tres.setEnabled(false);
-            this.boton_tres.setBackground(getResources().getDrawable(R.drawable.tres_gris));
+            this.boton_tres.setBackground(act.getResources().getDrawable(R.drawable.tres_gris));
             this.boton_cuatro.setEnabled(false);
-            this.boton_cuatro.setBackground(getResources().getDrawable(R.drawable.cuatro_gris));
+            this.boton_cuatro.setBackground(act.getResources().getDrawable(R.drawable.cuatro_gris));
             this.boton_seis.setEnabled(false);
-            this.boton_seis.setBackground(getResources().getDrawable(R.drawable.seis_gris));
+            this.boton_seis.setBackground(act.getResources().getDrawable(R.drawable.seis_gris));
             this.boton_parada.setEnabled(false);
-            this.boton_parada.setBackground(getResources().getDrawable(R.drawable.parada_gris));
+            this.boton_parada.setBackground(act.getResources().getDrawable(R.drawable.parada_gris));
+        }
+        if(ls_id_turno.equals("0"))
+        {
+            this.boton_automatico.setBackground(act.getResources().getDrawable(R.drawable.automtico_gris));
+            this.boton_automatico.setEnabled(false);
+        }else{
+            this.boton_automatico.setBackground(act.getResources().getDrawable(R.drawable.selector_automatico));
+            this.boton_automatico.setEnabled(true);
         }
         MediaPlayer mediaPlayer = MediaPlayer.create(getActivity(), R.raw.everblue);
 
@@ -389,9 +399,11 @@ public class fragment_principal extends Fragment {
             @Override
             public void onClick(View v) {
                 mediaPlayer.start();
-
-                cerrar_turno(context);
-
+                if(ls_id_turno.equals("0")) {
+                    iniciar_turno(context);
+                }else{
+                    cerrar_turno(context);
+                }
             }
         });
 
@@ -779,7 +791,7 @@ public class fragment_principal extends Fragment {
                         SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(context);
                         SharedPreferences.Editor editor = settings.edit();
                         editor.putString("nocturno",l_nocturno);
-                        editor.commit();
+                        editor.apply();
 
                     }
                     cargarParadas( context);
@@ -846,6 +858,7 @@ public class fragment_principal extends Fragment {
 
                     fecha = object.getString("fecha");
                     hora_inicio = object.getString("hora_inicio");
+                    hora_fin = object.getString("hora_fin");
                     if(!object.getString("distancia").equals("null")){
                         kms =object.getString("distancia");}
                     if(!object.getString("recaudacion").equals("null")){
@@ -933,6 +946,10 @@ public class fragment_principal extends Fragment {
 
                         via.setImporte(importe);
 
+                        String nro_recibo = object.getString("nro_recibo");
+
+                        via.setNro_recibo(nro_recibo);
+
                         viajes.add(via);
                     }
 
@@ -1008,6 +1025,7 @@ public class fragment_principal extends Fragment {
         }
     }
 
+
     private void cerrar_turno(final Context context){
 
         String newURL = Constantes.FIN_TURNO + "?id=" + ls_id_turno;
@@ -1062,10 +1080,18 @@ public class fragment_principal extends Fragment {
                     context,
                     "Turno Finalizado",
                     Toast.LENGTH_LONG).show();
+                    turno.setText("Turno Finalizado" );
+                    ls_id_turno = "0";
+                    this.boton_automatico.setBackground(act.getResources().getDrawable(R.drawable.automtico_gris));
+                    this.boton_automatico.setEnabled(false);
+                    SharedPreferences settings1 = PreferenceManager.getDefaultSharedPreferences(context);
+
+                    SharedPreferences.Editor editor = settings1.edit();
+
+                    editor.putString("id_turno_chofer",ls_id_turno);
+                    editor.apply();
                     if(mBound) {
                         datos_turno(context);
-                    }else{
-                        iniciar_turno(context);
                     }
                     break;
                 case "2":
@@ -1203,6 +1229,13 @@ public class fragment_principal extends Fragment {
 
                     editor.putString("id_turno_chofer",ls_id_turno);
                     editor.apply();
+
+                    String l_fecha = object.getString("fecha");
+                    String l_hora_inicio = object.getString("hora_inicio");
+
+                    turno.setText("Turno: " + l_fecha + " - " + l_hora_inicio);
+                    this.boton_automatico.setBackground(act.getResources().getDrawable(R.drawable.selector_automatico));
+                    this.boton_automatico.setEnabled(true);
 
                     //datos_turno(context);
 
@@ -1446,9 +1479,96 @@ public class fragment_principal extends Fragment {
                         txt_parada.setText("Parada Nro: " + object.getString("id"));
                     }
 
+
+
+                    break;
+
+
+            }
+            datos_turno_inicial(context);
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    public void datos_turno_inicial(final Context context) {
+
+        // Añadir parámetro a la URL del web service
+        String newURL = Constantes.GET_TURNO + "?conductor=" + ls_id_conductor;
+        Log.d(TAG,newURL);
+
+        // Realizar petición GET_BY_ID
+        VolleySingleton.getInstance(context).addToRequestQueue(
+                myRequest = new JsonObjectRequest(
+                        Request.Method.POST,
+                        newURL,
+                        null,
+                        new Response.Listener<JSONObject>() {
+
+                            @Override
+                            public void onResponse(JSONObject response) {
+                                // Procesar respuesta Json
+                                procesarRespuesta_inicial(response, context);
+                            }
+                        },
+                        new Response.ErrorListener() {
+                            @Override
+                            public void onErrorResponse(VolleyError error) {
+                                Log.d(TAG, "Error Volley turno: " + error.getMessage());
+
+                            }
+                        }
+                )
+        );
+        myRequest.setRetryPolicy(new DefaultRetryPolicy(
+                50000,
+                5,//DefaultRetryPolicy.DEFAULT_MAX_RETRIES
+                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+
+    }
+
+    private void procesarRespuesta_inicial(JSONObject response, Context context) {
+
+        try {
+            // Obtener atributo "mensaje"
+            String mensaje = response.getString("estado");
+            switch (mensaje) {
+                case "1":
+                    JSONArray mensaje1 = response.getJSONArray("conductor");
+                    JSONObject object = mensaje1.getJSONObject(0);
+
+                    SharedPreferences settings1 = PreferenceManager.getDefaultSharedPreferences(context);
+
+                    SharedPreferences.Editor editor = settings1.edit();
+
+                    ls_id_turno = object.getString("id");
+
+                    editor.putString("id_turno_chofer",ls_id_turno);
+                    editor.apply();
+
+                    String l_fecha = object.getString("fecha");
+                    String l_hora_inicio = object.getString("hora_inicio");
+
+                    turno.setText("Turno: " + l_fecha + " - " + l_hora_inicio);
+                    this.boton_automatico.setBackground(act.getResources().getDrawable(R.drawable.selector_automatico));
+                    this.boton_automatico.setEnabled(true);
+
+                    break;
+                case "2":
+                    Toast.makeText(
+                            context,
+                            mensaje,
+                            Toast.LENGTH_LONG).show();
+                    turno.setText("Turno Terminado");
+                    this.boton_automatico.setBackground(act.getResources().getDrawable(R.drawable.automtico_gris));
+                    this.boton_automatico.setEnabled(false);
+
                     break;
 
             }
+
 
         } catch (JSONException e) {
             e.printStackTrace();
@@ -1678,9 +1798,11 @@ public class fragment_principal extends Fragment {
                 printText(getResources().getString(R.string.ticket_turno)); // total 32 char in a single line
 
                 printNewLine();
-                printText(fecha);//fecha
+                printText("Fecha: " + fecha);//fecha
+                printNewLine();
+                printText("Inicio: " + hora_inicio);
                 printText(" - ");
-                printText(hora_inicio);//fecha
+                printText("Fin: " + hora_fin);
                 printNewLine();
 
                 String id;
@@ -1688,7 +1810,7 @@ public class fragment_principal extends Fragment {
 
                 for (viaje Viaje : viajes) {
                     id = Viaje.getId();
-                    printCustom("VIAJE " + id, 1, 0);
+                    printCustom("VIAJE " + id + " - " + Viaje.getNro_recibo(),  1, 0);
 
                     importe = Viaje.getImporte();
                     printText("TOTAL:  " + importe);
@@ -1709,7 +1831,7 @@ public class fragment_principal extends Fragment {
                 printNewLine();
 
                 outputStream.flush();
-                iniciar_turno(context);
+
             } catch (IOException e) {
                 e.printStackTrace();
             }

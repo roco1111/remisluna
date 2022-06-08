@@ -5,7 +5,7 @@
     <dimen name="tamanio_campo_numero">122sp</dimen>
     <dimen name="tamanio_numero">140sp</dimen>
     <dimen name="tamanio_campo_numero_chico">68sp</dimen>
-    <dimen name="tamanio_numero_chico">80sp</dimen>
+    <dimen name="tamanio_numero_chico">75sp</dimen>
     <dimen name="tamanio_numero_tiempo">41sp</dimen>
     <dimen name="tamanio_texto">15sp</dimen>
     <dimen name="tamanio_titulo">25sp</dimen>
@@ -26,6 +26,7 @@
     <dimen name="perfil_image_size">120dp</dimen>
     <dimen name="imagen_regla">100dp</dimen>
     <dimen name="icono_chico">23dp</dimen>
+    <dimen name="medidores">35dp</dimen>
     <dimen name="margin_top_item_grande">12dp</dimen>
     <dimen name="margin_top_item">4dp</dimen>
     <dimen name="item_horizontal_margin">6dp</dimen>

@@ -3,6 +3,8 @@
   <component name="DesignSurface">
     <option name="filePathToZoomLevelMap">
       <map>
+        <entry key="..\:/Users/hp/AndroidStudioProjects/remisluna/app/src/main/res/drawable-hdpi/selector_cinco.xml" value="0.1605" />
+        <entry key="..\:/Users/hp/AndroidStudioProjects/remisluna/app/src/main/res/drawable-hdpi/selector_seis.xml" value="0.1605" />
         <entry key="..\:/Users/hp/AndroidStudioProjects/remisluna/app/src/main/res/drawable-xhdpi/selector_parada.xml" value="0.20833333333333334" />
         <entry key="..\:/Users/hp/AndroidStudioProjects/remisluna/app/src/main/res/drawable-xxxhdpi/selector_whatsapp.xml" value="0.20833333333333334" />
         <entry key="..\:/Users/hp/AndroidStudioProjects/remisluna/app/src/main/res/drawable/selector_automatico.xml" value="0.1055" />

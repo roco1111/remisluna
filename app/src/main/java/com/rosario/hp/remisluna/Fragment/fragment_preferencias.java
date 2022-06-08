@@ -1,5 +1,7 @@
 package com.rosario.hp.remisluna.Fragment;
 
+import android.app.Activity;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -28,6 +30,8 @@ public class fragment_preferencias extends Fragment {
     private RelativeLayout acerca;
     private RelativeLayout salir;
     private FirebaseAuth mAuth;
+    private Context context;
+    private Activity act;
 
 
     @Override
@@ -42,14 +46,15 @@ public class fragment_preferencias extends Fragment {
         terminos = v.findViewById(R.id.nav_terminos);
         acerca = v.findViewById(R.id.nav_acerca);
         salir = v.findViewById(R.id.nav_salir);
-
+        context = getContext();
+        act = getActivity();
 
         this.perfil.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Intent intent2 = new Intent(getActivity(), insertUsuario.class);
 
-                getActivity().startActivity(intent2);
+                act.startActivity(intent2);
             }
         });
 
@@ -57,7 +62,7 @@ public class fragment_preferencias extends Fragment {
             @Override
             public void onClick(View v) {
 
-                SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getContext());
+                SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(context);
                 SharedPreferences.Editor editor = settings.edit();
 
                 editor.putString("url", "https://remisluna.com.ar/politicas/privacidad.php");
@@ -65,7 +70,7 @@ public class fragment_preferencias extends Fragment {
 
                 Intent intent = new Intent(getContext(), WebActivity.class);
                 intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                Objects.requireNonNull(getActivity()).startActivity(intent);
+                act.startActivity(intent);
                 editor.commit();
             }
         });
@@ -85,7 +90,7 @@ public class fragment_preferencias extends Fragment {
     }
 
     private void cerrar_sesion() {
-        new AlertDialog.Builder(getContext())
+        new AlertDialog.Builder(context)
                 .setIcon(android.R.drawable.ic_dialog_alert)
                 .setTitle("Salir")
                 .setMessage("Desea salir de la aplicación?")
@@ -93,7 +98,7 @@ public class fragment_preferencias extends Fragment {
                 .setPositiveButton(android.R.string.ok,new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getContext());
+                        SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(context);
                         SharedPreferences.Editor editor = settings.edit();
                         editor.putString("posicion", "0");
                         editor.commit();
@@ -101,7 +106,7 @@ public class fragment_preferencias extends Fragment {
                         mAuth.signOut();
 
                         getActivity().finish();
-                        Intent intent4 = new Intent(getContext(), Main_Login.class);
+                        Intent intent4 = new Intent(context, Main_Login.class);
                         startActivity(intent4);
 
                     }

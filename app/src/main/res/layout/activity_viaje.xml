@@ -27,14 +27,48 @@
 
             <TextView
                 android:id="@+id/gps"
-                android:layout_width="wrap_content"
+                android:layout_width="@dimen/medidores"
                 android:layout_height="@dimen/icono_chico"
+                android:layout_alignParentStart="true"
                 android:text="@string/gps"
                 android:textAlignment="center"
-                android:layout_alignParentStart="true"
                 android:textColor="@color/colorPrimary"
-                android:textStyle="bold"
-                android:textSize="@dimen/tamanio_parrafo" />
+                android:textSize="@dimen/tamanio_parrafo"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/turno"
+                android:layout_width="wrap_content"
+                android:layout_height="@dimen/icono_chico"
+
+                android:layout_alignParentEnd="true"
+                android:text="@string/libre"
+                android:textAlignment="center"
+                android:textColor="@color/colorPrimary"
+                android:textSize="@dimen/tamanio_parrafo"
+                android:textStyle="bold" />
+
+
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:id="@+id/id_datos_libre"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/id_datos_superior"
+            android:layout_marginTop="@dimen/margin_boton"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/impresora"
+                android:layout_width="@dimen/medidores"
+                android:layout_height="@dimen/icono_chico"
+                android:layout_alignParentStart="true"
+                android:text="@string/impresora_lista"
+                android:textAlignment="center"
+                android:textColor="@color/alarma"
+                android:textSize="@dimen/tamanio_parrafo"
+                android:textStyle="bold" />
 
             <TextView
                 android:id="@+id/tarifa"
@@ -46,26 +80,6 @@
                 android:textColor="@color/colorPrimary"
                 android:textSize="@dimen/tamanio_parrafo"
                 android:textStyle="bold" />
-        </RelativeLayout>
-        <RelativeLayout
-            android:id="@+id/id_datos_libre"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/margin_boton"
-            android:layout_below="@id/id_datos_superior"
-            android:orientation="horizontal">
-
-            <TextView
-                android:id="@+id/impresora"
-                android:layout_width="wrap_content"
-                android:layout_height="@dimen/icono_chico"
-                android:layout_alignParentStart="true"
-                android:text="@string/impresora_lista"
-                android:textAlignment="center"
-                android:textColor="@color/alarma"
-                android:textSize="@dimen/tamanio_parrafo"
-                android:textStyle="bold" />
-
 
 
         </RelativeLayout>

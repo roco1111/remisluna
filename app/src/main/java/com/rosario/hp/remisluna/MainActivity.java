@@ -189,7 +189,7 @@ public class MainActivity extends AppCompatActivity {
 
                     break;
                 case"2":
-                    alta_turno(context);
+                    cargarDaIdVehiculo(context);
                     break;
 
 
@@ -202,71 +202,6 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    private void alta_turno(final Context context){
-
-        String newURL = Constantes.ALTA_TURNO + "?id_conductor=" + ls_id_conductor;
-        Log.d(TAG,newURL);
-
-        // Actualizar datos en el servidor
-        VolleySingleton.getInstance(context).addToRequestQueue(
-                new JsonObjectRequest(
-                        Request.Method.POST,
-                        newURL,
-                        null,
-                        new Response.Listener<JSONObject>() {
-                            @Override
-                            public void onResponse(JSONObject response) {
-                                procesarRespuestaAltaTurno(response, context);
-                            }
-                        },
-                        new Response.ErrorListener() {
-                            @Override
-                            public void onErrorResponse(VolleyError error) {
-                                Log.d(TAG, "Error turno: " + error.getMessage());
-
-                            }
-                        }
-
-                ) {
-                    @Override
-                    public Map<String, String> getHeaders() {
-                        Map<String, String> headers = new HashMap<>();
-                        headers.put("Content-Type", "application/json; charset=utf-8");
-                        return headers;
-                    }
-
-                    @Override
-                    public String getBodyContentType() {
-                        return "application/json; charset=utf-8" + getParamsEncoding();
-                    }
-                }
-        );
-    }
-    private void procesarRespuestaAltaTurno(JSONObject response, Context context) {
-
-        try {
-            // Obtener estado
-            String estado = response.getString("estado");
-            // Obtener mensaje
-            String mensaje = response.getString("mensaje");
-
-            switch (estado) {
-                case "1":
-                    cargarDatos(context);
-                    break;
-                case "2":
-                    // Mostrar mensaje
-                    Toast.makeText(
-                            context,
-                            mensaje,
-                            Toast.LENGTH_LONG).show();
-                    // Enviar código de falla
-                    break;
-            }
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {

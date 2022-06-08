@@ -103,6 +103,7 @@ public class fragment_viaje extends Fragment {
     private String kms;
     private String fecha;
     private String hora_inicio;
+    private String hora_fin;
     private String estado;
     private String ls_id_turno;
     private String fecha_ultimo;
@@ -157,6 +158,7 @@ public class fragment_viaje extends Fragment {
     private String l_porcentaje;
     ProgressDialog progress1;
     private String nro_recibo;
+    private TextView turno;
 
     @Override
     public void onStart() {
@@ -247,6 +249,9 @@ public class fragment_viaje extends Fragment {
         this.boton_ocho = v.findViewById(R.id.imageButtonOcho);
         this.boton_nueve = v.findViewById(R.id.imageButtonNueve);
         this.boton_whatsapp = v.findViewById(R.id.imageWa);
+        this.turno = v.findViewById(R.id.turno);
+        this.boton_dos.setEnabled(false);
+        this.boton_dos.setBackground(getResources().getDrawable(R.drawable.dos_gris));
         datos = new ArrayList<>();
 
         context = getContext();
@@ -1333,12 +1338,88 @@ public class fragment_viaje extends Fragment {
                     salida_coordenada = object.getString("salida_coordenadas");
                     destino_coordenada = object.getString("destino_coordenadas");
                     id_movil = object.getString("id_movil");
-                    progress1.dismiss();
-                    actualizar_coordenadas(context);
+
+                    datos_turno_inicial(context);
                     break;
 
                 case "2":
                     progress1.dismiss();
+                    break;
+
+            }
+
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    public void datos_turno_inicial(final Context context) {
+
+        // Añadir parámetro a la URL del web service
+        String newURL = Constantes.GET_TURNO_BY_ID + "?id=" + ls_id_turno;
+        Log.d(TAG,newURL);
+
+        // Realizar petición GET_BY_ID
+        VolleySingleton.getInstance(context).addToRequestQueue(
+                myRequest = new JsonObjectRequest(
+                        Request.Method.POST,
+                        newURL,
+                        null,
+                        new Response.Listener<JSONObject>() {
+
+                            @Override
+                            public void onResponse(JSONObject response) {
+                                // Procesar respuesta Json
+                                procesarRespuesta_inicial(response, context);
+                            }
+                        },
+                        new Response.ErrorListener() {
+                            @Override
+                            public void onErrorResponse(VolleyError error) {
+                                Log.d(TAG, "Error Volley turno: " + error.getMessage());
+                                progress1.dismiss();
+
+                            }
+                        }
+                )
+        );
+        myRequest.setRetryPolicy(new DefaultRetryPolicy(
+                50000,
+                5,//DefaultRetryPolicy.DEFAULT_MAX_RETRIES
+                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+
+    }
+
+    private void procesarRespuesta_inicial(JSONObject response, Context context) {
+
+        try {
+            // Obtener atributo "mensaje"
+            String mensaje = response.getString("estado");
+            switch (mensaje) {
+                case "1":
+                    // Obtener objeto "cliente"
+                    JSONArray mensaje1 = response.getJSONArray("turno");
+
+                    JSONObject object = mensaje1.getJSONObject(0);
+                    //Parsear objeto
+
+                    String l_fecha = object.getString("fecha");
+                    String l_hora_inicio = object.getString("hora_inicio");
+
+                    turno.setText("Turno: " + l_fecha + " - " + l_hora_inicio);
+                    progress1.dismiss();
+                    actualizar_coordenadas(context);
+
+
+                case "2":
+                    progress1.dismiss();
+                    Toast.makeText(
+                            context,
+                            mensaje,
+                            Toast.LENGTH_LONG).show();
+
                     break;
 
             }
@@ -1401,6 +1482,7 @@ public class fragment_viaje extends Fragment {
 
                     fecha = object.getString("fecha");
                     hora_inicio = object.getString("hora_inicio");
+                    hora_fin = object.getString("hora_fin");
                     if(!object.getString("distancia").equals("null")){
                         kms =object.getString("distancia");}
                     if(!object.getString("recaudacion").equals("null")){
@@ -1487,6 +1569,10 @@ public class fragment_viaje extends Fragment {
                         String importe = object.getString("importe");
 
                         via.setImporte(importe);
+
+                        String nro_recibo = object.getString("nro_recibo");
+
+                        via.setNro_recibo(nro_recibo);
 
                         viajes.add(via);
                     }
@@ -1594,9 +1680,11 @@ public class fragment_viaje extends Fragment {
                 printText(getResources().getString(R.string.ticket_turno)); // total 32 char in a single line
 
                 printNewLine();
-                printText(fecha);//fecha
+                printText("Fecha: " + fecha);//fecha
+                printNewLine();
+                printText("Inicio: " + hora_inicio);
                 printText(" - ");
-                printText(hora_inicio);//fecha
+                printText("Fin: " + hora_fin);
                 printNewLine();
 
                 String id;
@@ -1604,7 +1692,7 @@ public class fragment_viaje extends Fragment {
 
                 for (viaje Viaje : viajes) {
                     id = Viaje.getId();
-                    printCustom("VIAJE " + id, 1, 0);
+                    printCustom("VIAJE " + id + " - " + Viaje.getNro_recibo(),  1, 0);
 
                     importe = Viaje.getImporte();
                     printText("TOTAL:  " + importe);

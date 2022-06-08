@@ -111,8 +111,8 @@
     <string name="automatico">A:Viaje de Prueba </string>
     <string name="whatsapps">W:Whatsapps </string>
 
-    <string name="diurno">Tarifa Diurna</string>
-    <string name="nocturno">Tarifa Nocturna</string>
+    <string name="diurno">T. Diurna</string>
+    <string name="nocturno">T. Nocturna</string>
 
 
 </resources>
