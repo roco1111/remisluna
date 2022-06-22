@@ -90,8 +90,9 @@
             android:layout_height="@dimen/tamanio_campo_numero_chico"
             android:layout_below="@id/id_datos_superior"
             android:layout_centerHorizontal="true"
+            android:autoSizeTextType="uniform"
             android:fontFamily="@font/digital"
-
+            android:layout_marginTop="@dimen/margin_top_item"
             android:text="@string/cero_pesos"
             android:textAlignment="center"
             android:textColor="@color/colorPrimary"
@@ -109,26 +110,26 @@
             <TextView
                 android:id="@+id/tiempo"
                 android:layout_width="wrap_content"
-                android:layout_height="@dimen/tamanio_titulo_grande"
+                android:layout_height="@dimen/tamanio_numero_tiempo"
                 android:layout_alignParentStart="true"
                 android:fontFamily="@font/digital"
                 android:text="@string/cero_tiempo"
                 android:textAlignment="center"
                 android:textColor="@color/colorPrimary"
-                android:textSize="@dimen/tamanio_titulo_grande"
+                android:textSize="@dimen/tamanio_texto_tiempo"
                 android:textStyle="bold" />
 
             <TextView
                 android:id="@+id/kms"
                 android:layout_width="wrap_content"
-                android:layout_height="@dimen/tamanio_titulo_grande"
-                android:text="@string/cero_distancia"
-                android:fontFamily="@font/digital"
-                android:textAlignment="center"
+                android:layout_height="@dimen/tamanio_numero_tiempo"
                 android:layout_alignParentEnd="true"
+                android:fontFamily="@font/digital"
+                android:text="@string/cero_distancia"
+                android:textAlignment="center"
                 android:textColor="@color/colorPrimary"
-                android:textStyle="bold"
-                android:textSize="@dimen/tamanio_titulo_grande" />
+                android:textSize="@dimen/tamanio_texto_tiempo"
+                android:textStyle="bold" />
         </RelativeLayout>
 
         <LinearLayout
@@ -361,12 +362,12 @@
     </RelativeLayout>
 
     <RelativeLayout
+        android:id="@+id/id_teclado_cero"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_centerHorizontal="true"
         android:layout_below="@id/id_teclado_inferior"
-        android:layout_marginTop="@dimen/margin_start"
-        android:id="@+id/id_teclado_cero"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="@dimen/margin_top_item"
         android:orientation="horizontal">
 
         <ImageButton

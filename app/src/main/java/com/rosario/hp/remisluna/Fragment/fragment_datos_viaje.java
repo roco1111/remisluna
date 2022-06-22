@@ -1,5 +1,6 @@
 package com.rosario.hp.remisluna.Fragment;
 
+import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -8,6 +9,7 @@ import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
 import android.util.Log;
@@ -77,6 +79,8 @@ public class fragment_datos_viaje extends Fragment{
     private String importe_fichas;
     private String bajada;
     private String localidad_abreviada;
+    private String precio_km;
+    private String ls_id_conductor;
 
     private String ls_id_viaje;
     private Impresion impresion;
@@ -86,19 +90,25 @@ public class fragment_datos_viaje extends Fragment{
     byte FONT_TYPE;
     private String nro_recibo;
 
+    private Activity act;
+    private Context context;
+
     @Override
     public void onStart() {
         super.onStart();
         // Bind to LocalService
-        Intent intent = new Intent(getActivity(), Impresion.class);
-        getActivity().bindService(intent, connection, Context.BIND_AUTO_CREATE);
+
     }
 
     @Override
     public void onStop() {
         super.onStop();
-        getActivity().unbindService(connection);
-        mBound = false;
+
+        if(mBound) {
+            act.unbindService(connection);
+
+            mBound = false;
+        }
     }
 
     /** Defines callbacks for service binding, passed to bindService() */
@@ -125,7 +135,7 @@ public class fragment_datos_viaje extends Fragment{
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              final Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.activity_datos_viaje, container, false);
-
+        act = getActivity();
 
         fecha = v.findViewById(R.id.dato_fecha);
         nro_viaje = v.findViewById(R.id.dato_viaje);
@@ -271,6 +281,8 @@ public class fragment_datos_viaje extends Fragment{
                     bajada = object.getString("bajada");
                     importe_fichas = object.getString("importe_fichas");
                     nro_recibo = object.getString("nro_recibo");
+                    precio_km = object.getString("precio_km");
+                    ls_id_conductor = object.getString("id_conductor");
 
                     if(object.getString("estado").equals("4")){
                         suspension.setVisibility(View.VISIBLE);
@@ -278,9 +290,12 @@ public class fragment_datos_viaje extends Fragment{
                         suspension.setVisibility(View.INVISIBLE);
                     }
 
+                    cargarImpresora(context);
+                    break;
+
                 case "2":
                     Toast.makeText(
-                            getContext(),
+                            context,
                             mensaje,
                             Toast.LENGTH_LONG).show();
 
@@ -293,6 +308,122 @@ public class fragment_datos_viaje extends Fragment{
             e.printStackTrace();
         }
 
+    }
+
+    public void cargarImpresora(final Context context) {
+
+        String newURL = Constantes.GET_CONDUCTOR_BY_ID + "?conductor=" + ls_id_conductor;
+        Log.d(TAG,newURL);
+
+        // Realizar petición GET_BY_ID
+        VolleySingleton.getInstance(context).addToRequestQueue(
+                myRequest = new JsonObjectRequest(
+                        Request.Method.POST,
+                        newURL,
+                        null,
+                        new Response.Listener<JSONObject>() {
+
+                            @Override
+                            public void onResponse(JSONObject response) {
+                                // Procesar respuesta Json
+                                procesarRespuestaImpresora(response, context);
+                            }
+                        },
+                        new Response.ErrorListener() {
+                            @Override
+                            public void onErrorResponse(VolleyError error) {
+                                Log.d(TAG, "Error Volley parametro: " + error.getMessage());
+
+                            }
+                        }
+                )
+        );
+        myRequest.setRetryPolicy(new DefaultRetryPolicy(
+                50000,
+                5,//DefaultRetryPolicy.DEFAULT_MAX_RETRIES
+                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+
+    }
+
+    private void procesarRespuestaImpresora(JSONObject response, Context context) {
+
+        try {
+            // Obtener atributo "mensaje"
+            String mensaje = response.getString("estado");
+
+            switch (mensaje) {
+                case "1":
+                    JSONArray datos_parada = response.getJSONArray("conductor");
+
+                    for(int i = 0; i < datos_parada.length(); i++)
+                    {
+                        JSONObject object = datos_parada.getJSONObject(i);
+
+                        SharedPreferences settings1 = PreferenceManager.getDefaultSharedPreferences(context);
+
+                        SharedPreferences.Editor editor = settings1.edit();
+
+                        String l_impresora;
+
+                        l_impresora = object.getString("impresora");
+
+                        editor.putString("impresora",l_impresora);
+                        editor.putString("tipo_ventana", "main");
+                        editor.apply();
+
+                        if(!l_impresora.equals("")) {
+
+
+                            Intent intent = new Intent(context, Impresion.class);
+                            context.startService(intent);
+                            esperarYCerrar(1500, intent,context);
+
+                        }else{
+
+                            Intent intent = new Intent(context, Impresion.class);
+                            context.bindService(intent, connection, Context.BIND_AUTO_CREATE);
+                            context.startService(intent);
+
+                        }
+
+                    }
+                    break;
+
+            }
+
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    public void esperarYCerrar(int milisegundos, Intent intent, final Context context) {
+        Handler handler = new Handler();
+        handler.postDelayed(new Runnable() {
+            public void run() {
+                // acciones que se ejecutan tras los milisegundos
+                bindApp(intent, context);
+            }
+        }, milisegundos);
+    }
+    public void bindApp(Intent intent, Context context) {
+        Log.d("impresora", "bind");
+        context.bindService(intent, connection, Context.BIND_AUTO_CREATE);
+        if (impresion != null) {
+            if (impresion.getBluetoothAdapter() != null) {
+                if (impresion.getOutputStream() != null) {
+                    mBound = true;
+                } else {
+                    mBound = false;
+
+                }
+            } else {
+                mBound = false;
+            }
+        }else{
+            mBound = false;
+        }
     }
 
 
@@ -340,6 +471,8 @@ public class fragment_datos_viaje extends Fragment{
             printText("LLEGADA  " + hora_destino.getText());
             printNewLine();
             printText("RECORRIDO  " + String.format(Locale.GERMANY,"%.2f",Double.parseDouble(distancia)) + " Kms.");
+            printNewLine();
+            printText("PRECIO/KM  " + precio_km);
             printNewLine();
             printNewLine();
             printText("TARIFA AL  " + fecha_tarifa);

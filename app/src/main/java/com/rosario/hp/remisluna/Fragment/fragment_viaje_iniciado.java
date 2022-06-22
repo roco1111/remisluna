@@ -32,7 +32,6 @@ import com.rosario.hp.remisluna.MainActivity;
 import com.rosario.hp.remisluna.MainViaje;
 import com.rosario.hp.remisluna.R;
 import com.rosario.hp.remisluna.ServicioGeolocalizacion;
-import com.rosario.hp.remisluna.ServicioGeolocalizacion_metros;
 import com.rosario.hp.remisluna.include.Constantes;
 import com.rosario.hp.remisluna.include.VolleySingleton;
 
@@ -47,8 +46,6 @@ import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
-
-import static com.rosario.hp.remisluna.include.Utils.stringABytes;
 
 public class fragment_viaje_iniciado extends Fragment {
     private JsonObjectRequest myRequest;
@@ -93,7 +90,6 @@ public class fragment_viaje_iniciado extends Fragment {
     private Double precio_espera = 0.00;
     private Double precio_bajada= 0.00;
     private Integer id_trayecto = 0;
-    private LocationManager mLocationManager;
     boolean lb_ticket;
     private Double l_porcentaje;
     boolean cronometroActivo;
@@ -116,7 +112,6 @@ public class fragment_viaje_iniciado extends Fragment {
     private Boolean lb_torerancia;
     private String salida_coordenada;
     private Iniciar_servicio_tiempo Iniciar_servicio_tiempo;
-    private Iniciar_servicio_metros Iniciar_servicio_metros;
     private String l_nro_recibo;
     private String l_recibo_parametro;
 
@@ -144,7 +139,7 @@ public class fragment_viaje_iniciado extends Fragment {
 
         context = getContext();
         //((MainActivity) getActivity()).locationEnd();
-        mLocationManager = (LocationManager) act.getSystemService(Context.LOCATION_SERVICE);
+
         id_viaje = v.findViewById(R.id.dato_viaje);
         solicitante = v.findViewById(R.id.dato_solicitante);
         dato_salida = v.findViewById(R.id.dato_salida);
@@ -165,7 +160,7 @@ public class fragment_viaje_iniciado extends Fragment {
         ls_id_conductor     = settings.getString("id","");
         id_turno            = settings.getString("id_turno_chofer","");
         ls_remiseria     = settings.getString("remiseria","");
-        l_porcentaje = Double.parseDouble(settings.getString("porcentaje","0"));
+        l_porcentaje = getValor(settings.getString("porcentaje","0"));
         l_hora_desde = settings.getString("tarifa_desde","");
         l_hora_hasta= settings.getString("tarifa_hasta","");
         ls_es_feriado = settings.getString("feriado","");
@@ -801,6 +796,8 @@ public class fragment_viaje_iniciado extends Fragment {
 
                     editor.apply();
 
+                    Log.d("inicio carga", "listo");
+
                     Iniciar_servicio_tiempo = new Iniciar_servicio_tiempo();
                     Iniciar_servicio_tiempo.execute();
 
@@ -844,21 +841,6 @@ public class fragment_viaje_iniciado extends Fragment {
         }
     }
 
-    private class Iniciar_servicio_metros extends AsyncTask<Void, Integer, Integer> {
-        protected Integer doInBackground(Void... params ) {
-            Log.d("servicio", "paso metros");
-            act.startService(new Intent(act,ServicioGeolocalizacion_metros.class));
-            return 0;
-        }
-
-        protected void onProgressUpdate(Integer... progress) {
-
-        }
-
-        protected void onPostExecute(Long result) {
-
-        }
-    }
 
 
     public void cargarDatosFinal(final Context context) {
@@ -1315,6 +1297,14 @@ public class fragment_viaje_iniciado extends Fragment {
         descuento_titular = subtotal * (ldb_porcentaje_titular / 100);//porcentaje titular
         total = subtotal - descuento_titular;
 
+        Double precio_km;
+
+        if(!distancia.equals("0")) {
+            precio_km = precio_total / Double.parseDouble(distancia);
+        }else{
+            precio_km = precio_total;
+        }
+
 
         HashMap<String, String> map = new HashMap<>();// Mapeo previo
 
@@ -1335,6 +1325,8 @@ public class fragment_viaje_iniciado extends Fragment {
         map.put("importe_fichas", String.valueOf(precio_ficha));
         map.put("nro_recibo", l_nro_recibo);
         map.put("importe_titular", String.valueOf(descuento_titular));
+        map.put("precio_km", String.valueOf(precio_km));
+
 
 
 

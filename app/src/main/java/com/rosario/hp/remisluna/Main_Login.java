@@ -115,18 +115,9 @@ public class Main_Login extends AppCompatActivity implements login.Callback  {
 
     @Override
         public boolean onOptionsItemSelected(MenuItem item) {
-
-
-
-            SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-            SharedPreferences.Editor editor = settings.edit();
-
-            editor.putString("url", "https://remisluna.com.ar/remiseria/paginas_ayuda");
-            editor.apply();
-
-            Intent intent = new Intent(getApplicationContext(), WebActivity.class);
-            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            getApplicationContext().startActivity(intent);
+        Intent intent2 = new Intent(getApplicationContext(), activity_preferencias.class);
+        intent2.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        getApplicationContext().startActivity(intent2);
 
 
         return super.onOptionsItemSelected(item);

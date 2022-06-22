@@ -2,11 +2,12 @@
 <resources>
     <dimen name="tamanio_subtitulo">22sp</dimen>
     <dimen name="tamanio_parrafo">18sp</dimen>
-    <dimen name="tamanio_campo_numero">122sp</dimen>
+    <dimen name="tamanio_campo_numero">120sp</dimen>
     <dimen name="tamanio_numero">140sp</dimen>
-    <dimen name="tamanio_campo_numero_chico">68sp</dimen>
-    <dimen name="tamanio_numero_chico">75sp</dimen>
-    <dimen name="tamanio_numero_tiempo">41sp</dimen>
+    <dimen name="tamanio_campo_numero_chico">70sp</dimen>
+    <dimen name="tamanio_numero_chico">70sp</dimen>
+    <dimen name="tamanio_numero_tiempo">40sp</dimen>
+    <dimen name="tamanio_texto_tiempo">40sp</dimen>
     <dimen name="tamanio_texto">15sp</dimen>
     <dimen name="tamanio_titulo">25sp</dimen>
     <dimen name="tamanio_titulo_grande">35sp</dimen>

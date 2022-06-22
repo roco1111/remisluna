@@ -20,6 +20,8 @@ import android.preference.PreferenceManager;
 import android.provider.Settings;
 import android.util.Log;
 import android.view.KeyEvent;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.WindowManager;
 import android.widget.Toast;
 
@@ -161,6 +163,23 @@ public class MainViaje extends AppCompatActivity {
             return false;
         }
         return super.onKeyDown(keyCode, event);
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.menu_principal, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+
+        Intent intent2 = new Intent(getApplicationContext(), activity_preferencias.class);
+        intent2.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        getApplicationContext().startActivity(intent2);
+
+        return super.onOptionsItemSelected(item);
     }
 
     @Override
@@ -339,8 +358,6 @@ public class MainViaje extends AppCompatActivity {
             }
         }
     }
-
-
 
 
 }

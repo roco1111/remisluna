@@ -148,7 +148,6 @@
 
         </service>
         <service android:name=".ServicioGeolocalizacion" />
-        <service android:name=".ServicioGeolocalizacion_metros" />
     </application>
 
 </manifest>

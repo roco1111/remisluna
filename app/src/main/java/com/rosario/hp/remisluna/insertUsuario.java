@@ -160,6 +160,7 @@ public class insertUsuario extends AppCompatActivity {
 
     }
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode == 1000) {
             if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 locationStart();
@@ -341,16 +342,9 @@ public class insertUsuario extends AppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
 
-        SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-        SharedPreferences.Editor editor = settings.edit();
-        Intent intent;
-
-                editor.putString("url", "https://remisluna.com.ar/remiseria/paginas_ayuda.php");
-                editor.apply();
-                intent = new Intent(getApplicationContext(), WebActivity.class);
-                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                getApplicationContext().startActivity(intent);
-                editor.commit();
+        Intent intent2 = new Intent(getApplicationContext(), activity_preferencias.class);
+        intent2.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        getApplicationContext().startActivity(intent2);
 
         return super.onOptionsItemSelected(item);
     }

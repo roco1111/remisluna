@@ -8,6 +8,7 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -41,6 +42,7 @@ import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.error.VolleyError;
+import com.android.volley.misc.AsyncTask;
 import com.android.volley.request.JsonObjectRequest;
 import com.rosario.hp.remisluna.Entidades.turno;
 import com.rosario.hp.remisluna.Entidades.viaje;
@@ -48,6 +50,7 @@ import com.rosario.hp.remisluna.Impresion;
 import com.rosario.hp.remisluna.MainActivity;
 import com.rosario.hp.remisluna.MainViaje;
 import com.rosario.hp.remisluna.R;
+import com.rosario.hp.remisluna.ServicioGeolocalizacion;
 import com.rosario.hp.remisluna.activity_preferencias;
 import com.rosario.hp.remisluna.include.Constantes;
 import com.rosario.hp.remisluna.include.PrinterCommands;
@@ -159,6 +162,10 @@ public class fragment_viaje extends Fragment {
     ProgressDialog progress1;
     private String nro_recibo;
     private TextView turno;
+    private String precio_km;
+    private String ls_id_turno_ultimo;
+    private String l_nro_turno;
+    private boolean lb_ultimo;
 
     @Override
     public void onStart() {
@@ -252,6 +259,7 @@ public class fragment_viaje extends Fragment {
         this.turno = v.findViewById(R.id.turno);
         this.boton_dos.setEnabled(false);
         this.boton_dos.setBackground(getResources().getDrawable(R.drawable.dos_gris));
+        this.boton_nueve.setBackground(getResources().getDrawable(R.drawable.nueve_gris));
         datos = new ArrayList<>();
 
         context = getContext();
@@ -367,7 +375,7 @@ public class fragment_viaje extends Fragment {
             @Override
             public void onClick(View v) {
 
-                cerrar_turno(context);
+
 
             }
         });
@@ -443,8 +451,15 @@ public class fragment_viaje extends Fragment {
             @Override
             public void onClick(View v) {
                 mediaPlayer.start();
-                Intent intent2 = new Intent(context, activity_preferencias.class);
-                context.startActivity(intent2);
+                if(mBound) {
+                    lb_ultimo = true;
+                    ultimo_turno(context);
+                }else{
+                    Toast.makeText(
+                            context,
+                            R.string.no_impresora,
+                            Toast.LENGTH_LONG).show();
+                }
             }
         });
 
@@ -483,6 +498,7 @@ public class fragment_viaje extends Fragment {
             return;
         }
     }
+
 
     public void cargarDatosRemiseria(final Context context) {
 
@@ -628,7 +644,7 @@ public class fragment_viaje extends Fragment {
 
         HashMap<String, String> map = new HashMap<>();// Mapeo previo
 
-        map.put("parametro", "10");
+        map.put("parametro", "9");
         map.put("remiseria", ls_remiseria);
 
         JSONObject jobject = new JSONObject(map);
@@ -730,7 +746,7 @@ public class fragment_viaje extends Fragment {
 
         HashMap<String, String> map = new HashMap<>();// Mapeo previo
 
-        map.put("parametro", "11");
+        map.put("parametro", "10");
         map.put("remiseria", ls_remiseria);
 
         JSONObject jobject = new JSONObject(map);
@@ -829,7 +845,7 @@ public class fragment_viaje extends Fragment {
 
         HashMap<String, String> map = new HashMap<>();// Mapeo previo
 
-        map.put("parametro", "12");
+        map.put("parametro", "11");
         map.put("remiseria", ls_remiseria);
 
         JSONObject jobject = new JSONObject(map);
@@ -1137,9 +1153,9 @@ public class fragment_viaje extends Fragment {
         }
     }
 
-    private void cerrar_turno(final  Context context){
+    private void ultimo_turno(final  Context context){
 
-        String newURL = Constantes.FIN_TURNO + "?id=" + ls_id_turno;
+        String newURL = Constantes.GET_ULTIMO_TURNO + "?conductor=" + ls_id_conductor;
         Log.d(TAG,newURL);
 
         // Actualizar datos en el servidor
@@ -1187,15 +1203,24 @@ public class fragment_viaje extends Fragment {
 
             switch (estado) {
                 case "1":
-                    Toast.makeText(
-                    context,
-                    "Turno Finalizado",
-                    Toast.LENGTH_LONG).show();
-                    if(mBound) {
-                        datos_turno(context);
-                    }else{
-                        iniciar_turno(context);
-                    }
+                    JSONArray mensaje1 = response.getJSONArray("turno");
+
+                    JSONObject object = mensaje1.getJSONObject(0);
+                    //Parsear objeto
+
+                    fecha = object.getString("fecha");
+                    hora_inicio = object.getString("hora_inicio");
+                    hora_fin = object.getString("hora_fin");
+                    if(!object.getString("distancia").equals("null")){
+                        kms =object.getString("distancia");}
+                    if(!object.getString("recaudacion").equals("null")){
+                        recaudacion = object.getString("recaudacion");}
+                    estado = object.getString("estado");
+                    l_nro_turno = object.getString("nro_turno");
+
+                    ls_id_turno_ultimo = object.getString("id_turno");
+
+                    datos_viajes_turno(context);
                     break;
                 case "2":
                     // Mostrar mensaje
@@ -1259,7 +1284,7 @@ public class fragment_viaje extends Fragment {
                 printNewLine();
                 printText(stringABytes(getResources().getString(R.string.reporte_ticket)));
                 printNewLine();
-                printText(getResources().getString(R.string.reporte_perfil));
+                printText(getResources().getString(R.string.reporte_fin_turno));
                 printNewLine();
                 printText(getResources().getString(R.string.reporte_viajes));
                 printNewLine();
@@ -1407,8 +1432,9 @@ public class fragment_viaje extends Fragment {
 
                     String l_fecha = object.getString("fecha");
                     String l_hora_inicio = object.getString("hora_inicio");
+                    String l_nro_turno = object.getString("nro_turno");
 
-                    turno.setText("Turno: " + l_fecha + " - " + l_hora_inicio);
+                    turno.setText("T.N°: " + l_nro_turno + " - " + l_fecha + " - " + l_hora_inicio);
                     progress1.dismiss();
                     actualizar_coordenadas(context);
 
@@ -1508,8 +1534,13 @@ public class fragment_viaje extends Fragment {
 
     public void datos_viajes_turno(final Context context) {
 
-        // Añadir parámetro a la URL del web service
-        String newURL = Constantes.GET_VIAJES_TURNO + "?turno=" + ls_id_turno;
+        String l_turno;
+        if(lb_ultimo){
+            l_turno = ls_id_turno_ultimo;
+        }else{
+            l_turno = ls_id_turno;
+        }
+        String newURL = Constantes.GET_VIAJES_TURNO + "?turno=" + l_turno;
         Log.d(TAG,newURL);
 
         // Realizar petición GET_BY_ID
@@ -1581,11 +1612,16 @@ public class fragment_viaje extends Fragment {
 
             }
             if (mBound) {
-                if(estado.equals("1")){
-                    ticket_turno_parcial();
-                }else{
+                if(lb_ultimo){
                     ticket_turno(viajes);
+                    lb_ultimo = false;
+                }else {
+                    if (estado.equals("1")) {
+                        ticket_turno_parcial();
+                    } else {
+                        ticket_turno(viajes);
 
+                    }
                 }
             }
         } catch (JSONException e) {
@@ -1619,6 +1655,8 @@ public class fragment_viaje extends Fragment {
                 printNewLine();
                 printCustom(getResources().getString(R.string.parcial_turno), 1, 0); // total 32 char in a single line
 
+                printNewLine();
+                printText("Nro: " + l_nro_turno);//nro
                 printNewLine();
                 printText(fecha);
                 printText(" - ");
@@ -1680,6 +1718,8 @@ public class fragment_viaje extends Fragment {
                 printText(getResources().getString(R.string.ticket_turno)); // total 32 char in a single line
 
                 printNewLine();
+                printText("Nro: " + l_nro_turno);//nro
+                printNewLine();
                 printText("Fecha: " + fecha);//fecha
                 printNewLine();
                 printText("Inicio: " + hora_inicio);
@@ -1703,7 +1743,7 @@ public class fragment_viaje extends Fragment {
                 printText(kms);
                 printNewLine();
                 printNewLine();
-                printText("RECAUDACION: ");
+                printText("FIN TURNO: ");
                 printText(recaudacion);
                 printNewLine();
                 printNewLine();
@@ -1713,148 +1753,11 @@ public class fragment_viaje extends Fragment {
                 printNewLine();
 
                 outputStream.flush();
-                iniciar_turno(context);
+
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
-    }
-
-    private void iniciar_turno(final Context context){
-
-        String newURL = Constantes.ALTA_TURNO + "?id_conductor=" + ls_id_conductor;
-        Log.d(TAG,newURL);
-
-        // Actualizar datos en el servidor
-        VolleySingleton.getInstance(context).addToRequestQueue(
-                new JsonObjectRequest(
-                        Request.Method.POST,
-                        newURL,
-                        null,
-                        new Response.Listener<JSONObject>() {
-                            @Override
-                            public void onResponse(JSONObject response) {
-                                procesarRespuestaActualizarAlta(response, context);
-                            }
-                        },
-                        new Response.ErrorListener() {
-                            @Override
-                            public void onErrorResponse(VolleyError error) {
-                                Log.d(TAG, "Error turno: " + error.getMessage());
-
-                            }
-                        }
-
-                ) {
-                    @Override
-                    public Map<String, String> getHeaders() {
-                        Map<String, String> headers = new HashMap<>();
-                        headers.put("Content-Type", "application/json; charset=utf-8");
-                        return headers;
-                    }
-
-                    @Override
-                    public String getBodyContentType() {
-                        return "application/json; charset=utf-8" + getParamsEncoding();
-                    }
-                }
-        );
-    }
-    private void procesarRespuestaActualizarAlta(JSONObject response, Context context) {
-
-        try {
-            // Obtener estado
-            String estado = response.getString("estado");
-            // Obtener mensaje
-            String mensaje = response.getString("mensaje");
-
-            switch (estado) {
-                case "1":
-                    cargarTurno(context);
-                    break;
-                case "2":
-                    // Mostrar mensaje
-                    Toast.makeText(
-                            context,
-                            mensaje,
-                            Toast.LENGTH_LONG).show();
-                    // Enviar código de falla
-                    break;
-            }
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void cargarTurno(final Context context) {
-
-        // Añadir parámetro a la URL del web service
-        String newURL = Constantes.GET_TURNO + "?conductor=" + ls_id_conductor;
-        Log.d(TAG,newURL);
-
-        // Realizar petición GET_BY_ID
-        VolleySingleton.getInstance(context).addToRequestQueue(
-                myRequest = new JsonObjectRequest(
-                        Request.Method.POST,
-                        newURL,
-                        null,
-                        new Response.Listener<JSONObject>() {
-
-                            @Override
-                            public void onResponse(JSONObject response) {
-                                // Procesar respuesta Json
-                                procesarRespuestaCargaTurno(response, context);
-                            }
-                        },
-                        new Response.ErrorListener() {
-                            @Override
-                            public void onErrorResponse(VolleyError error) {
-                                Log.d(TAG, "Error Volley viaje: " + error.getMessage());
-
-                            }
-                        }
-                )
-        );
-        myRequest.setRetryPolicy(new DefaultRetryPolicy(
-                50000,
-                5,//DefaultRetryPolicy.DEFAULT_MAX_RETRIES
-                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
-
-    }
-
-    private void procesarRespuestaCargaTurno(JSONObject response, Context context) {
-
-        try {
-            // Obtener atributo "mensaje"
-            String mensaje = response.getString("estado");
-            Fragment fragment = null;
-            switch (mensaje) {
-                case "1":
-                    JSONArray mensaje1 = response.getJSONArray("conductor");
-                    JSONObject object = mensaje1.getJSONObject(0);
-
-                    SharedPreferences settings1 = PreferenceManager.getDefaultSharedPreferences(context);
-
-                    SharedPreferences.Editor editor = settings1.edit();
-
-                    ls_id_turno = object.getString("id");
-
-                    editor.putString("id_turno_chofer",ls_id_turno);
-                    editor.apply();
-
-
-                    break;
-
-                case "2":
-                    break;
-
-            }
-
-
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-
     }
 
 
@@ -2125,7 +2028,7 @@ public class fragment_viaje extends Fragment {
 
         HashMap<String, String> map = new HashMap<>();// Mapeo previo
 
-        map.put("parametro", "13");
+        map.put("parametro", "12");
         map.put("remiseria", ls_remiseria);
 
         JSONObject jobject = new JSONObject(map);
@@ -2222,7 +2125,7 @@ public class fragment_viaje extends Fragment {
 
         HashMap<String, String> map = new HashMap<>();// Mapeo previo
 
-        map.put("parametro", "14");
+        map.put("parametro", "13");
         map.put("remiseria", ls_remiseria);
 
         JSONObject jobject = new JSONObject(map);
@@ -2653,6 +2556,7 @@ public class fragment_viaje extends Fragment {
                     chapa = object.getString("chapa");
                     patente = object.getString("patente");
                     nro_recibo = object.getString("nro_recibo");
+                    precio_km = object.getString("precio_km");
 
                     repetirTicket();
 
@@ -2722,6 +2626,8 @@ public class fragment_viaje extends Fragment {
                 printText("LLEGADA  " + hora_destino_ultimo);
                 printNewLine();
                 printText("RECORRIDO  " + String.format(Locale.GERMANY, "%.2f", Double.parseDouble(distancia_ultimo)) + " Kms.");
+                printNewLine();
+                printText("PRECIO/KM  " + precio_km);
                 printNewLine();
                 printNewLine();
                 printText("TARIFA AL  " + fecha_tarifa_ultimo);

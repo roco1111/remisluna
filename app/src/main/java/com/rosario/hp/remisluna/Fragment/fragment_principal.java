@@ -123,6 +123,7 @@ public class fragment_principal extends Fragment {
     private String movil_ultimo ;
 
     private String ls_id_turno;
+    private String ls_id_turno_ultimo;
     private String recaudacion;
     private String kms;
     private String fecha;
@@ -164,6 +165,10 @@ public class fragment_principal extends Fragment {
     private Activity act;
     private String nro_recibo;
     private TextView turno;
+    private String l_nro_turno;
+    private String l_turno_parametro;
+    private String precio_km;
+    private boolean lb_ultimo;
 
     @Override
     public void onStart() {
@@ -193,7 +198,7 @@ public class fragment_principal extends Fragment {
         }else{
             gps.setTextColor(getResources().getColor(R.color.alarma));
         }
-        cargarImpresora(getContext());
+        cargarImpresora(context);
     }
 
     /** Defines callbacks for service binding, passed to bindService() */
@@ -272,7 +277,7 @@ public class fragment_principal extends Fragment {
 
         datos = new ArrayList<>();
         impresion = new Impresion();
-        SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getContext());
+        SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(context);
         ls_id_conductor     = settings.getString("id","");
         ls_id_turno     = settings.getString("id_turno_chofer","");
         ls_remiseria     = settings.getString("remiseria","");
@@ -400,7 +405,7 @@ public class fragment_principal extends Fragment {
             public void onClick(View v) {
                 mediaPlayer.start();
                 if(ls_id_turno.equals("0")) {
-                    iniciar_turno(context);
+                    obtenerNroTurno(context);
                 }else{
                     cerrar_turno(context);
                 }
@@ -429,7 +434,7 @@ public class fragment_principal extends Fragment {
                 mediaPlayer.start();
                 if(mBound) {
 
-                    datos_ultimos_viajes(getContext());
+                    datos_ultimos_viajes(context);
                 }else{
                     Toast.makeText(
                             context,
@@ -443,7 +448,7 @@ public class fragment_principal extends Fragment {
             @Override
             public void onClick(View v) {
                 mediaPlayer.start();
-                SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getContext());
+                SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(context);
                 SharedPreferences.Editor editor = settings.edit();
                 editor.putString("tipo_ventana","main");
                 editor.apply();
@@ -478,8 +483,16 @@ public class fragment_principal extends Fragment {
             @Override
             public void onClick(View v) {
                 mediaPlayer.start();
-                Intent intent2 = new Intent(context, activity_preferencias.class);
-                context.startActivity(intent2);
+                if(mBound) {
+                    lb_ultimo = true;
+                    ultimo_turno(context);
+                }else{
+                    Toast.makeText(
+                            context,
+                            R.string.no_impresora,
+                            Toast.LENGTH_LONG).show();
+                }
+
             }
         });
 
@@ -573,7 +586,7 @@ public class fragment_principal extends Fragment {
     }
 
     private boolean checkIfLocationOpened() {
-        String provider = Settings.Secure.getString(getContext().getContentResolver(), Settings.Secure.LOCATION_PROVIDERS_ALLOWED);
+        String provider = Settings.Secure.getString(context.getContentResolver(), Settings.Secure.LOCATION_PROVIDERS_ALLOWED);
         System.out.println("Provider contains=> " + provider);
         if (provider.contains("gps") || provider.contains("network")){
             return true;
@@ -585,7 +598,7 @@ public class fragment_principal extends Fragment {
 
         HashMap<String, String> map = new HashMap<>();// Mapeo previo
 
-        map.put("parametro", "11");
+        map.put("parametro", "10");
         map.put("remiseria", ls_remiseria);
 
         JSONObject jobject = new JSONObject(map);
@@ -678,7 +691,7 @@ public class fragment_principal extends Fragment {
 
         HashMap<String, String> map = new HashMap<>();// Mapeo previo
 
-        map.put("parametro", "12");
+        map.put("parametro", "11");
         map.put("remiseria", ls_remiseria);
 
         JSONObject jobject = new JSONObject(map);
@@ -809,8 +822,7 @@ public class fragment_principal extends Fragment {
 
     public void datos_turno(final Context context) {
 
-        // Añadir parámetro a la URL del web service
-        String newURL = Constantes.GET_TURNO_BY_ID + "?id=" + ls_id_turno;
+       String newURL = Constantes.GET_TURNO_BY_ID + "?id=" + ls_id_turno;
         Log.d(TAG,newURL);
 
         // Realizar petición GET_BY_ID
@@ -864,6 +876,7 @@ public class fragment_principal extends Fragment {
                     if(!object.getString("recaudacion").equals("null")){
                         recaudacion = object.getString("recaudacion");}
                     estado = object.getString("estado");
+                    l_nro_turno = object.getString("nro_turno");
                     datos_viajes_turno(context);
                 case "2":
                     Toast.makeText(
@@ -884,8 +897,14 @@ public class fragment_principal extends Fragment {
 
     public void datos_viajes_turno(final Context context) {
 
-        // Añadir parámetro a la URL del web service
-        String newURL = Constantes.GET_VIAJES_TURNO + "?turno=" + ls_id_turno;
+        String l_turno;
+        if(lb_ultimo){
+            l_turno = ls_id_turno_ultimo;
+        }else{
+            l_turno = ls_id_turno;
+        }
+
+        String newURL = Constantes.GET_VIAJES_TURNO + "?turno=" + l_turno;
         Log.d(TAG,newURL);
 
         // Realizar petición GET_BY_ID
@@ -957,11 +976,16 @@ public class fragment_principal extends Fragment {
 
             }
             if (mBound) {
-                if(estado.equals("1")){
-                    ticket_turno_parcial();
-                }else{
+                if(lb_ultimo){
                     ticket_turno(viajes);
+                    lb_ultimo = false;
+                }else {
+                    if (estado.equals("1")) {
+                        ticket_turno_parcial();
+                    } else {
+                        ticket_turno(viajes);
 
+                    }
                 }
             }
         } catch (JSONException e) {
@@ -996,6 +1020,8 @@ public class fragment_principal extends Fragment {
                 printNewLine();
                 printCustom(getResources().getString(R.string.parcial_turno), 1, 0); // total 32 char in a single line
 
+                printNewLine();
+                printText("Nro: " + l_nro_turno);//nro
                 printNewLine();
                 printText(fecha);
                 printText(" - ");
@@ -1080,7 +1106,7 @@ public class fragment_principal extends Fragment {
                     context,
                     "Turno Finalizado",
                     Toast.LENGTH_LONG).show();
-                    turno.setText("Turno Finalizado" );
+                    turno.setText(act.getResources().getString(R.string.turno_finalizado) );
                     ls_id_turno = "0";
                     this.boton_automatico.setBackground(act.getResources().getDrawable(R.drawable.automtico_gris));
                     this.boton_automatico.setEnabled(false);
@@ -1093,6 +1119,289 @@ public class fragment_principal extends Fragment {
                     if(mBound) {
                         datos_turno(context);
                     }
+                    break;
+                case "2":
+                    // Mostrar mensaje
+                    Toast.makeText(
+                            context,
+                            mensaje,
+                            Toast.LENGTH_LONG).show();
+                    // Enviar código de falla
+                    break;
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void ultimo_turno(final Context context){
+
+        String newURL = Constantes.GET_ULTIMO_TURNO + "?conductor=" + ls_id_conductor;
+        Log.d(TAG,newURL);
+
+        // Actualizar datos en el servidor
+        VolleySingleton.getInstance(context).addToRequestQueue(
+                new JsonObjectRequest(
+                        Request.Method.POST,
+                        newURL,
+                        null,
+                        new Response.Listener<JSONObject>() {
+                            @Override
+                            public void onResponse(JSONObject response) {
+                                procesarRespuestaUltimoTurno(response, context);
+                            }
+                        },
+                        new Response.ErrorListener() {
+                            @Override
+                            public void onErrorResponse(VolleyError error) {
+                                Log.d(TAG, "Error turno: " + error.getMessage());
+
+                            }
+                        }
+
+                ) {
+                    @Override
+                    public Map<String, String> getHeaders() {
+                        Map<String, String> headers = new HashMap<>();
+                        headers.put("Content-Type", "application/json; charset=utf-8");
+                        return headers;
+                    }
+
+                    @Override
+                    public String getBodyContentType() {
+                        return "application/json; charset=utf-8" + getParamsEncoding();
+                    }
+                }
+        );
+    }
+    private void procesarRespuestaUltimoTurno(JSONObject response, Context context) {
+
+        try {
+            // Obtener estado
+            String estado = response.getString("estado");
+            // Obtener mensaje
+
+            switch (estado) {
+                case "1":
+
+                    JSONArray mensaje1 = response.getJSONArray("turno");
+
+                    JSONObject object = mensaje1.getJSONObject(0);
+                    //Parsear objeto
+
+                    fecha = object.getString("fecha");
+                    hora_inicio = object.getString("hora_inicio");
+                    hora_fin = object.getString("hora_fin");
+                    if(!object.getString("distancia").equals("null")){
+                        kms =object.getString("distancia");}
+                    if(!object.getString("recaudacion").equals("null")){
+                        recaudacion = object.getString("recaudacion");}
+                    estado = object.getString("estado");
+                    l_nro_turno = object.getString("nro_turno");
+
+                    ls_id_turno_ultimo = object.getString("id_turno");
+
+                    datos_viajes_turno(context);
+
+                    break;
+                case "2":
+                    // Mostrar mensaje
+                    Toast.makeText(
+                            context,
+                            "Error en fin de turno",
+                            Toast.LENGTH_LONG).show();
+                    // Enviar código de falla
+                    break;
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void obtenerNroTurno(final Context context) {
+
+        HashMap<String, String> map = new HashMap<>();// Mapeo previo
+
+        map.put("parametro", "15");
+        map.put("remiseria", ls_remiseria);
+
+        JSONObject jobject = new JSONObject(map);
+
+
+        // Depurando objeto Json...
+        Log.d(TAG, jobject.toString());
+
+        StringBuilder encodedParams = new StringBuilder();
+        try {
+            for (Map.Entry<String, String> entry : map.entrySet()) {
+                encodedParams.append(URLEncoder.encode(entry.getKey(), "utf-8"));
+                encodedParams.append('=');
+                encodedParams.append(URLEncoder.encode(entry.getValue(), "utf-8"));
+                encodedParams.append('&');
+            }
+        } catch (UnsupportedEncodingException uee) {
+            throw new RuntimeException("Encoding not supported: " + "utf-8", uee);
+        }
+
+        encodedParams.setLength(Math.max(encodedParams.length() - 1, 0));
+
+        // Añadir parámetro a la URL del web service
+        String newURL = Constantes.GET_ID_PARAMETRO + "?" + encodedParams;
+        Log.d(TAG,newURL);
+
+        // Realizar petición GET_BY_ID
+        VolleySingleton.getInstance(context).addToRequestQueue(
+                myRequest = new JsonObjectRequest(
+                        Request.Method.POST,
+                        newURL,
+                        null,
+                        new Response.Listener<JSONObject>() {
+
+                            @Override
+                            public void onResponse(JSONObject response) {
+                                // Procesar respuesta Json
+                                procesarRespuestaParametro(response, context);
+                            }
+                        },
+                        new Response.ErrorListener() {
+                            @Override
+                            public void onErrorResponse(VolleyError error) {
+                                Log.d(TAG, "Error Volley parámetro: " + error.getMessage());
+
+                            }
+                        }
+                )
+        );
+        myRequest.setRetryPolicy(new DefaultRetryPolicy(
+                50000,
+                5,//DefaultRetryPolicy.DEFAULT_MAX_RETRIES
+                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+
+    }
+
+    private void procesarRespuestaParametro(JSONObject response, Context context) {
+
+        try {
+            // Obtener atributo "mensaje"
+            String mensaje = response.getString("estado");
+
+            switch (mensaje) {
+                case "1":
+                    JSONArray datos_parametro = response.getJSONArray("parametro");
+
+                    for(int i = 0; i < datos_parametro.length(); i++)
+                    {JSONObject object = datos_parametro.getJSONObject(i);
+
+                        l_nro_turno = object.getString("valor");
+
+                    }
+                    Long l_turno = 0L;
+
+                    l_turno = Long.parseLong(l_nro_turno) + 1;
+
+                    l_turno_parametro = String.valueOf(l_turno);
+                    l_nro_turno = l_turno_parametro;
+
+                    actualizar_nro_turno(context);
+
+                    break;
+                case "2":
+                    String mensaje2 = response.getString("mensaje");
+                    Toast.makeText(
+                            context,
+                            mensaje2,
+                            Toast.LENGTH_LONG).show();
+                    break;
+
+
+            }
+
+            // run_espera();
+
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    private void actualizar_nro_turno(final Context context){
+
+
+        HashMap<String, String> map = new HashMap<>();// Mapeo previo
+
+        map.put("parametro", "15");
+        map.put("remiseria", ls_remiseria);
+        map.put("valor", l_turno_parametro);
+
+        JSONObject jobject = new JSONObject(map);
+
+        // Depurando objeto Json...
+        Log.d(TAG, jobject.toString());
+
+        StringBuilder encodedParams = new StringBuilder();
+        try {
+            for (Map.Entry<String, String> entry : map.entrySet()) {
+                encodedParams.append(URLEncoder.encode(entry.getKey(), "utf-8"));
+                encodedParams.append('=');
+                encodedParams.append(URLEncoder.encode(entry.getValue(), "utf-8")).toString();
+                encodedParams.append('&');
+            }
+        } catch (UnsupportedEncodingException uee) {
+            throw new RuntimeException("Encoding not supported: " + "utf-8", uee);
+        }
+
+        encodedParams.setLength(Math.max(encodedParams.length() - 1, 0));
+
+
+        String newURL = Constantes.UPDATE_PARAMETRO + "?" + encodedParams;
+        Log.d(TAG,newURL);
+        // Actualizar datos en el servidor
+        VolleySingleton.getInstance(context).addToRequestQueue(
+                new JsonObjectRequest(
+                        Request.Method.GET,
+                        newURL,
+                        null,
+                        new Response.Listener<JSONObject>() {
+                            @Override
+                            public void onResponse(JSONObject response) {
+                                procesarRespuesta_actualizar_nro_turno(response, context);
+                            }
+                        },
+                        new Response.ErrorListener() {
+                            @Override
+                            public void onErrorResponse(VolleyError error) {
+                                Log.d(TAG, "Error Turno: " + error.getMessage());
+
+                            }
+                        }
+
+                ) {
+                    @Override
+                    public Map<String, String> getHeaders() {
+                        Map<String, String> headers = new HashMap<>();
+                        headers.put("Content-Type", "application/json; charset=utf-8");
+                        return headers;
+                    }
+
+                    @Override
+                    public String getBodyContentType() {
+                        return "application/json; charset=utf-8" + getParamsEncoding();
+                    }
+                }
+        );
+    }
+    private void procesarRespuesta_actualizar_nro_turno(JSONObject response, Context context) {
+
+        try {
+            // Obtener estado
+            String estado = response.getString("estado");
+            // Obtener mensaje
+            String mensaje = response.getString("mensaje");
+
+            switch (estado) {
+                case "1":
+                    iniciar_turno( context);
                     break;
                 case "2":
                     // Mostrar mensaje
@@ -1233,11 +1542,11 @@ public class fragment_principal extends Fragment {
                     String l_fecha = object.getString("fecha");
                     String l_hora_inicio = object.getString("hora_inicio");
 
-                    turno.setText("Turno: " + l_fecha + " - " + l_hora_inicio);
+                    turno.setText("T.N°: " + l_nro_turno + " - " + l_fecha + " - " + l_hora_inicio);
                     this.boton_automatico.setBackground(act.getResources().getDrawable(R.drawable.selector_automatico));
                     this.boton_automatico.setEnabled(true);
 
-                    //datos_turno(context);
+                    actualizar_turno(context);
 
                     break;
 
@@ -1251,6 +1560,100 @@ public class fragment_principal extends Fragment {
             e.printStackTrace();
         }
 
+    }
+
+    private void actualizar_turno(final Context context){
+
+
+        HashMap<String, String> map = new HashMap<>();// Mapeo previo
+
+        map.put("id", ls_id_turno);
+        map.put("nro_turno", l_turno_parametro);
+
+        JSONObject jobject = new JSONObject(map);
+
+        // Depurando objeto Json...
+        Log.d(TAG, jobject.toString());
+
+        StringBuilder encodedParams = new StringBuilder();
+        try {
+            for (Map.Entry<String, String> entry : map.entrySet()) {
+                encodedParams.append(URLEncoder.encode(entry.getKey(), "utf-8"));
+                encodedParams.append('=');
+                encodedParams.append(URLEncoder.encode(entry.getValue(), "utf-8")).toString();
+                encodedParams.append('&');
+            }
+        } catch (UnsupportedEncodingException uee) {
+            throw new RuntimeException("Encoding not supported: " + "utf-8", uee);
+        }
+
+        encodedParams.setLength(Math.max(encodedParams.length() - 1, 0));
+
+
+        String newURL = Constantes.UPDATE_NRO_TURNO + "?" + encodedParams;
+        Log.d(TAG,newURL);
+        // Actualizar datos en el servidor
+        VolleySingleton.getInstance(context).addToRequestQueue(
+                new JsonObjectRequest(
+                        Request.Method.GET,
+                        newURL,
+                        null,
+                        new Response.Listener<JSONObject>() {
+                            @Override
+                            public void onResponse(JSONObject response) {
+                                procesarRespuestaActualizarTurno(response, context);
+                            }
+                        },
+                        new Response.ErrorListener() {
+                            @Override
+                            public void onErrorResponse(VolleyError error) {
+                                Log.d(TAG, "Error Turno: " + error.getMessage());
+
+                            }
+                        }
+
+                ) {
+                    @Override
+                    public Map<String, String> getHeaders() {
+                        Map<String, String> headers = new HashMap<>();
+                        headers.put("Content-Type", "application/json; charset=utf-8");
+                        return headers;
+                    }
+
+                    @Override
+                    public String getBodyContentType() {
+                        return "application/json; charset=utf-8" + getParamsEncoding();
+                    }
+                }
+        );
+    }
+    private void procesarRespuestaActualizarTurno(JSONObject response, Context context) {
+
+        try {
+            // Obtener estado
+            String estado = response.getString("estado");
+            // Obtener mensaje
+            String mensaje = response.getString("mensaje");
+
+            switch (estado) {
+                case "1":
+                    Toast.makeText(
+                            context,
+                            mensaje,
+                            Toast.LENGTH_LONG).show();
+                    break;
+                case "2":
+                    // Mostrar mensaje
+                    Toast.makeText(
+                            context,
+                            mensaje,
+                            Toast.LENGTH_LONG).show();
+                    // Enviar código de falla
+                    break;
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
     }
 
     public void cargarDatos(final Context context) {
@@ -1550,18 +1953,19 @@ public class fragment_principal extends Fragment {
 
                     String l_fecha = object.getString("fecha");
                     String l_hora_inicio = object.getString("hora_inicio");
+                    String l_nro_turno = object.getString("nro_turno");
 
-                    turno.setText("Turno: " + l_fecha + " - " + l_hora_inicio);
+                    turno.setText("T.N°: " + l_nro_turno + " - " + l_fecha + " - " + l_hora_inicio);
                     this.boton_automatico.setBackground(act.getResources().getDrawable(R.drawable.selector_automatico));
                     this.boton_automatico.setEnabled(true);
-
+                    cargarImpresora(context);
                     break;
                 case "2":
                     Toast.makeText(
                             context,
                             mensaje,
                             Toast.LENGTH_LONG).show();
-                    turno.setText("Turno Terminado");
+                    turno.setText(act.getResources().getString(R.string.turno_finalizado) );
                     this.boton_automatico.setBackground(act.getResources().getDrawable(R.drawable.automtico_gris));
                     this.boton_automatico.setEnabled(false);
 
@@ -1798,6 +2202,8 @@ public class fragment_principal extends Fragment {
                 printText(getResources().getString(R.string.ticket_turno)); // total 32 char in a single line
 
                 printNewLine();
+                printText("Nro: " + l_nro_turno);//nro
+                printNewLine();
                 printText("Fecha: " + fecha);//fecha
                 printNewLine();
                 printText("Inicio: " + hora_inicio);
@@ -1821,7 +2227,7 @@ public class fragment_principal extends Fragment {
                 printText(kms);
                 printNewLine();
                 printNewLine();
-                printText("RECAUDACION: ");
+                printText("FIN TURNO: ");
                 printText(recaudacion);
                 printNewLine();
                 printNewLine();
@@ -1844,7 +2250,7 @@ public class fragment_principal extends Fragment {
         outputStream = impresion.getOutputStream();
 
         if(outputStream == null){
-            Toast.makeText(getContext(), "No se pudo conectar el dispositivo. Verifique si la impresora esta encendida", Toast.LENGTH_SHORT).show();
+            Toast.makeText(context, "No se pudo conectar el dispositivo. Verifique si la impresora esta encendida", Toast.LENGTH_SHORT).show();
         }else {
 
             //print command
@@ -1888,7 +2294,7 @@ public class fragment_principal extends Fragment {
                 printNewLine();
                 printText(stringABytes(getResources().getString(R.string.reporte_ticket)));
                 printNewLine();
-                printText(getResources().getString(R.string.reporte_perfil));
+                printText(getResources().getString(R.string.reporte_fin_turno));
                 printNewLine();
                 printText(getResources().getString(R.string.reporte_viajes));
                 printNewLine();
@@ -2118,7 +2524,7 @@ public class fragment_principal extends Fragment {
 
         outputStream = impresion.getOutputStream();
         if(outputStream == null){
-            Toast.makeText(getContext(), "No se pudo conectar el dispositivo. Verifique si la impresora esta encendida", Toast.LENGTH_SHORT).show();
+            Toast.makeText(context, "No se pudo conectar el dispositivo. Verifique si la impresora esta encendida", Toast.LENGTH_SHORT).show();
         }else {
 
             //print command
@@ -2293,6 +2699,7 @@ public class fragment_principal extends Fragment {
                     chapa = object.getString("chapa");
                     patente = object.getString("patente");
                     nro_recibo = object.getString("nro_recibo");
+                    precio_km = object.getString("precio_km");
 
                     repetirTicket();
 
@@ -2363,6 +2770,8 @@ public class fragment_principal extends Fragment {
                 printText("LLEGADA  " + hora_destino_ultimo);
                 printNewLine();
                 printText("RECORRIDO  " + String.format(Locale.GERMANY, "%.2f", Double.parseDouble(distancia_ultimo)) + " Kms.");
+                printNewLine();
+                printText("PRECIO/KM  " + precio_km);
                 printNewLine();
                 printNewLine();
                 printText("TARIFA AL  " + fecha_tarifa_ultimo);
@@ -2900,7 +3309,7 @@ public class fragment_principal extends Fragment {
 
                     Intent intent2 = new Intent(context, MainViaje.class);
                     context.startActivity(intent2);
-                    ((MainActivity)getContext()).locationEnd();
+                    ((MainActivity)context).locationEnd();
                     act.finish();
                     break;
                 case "2":

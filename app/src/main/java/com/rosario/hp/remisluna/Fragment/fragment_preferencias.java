@@ -29,6 +29,7 @@ public class fragment_preferencias extends Fragment {
     private RelativeLayout terminos;
     private RelativeLayout acerca;
     private RelativeLayout salir;
+    private RelativeLayout ayuda;
     private FirebaseAuth mAuth;
     private Context context;
     private Activity act;
@@ -46,6 +47,7 @@ public class fragment_preferencias extends Fragment {
         terminos = v.findViewById(R.id.nav_terminos);
         acerca = v.findViewById(R.id.nav_acerca);
         salir = v.findViewById(R.id.nav_salir);
+        ayuda = v.findViewById(R.id.nav_ayuda);
         context = getContext();
         act = getActivity();
 
@@ -55,6 +57,23 @@ public class fragment_preferencias extends Fragment {
                 Intent intent2 = new Intent(getActivity(), insertUsuario.class);
 
                 act.startActivity(intent2);
+            }
+        });
+
+        this.ayuda.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(context);
+                SharedPreferences.Editor editor = settings.edit();
+                Intent intent;
+
+
+                editor.putString("url", "https://remisluna.com.ar/remiseria/paginas_ayuda.php");
+                editor.apply();
+                intent = new Intent(context, WebActivity.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                context.startActivity(intent);
+                editor.apply();
             }
         });
 

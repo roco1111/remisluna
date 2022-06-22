@@ -91,6 +91,7 @@ public class viajeAdapter extends RecyclerView.Adapter<viajeAdapter.HolderTurno>
             hora = v.findViewById(R.id.hora);
             importe = v.findViewById(R.id.importe);
             indicador = v.findViewById(R.id.indicador);
+            recibo = v.findViewById(R.id.recibo);
             this.listener = listener;
 
             v.setOnClickListener(this);

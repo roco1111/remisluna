@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.location.Address;
+import android.location.Criteria;
 import android.location.Geocoder;
 import android.location.Location;
 import android.location.LocationListener;
@@ -26,6 +27,9 @@ import android.widget.Toast;
 import androidx.core.app.ActivityCompat;
 
 import com.android.volley.request.JsonObjectRequest;
+import com.google.android.gms.common.api.GoogleApi;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.LocationServices;
 import com.rosario.hp.remisluna.Fragment.login;
 
 
@@ -71,6 +75,7 @@ public class ServicioGeolocalizacion extends Service implements Runnable {
     private Integer l_tipo;
     private boolean lb_diferencia;
     private boolean lb_tolerancia = true;
+    private Integer l_gps = 0;
 
 
     @Override
@@ -100,6 +105,7 @@ public class ServicioGeolocalizacion extends Service implements Runnable {
     }
 
 
+
     private void actualizar_coordenadas(){
 
         Geocoder coder = new Geocoder(getApplicationContext());
@@ -107,7 +113,7 @@ public class ServicioGeolocalizacion extends Service implements Runnable {
             ArrayList<Address> adresses = (ArrayList<Address>) coder.getFromLocationName(salida_coordenada, 50);
             for(Address add : adresses){
                 if (!adresses.isEmpty()) {
-
+                    Log.d("geolicalizacion","coordenadas");
                     longitud_inicial = add.getLongitude();
                     latitud_inicial = add.getLatitude();
                     l_inicio = System.currentTimeMillis();
@@ -124,6 +130,7 @@ public class ServicioGeolocalizacion extends Service implements Runnable {
     public int onStartCommand(Intent intenc, int flags, int idArranque) {
         // Toast.makeText(this,"Servicio arrancado "+ idArranque,Toast.LENGTH_SHORT).show();
         obtenerSenalGPS();
+        Log.d("geolicalizacion","gps");
         return START_STICKY;
     }
 
@@ -150,7 +157,7 @@ public class ServicioGeolocalizacion extends Service implements Runnable {
     private Handler handler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
-            // mLocationManager.removeUpdates(mLocationListener);
+
             updateLocation(currentLocation);
         }
     };
@@ -185,7 +192,7 @@ public class ServicioGeolocalizacion extends Service implements Runnable {
                 return;
             }
 
-            if(distance > 1.5) {
+            if(distance > 2.8) {
                 l_tipo = 1;
             }else{
                 l_tipo = 2;
@@ -344,8 +351,9 @@ public class ServicioGeolocalizacion extends Service implements Runnable {
                 Toast.makeText(getApplicationContext(), "Error con GPS", Toast.LENGTH_LONG).show();
                 return;
             }
-            mLocationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 1000, 0, mLocationListener);
+            //mLocationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 1000, 0, mLocationListener);
             mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000, 0, mLocationListener);
+            Log.d("geolicalizacion","LocationManager");
             Looper.loop();
             Looper.myLooper().quit();
         } else {
@@ -365,6 +373,7 @@ public class ServicioGeolocalizacion extends Service implements Runnable {
      * Metodo para Obtener la se–al del GPS
      */
     private void obtenerSenalGPS() {
+
         thread = new Thread(this);
         thread.start();
     }

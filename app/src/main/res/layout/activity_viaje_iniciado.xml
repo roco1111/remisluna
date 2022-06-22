@@ -68,9 +68,10 @@
             android:layout_height="@dimen/tamanio_campo_numero"
             android:layout_below="@id/id_datos_superior"
             android:layout_centerHorizontal="true"
+            android:layout_marginTop="@dimen/margin_top_item"
+            android:autoSizeTextType="uniform"
             android:fontFamily="@font/digital"
             android:text="@string/cero_pesos"
-
             android:textAlignment="center"
             android:textColor="@color/colorPrimary"
             android:textSize="@dimen/tamanio_numero"
@@ -94,7 +95,7 @@
                 android:text="@string/cero_tiempo"
                 android:textAlignment="center"
                 android:textColor="@color/colorPrimary"
-                android:textSize="@dimen/tamanio_numero_tiempo"
+                android:textSize="@dimen/tamanio_texto_tiempo"
                 android:textStyle="bold" />
 
             <TextView
@@ -109,7 +110,7 @@
                 android:text="@string/cero_distancia"
                 android:textAlignment="center"
                 android:textColor="@color/colorPrimary"
-                android:textSize="@dimen/tamanio_numero_tiempo"
+                android:textSize="@dimen/tamanio_texto_tiempo"
                 android:textStyle="bold" />
 
             <TextView
@@ -122,7 +123,7 @@
                 android:text="@string/cero_distancia"
                 android:textAlignment="center"
                 android:textColor="@color/colorPrimary"
-                android:textSize="@dimen/tamanio_numero_tiempo"
+                android:textSize="@dimen/tamanio_texto_tiempo"
                 android:textStyle="bold" />
         </RelativeLayout>
 

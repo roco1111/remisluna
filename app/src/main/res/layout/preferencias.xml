@@ -6,18 +6,21 @@
     android:orientation="vertical">
 
     <RelativeLayout
+        android:id="@+id/nav_perfil"
         android:layout_width="wrap_content"
-        android:layout_height="75dp"
 
-        android:id="@+id/nav_perfil">
+        android:layout_height="75dp">
+
         <TextView
             android:id="@+id/textViewPerfil"
-            android:layout_marginStart="5dp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textSize="@dimen/tamanio_parrafo"
             android:layout_centerVertical="true"
-            android:text="@string/menu_perfil" />
+            android:layout_marginStart="5dp"
+            android:text="@string/menu_perfil"
+            android:textSize="@dimen/tamanio_parrafo" />
+
+
 
         <View
             android:id="@+id/divider_perfil"
@@ -29,9 +32,35 @@
     </RelativeLayout>
 
     <RelativeLayout
+        android:id="@+id/nav_ayuda"
+        android:layout_width="wrap_content"
+        android:layout_below="@id/nav_perfil"
+        android:layout_height="75dp">
+
+        <TextView
+            android:id="@+id/textViewAyuda"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_marginStart="5dp"
+            android:text="@string/menu_ayuda"
+            android:textSize="@dimen/tamanio_parrafo" />
+
+
+
+        <View
+            android:id="@+id/divider_ayuda"
+            android:layout_width="fill_parent"
+            android:layout_height="1dp"
+            android:layout_alignParentBottom="true"
+
+            android:background="@android:color/darker_gray" />
+    </RelativeLayout>
+
+    <RelativeLayout
         android:layout_width="wrap_content"
         android:layout_height="75dp"
-        android:layout_below="@id/nav_perfil"
+        android:layout_below="@id/nav_ayuda"
         android:id="@+id/nav_politicas">
         <TextView
             android:id="@+id/textViewpoliticas"

@@ -5,7 +5,7 @@
 
     <item
         android:id="@+id/menu_principal"
-        android:icon="@drawable/ic_ayuda"
+        android:icon="@drawable/ic_configuracion"
         app:showAsAction="always"
         android:title="@string/menu_ayuda">
         <menu></menu>

@@ -104,7 +104,7 @@
     <string name="reporte_resumen">4: Viaje x Viaje</string>
     <string name="reporte_impresora">5: Habilitar Ticket</string>
     <string name="reporte_ticket">6: Repetir Ticket</string>
-    <string name="reporte_perfil">7: Perfil</string>
+    <string name="reporte_fin_turno">7: Último Fin de Turno</string>
     <string name="reporte_viajes">8: Historial</string>
     <string name="reporte_viaje">9:Viaje Asignado</string>
     <string name="paradas">P:Paradas</string>
@@ -113,6 +113,7 @@
 
     <string name="diurno">T. Diurna</string>
     <string name="nocturno">T. Nocturna</string>
+    <string name="turno_finalizado">Turno Finalizado</string>
 
 
 </resources>

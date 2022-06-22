@@ -38,6 +38,8 @@ public class Constantes {
     public static final String ALTA_TURNO = "https://" + IP + PUERTO_HOST + "/agregar_turno.php";
     public static final String FIN_TURNO = "https://" + IP + PUERTO_HOST + "/terminar_turno.php";
     public static final String UPDATE_TURNO = "https://" + IP + PUERTO_HOST + "/actualizar_turno.php";
+    public static final String UPDATE_NRO_TURNO = "https://" + IP + PUERTO_HOST + "/actualizar_nro_turno.php";
+    public static final String GET_ULTIMO_TURNO = "https://" + IP + PUERTO_HOST + "/obtener_ultimo_turno.php";
 
     public static final String UPDATE_CONDUCTOR = "https://" + IP + PUERTO_HOST + "/actualizar_conductor.php";
     public static final String GET_CONDUCTOR_BY_ID = "https://" + IP + PUERTO_HOST + "/obtener_un_conductor.php";

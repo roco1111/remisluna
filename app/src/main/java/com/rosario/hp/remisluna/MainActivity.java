@@ -213,15 +213,9 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
 
-        SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-        SharedPreferences.Editor editor = settings.edit();
-        Intent intent;
-
-        editor.putString("url", "https://remisluna.com.ar/remiseria/paginas_ayuda.php");
-        editor.apply();
-        intent = new Intent(getApplicationContext(), WebActivity.class);
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        getApplicationContext().startActivity(intent);
+        Intent intent2 = new Intent(getApplicationContext(), activity_preferencias.class);
+        intent2.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        getApplicationContext().startActivity(intent2);
 
         return super.onOptionsItemSelected(item);
     }
@@ -504,6 +498,7 @@ public class MainActivity extends AppCompatActivity {
         LocationManager mlocManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         Local = new Localizacion();
         Local.setMainActivity(this);
+
         final boolean gpsEnabled = mlocManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
         if (!gpsEnabled) {
             Intent settingsIntent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
@@ -515,7 +510,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         mlocManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, (LocationListener) Local);
-        mlocManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, (LocationListener) Local);
+        //mlocManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, (LocationListener) Local);
         Log.d("servicio","inició");
     }
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
