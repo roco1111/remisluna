@@ -281,21 +281,12 @@
         android:orientation="horizontal">
 
 
-        <ImageButton
-            android:id="@+id/imageParada"
-            android:layout_width="@dimen/ancho_boton"
-            android:layout_height="@dimen/ancho_boton"
 
-
-            android:background="@drawable/selector_parada"
-            android:scaleType="fitXY" />
 
         <ImageButton
             android:id="@+id/imageButtonCero"
             android:layout_width="@dimen/ancho_boton"
             android:layout_height="@dimen/ancho_boton"
-            android:layout_marginStart="@dimen/campos_height"
-            android:layout_toEndOf="@id/imageParada"
             android:background="@drawable/selector_cero"
             android:scaleType="fitXY" />
 
@@ -323,6 +314,15 @@
             android:layout_width="@dimen/ancho_boton"
             android:layout_height="@dimen/ancho_boton"
             android:background="@drawable/selector_automatico"
+            android:scaleType="fitXY" />
+
+        <ImageButton
+            android:id="@+id/fin_turno"
+            android:layout_width="@dimen/ancho_boton"
+            android:layout_height="@dimen/ancho_boton"
+            android:layout_marginStart="@dimen/campos_height"
+            android:background="@drawable/selector_fin_turno"
+            android:layout_toEndOf="@id/imageautomatico"
             android:scaleType="fitXY" />
     </RelativeLayout>
 </RelativeLayout>

@@ -4,7 +4,7 @@
     <string name="telefono">341375869</string>
     <string name="recibo">Ticket para el Pasajero</string>
     <string name="servicio">Servicio Público</string>
-    <string name="ticket_turno">Totales Turno</string>
+    <string name="ticket_turno">Final Turno</string>
     <string name="ticket_ultimos_viajes">Viaje x Viaje</string>
     <string name="parcial_turno">Parcial Turno</string>
     <string name="ticket_recaudacion">Recaudación Últimos 10 Turnos</string>
@@ -70,6 +70,7 @@
     <string name="terminar">Terminar</string>
     <string name="iniciar">Iniciar Viaje</string>
     <string name="motivo">Motivo</string>
+    <string name="observaciones">Observaciones</string>
 
     <string name="fecha">Fecha</string>
     <string name="hora_inicio">Inicio</string>
@@ -104,10 +105,11 @@
     <string name="reporte_resumen">4: Viaje x Viaje</string>
     <string name="reporte_impresora">5: Habilitar Ticket</string>
     <string name="reporte_ticket">6: Repetir Ticket</string>
-    <string name="reporte_fin_turno">7: Último Fin de Turno</string>
+    <string name="reporte_fin_turno">7: Paradas</string>
     <string name="reporte_viajes">8: Historial</string>
-    <string name="reporte_viaje">9:Viaje Asignado</string>
+    <string name="reporte_viaje">9:Ver Viaje Asignado</string>
     <string name="paradas">P:Paradas</string>
+    <string name="fin_turno">T:Turnos</string>
     <string name="automatico">A:Viaje de Prueba </string>
     <string name="whatsapps">W:Whatsapps </string>
 

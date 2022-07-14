@@ -166,6 +166,10 @@ public class fragment_turnos extends Fragment {
 
                         tur.setEstado(estado_turno);
 
+                        String nro_turno = object.getString("NRO_TURNO");
+
+                        tur.setNro_turno(nro_turno);
+
                         datos.add(tur);
 
                     }

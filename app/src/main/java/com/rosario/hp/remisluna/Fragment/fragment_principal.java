@@ -3,6 +3,7 @@ package com.rosario.hp.remisluna.Fragment;
 import android.Manifest;
 import android.app.Activity;
 import android.bluetooth.BluetoothDevice;
+import android.content.ActivityNotFoundException;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
@@ -38,6 +39,7 @@ import android.widget.Toast;
 import androidx.appcompat.app.AlertDialog;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.core.content.FileProvider;
 import androidx.fragment.app.Fragment;
 
 import com.android.volley.DefaultRetryPolicy;
@@ -46,6 +48,19 @@ import com.android.volley.Response;
 import com.android.volley.error.VolleyError;
 import com.android.volley.request.JsonObjectRequest;
 import com.google.firebase.auth.FirebaseAuth;
+import com.itextpdf.text.BaseColor;
+import com.itextpdf.text.Chunk;
+import com.itextpdf.text.DocumentException;
+import com.itextpdf.text.Font;
+import com.itextpdf.text.PageSize;
+import com.itextpdf.text.Paragraph;
+import com.itextpdf.text.Phrase;
+import com.itextpdf.text.Rectangle;
+import com.itextpdf.text.pdf.BaseFont;
+import com.itextpdf.text.pdf.PdfPCell;
+import com.itextpdf.text.pdf.PdfPTable;
+import com.itextpdf.text.pdf.PdfWriter;
+import com.itextpdf.text.pdf.draw.LineSeparator;
 import com.rosario.hp.remisluna.Entidades.parada;
 import com.rosario.hp.remisluna.Entidades.turno;
 import com.rosario.hp.remisluna.Entidades.viaje;
@@ -64,8 +79,11 @@ import com.rosario.hp.remisluna.turnos_activity;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import com.itextpdf.text.Document;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
@@ -81,6 +99,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 
+import static com.facebook.FacebookSdk.getApplicationContext;
 import static com.rosario.hp.remisluna.include.Utils.stringABytes;
 
 public class fragment_principal extends Fragment {
@@ -100,7 +119,7 @@ public class fragment_principal extends Fragment {
     private ImageButton boton_nueve;
     private ImageButton boton_automatico;
 
-    private ImageButton boton_parada;
+    private ImageButton boton_fin_turno;
     private ImageButton boton_whatsapp;
 
     private String l_hora_desde;
@@ -169,6 +188,9 @@ public class fragment_principal extends Fragment {
     private String l_turno_parametro;
     private String precio_km;
     private boolean lb_ultimo;
+
+    private File file;
+
 
     @Override
     public void onStart() {
@@ -259,9 +281,9 @@ public class fragment_principal extends Fragment {
         this.boton_ocho = v.findViewById(R.id.imageButtonOcho);
         this.boton_nueve = v.findViewById(R.id.imageButtonNueve);
         this.impresora = v.findViewById(R.id.impresora);
-        this.boton_parada = v.findViewById(R.id.imageParada);
         this.boton_whatsapp = v.findViewById(R.id.imageWa);
         this.boton_automatico = v.findViewById(R.id.imageautomatico);
+        this.boton_fin_turno = v.findViewById(R.id.fin_turno);
         this.txt_parada = v.findViewById(R.id.parada);
         this.gps = v.findViewById(R.id.gps);
         this.turno = v.findViewById(R.id.turno);
@@ -303,8 +325,9 @@ public class fragment_principal extends Fragment {
             this.boton_cuatro.setBackground(act.getResources().getDrawable(R.drawable.selector_cuatro));
             this.boton_seis.setEnabled(true);
             this.boton_seis.setBackground(act.getResources().getDrawable(R.drawable.selector_seis));
-            this.boton_parada.setEnabled(true);
-            this.boton_parada.setBackground(act.getResources().getDrawable(R.drawable.selector_parada));
+            this.boton_siete.setEnabled(true);
+            this.boton_siete.setBackground(act.getResources().getDrawable(R.drawable.selector_siete));
+
 
         }else{
             this.boton_uno.setEnabled(false);
@@ -317,8 +340,8 @@ public class fragment_principal extends Fragment {
             this.boton_cuatro.setBackground(act.getResources().getDrawable(R.drawable.cuatro_gris));
             this.boton_seis.setEnabled(false);
             this.boton_seis.setBackground(act.getResources().getDrawable(R.drawable.seis_gris));
-            this.boton_parada.setEnabled(false);
-            this.boton_parada.setBackground(act.getResources().getDrawable(R.drawable.parada_gris));
+            this.boton_siete.setEnabled(false);
+            this.boton_siete.setBackground(act.getResources().getDrawable(R.drawable.siete_gris));
         }
         if(ls_id_turno.equals("0"))
         {
@@ -340,15 +363,6 @@ public class fragment_principal extends Fragment {
             }
         });
 
-        this.boton_parada.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-
-                mediaPlayer.start();
-                cargarIdVehiculo(context);
-
-            }
-        });
 
         this.boton_whatsapp.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -376,10 +390,7 @@ public class fragment_principal extends Fragment {
                 if(mBound) {
                     impresion_cero();
                 }else{
-                    Toast.makeText(
-                            context,
-                            R.string.no_impresora,
-                            Toast.LENGTH_LONG).show();
+                    crear_pfd_cero();
                 }
 
             }
@@ -401,6 +412,17 @@ public class fragment_principal extends Fragment {
         });
 
         this.boton_dos.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mediaPlayer.start();
+
+                lb_ultimo = true;
+                ultimo_turno(context);
+
+            }
+        });
+
+        this.boton_fin_turno.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 mediaPlayer.start();
@@ -468,14 +490,9 @@ public class fragment_principal extends Fragment {
             @Override
             public void onClick(View v) {
                 mediaPlayer.start();
-                if(mBound) {
-                    boton_repetirTicket(context);
-                }else{
-                    Toast.makeText(
-                            context,
-                            R.string.no_impresora,
-                            Toast.LENGTH_LONG).show();
-                }
+
+                boton_repetirTicket(context);
+
             }
         });
 
@@ -483,15 +500,7 @@ public class fragment_principal extends Fragment {
             @Override
             public void onClick(View v) {
                 mediaPlayer.start();
-                if(mBound) {
-                    lb_ultimo = true;
-                    ultimo_turno(context);
-                }else{
-                    Toast.makeText(
-                            context,
-                            R.string.no_impresora,
-                            Toast.LENGTH_LONG).show();
-                }
+                cargarIdVehiculo(context);
 
             }
         });
@@ -975,19 +984,32 @@ public class fragment_principal extends Fragment {
                     break;
 
             }
-            if (mBound) {
-                if(lb_ultimo){
+
+            if(lb_ultimo){
+                if(mBound) {
                     ticket_turno(viajes);
-                    lb_ultimo = false;
-                }else {
+                }else{
+                    crear_pfd_turno(viajes);
+                }
+                lb_ultimo = false;
+            }else {
+                if (mBound) {
                     if (estado.equals("1")) {
                         ticket_turno_parcial();
                     } else {
                         ticket_turno(viajes);
 
                     }
+                }else{
+                    if (estado.equals("1")) {
+                        //ticket_turno_parcial();
+                    } else {
+                        crear_pfd_turno(viajes);
+
+                    }
                 }
             }
+
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -2210,6 +2232,9 @@ public class fragment_principal extends Fragment {
                 printText(" - ");
                 printText("Fin: " + hora_fin);
                 printNewLine();
+                printNewLine();
+                printUnicode();
+                printNewLine();
 
                 String id;
                 String importe;
@@ -2242,6 +2267,170 @@ public class fragment_principal extends Fragment {
                 e.printStackTrace();
             }
         }
+
+    }
+
+    private void crear_pfd_turno(ArrayList<viaje> viajes)
+    {
+        directorio();
+        pdf_turno(viajes);
+        Intent target = new Intent(Intent.ACTION_VIEW);
+        target.setDataAndType(FileProvider.getUriForFile(context, act.getPackageName() + ".my.package.name.provider", file), "application/pdf");
+        target.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+
+        try {
+            startActivity(target);
+        } catch (ActivityNotFoundException e) {
+            Intent intent = Intent.createChooser(target, "Open File");
+            startActivity(intent);
+        }
+    }
+
+    private Boolean pdf_turno(ArrayList<viaje> viajes)
+    {
+        boolean success = false;
+        PdfPCell cell;
+
+
+        //saldo=saldo.replace("\n","");
+        //create document file
+        Document doc = new Document(PageSize.A5, 14f, 10f, 10f, 10f);
+        try {
+            doc.left(10f);
+            //doc.top(15f);
+            file = new File(dir, "fin_turno-"+ l_nro_turno +".pdf");
+            FileOutputStream fOut = new FileOutputStream(file);
+            PdfWriter writer = PdfWriter.getInstance(doc, fOut);
+
+            doc.open();
+
+            BaseFont bf = BaseFont.createFont(
+                    BaseFont.HELVETICA,
+                    BaseFont.CP1252,
+                    BaseFont.EMBEDDED);
+            Font font = new Font(bf, 15);
+
+            Font titulo = new Font(bf, 20);
+
+            float[] columnWidth;
+
+            columnWidth = new float[]{100};
+
+            PdfPTable tabla_enc = new PdfPTable(1);
+
+            cell = new PdfPCell(new Phrase(nombre_remiseria,titulo));
+            cell.setBorder(Rectangle.NO_BORDER);
+            cell.setHorizontalAlignment(PdfPCell.ALIGN_LEFT);
+            tabla_enc.addCell(cell);
+
+            cell = new PdfPCell(new Phrase(getResources().getString(R.string.ticket_turno),font));
+            cell.setBorder(Rectangle.NO_BORDER);
+            cell.setHorizontalAlignment(PdfPCell.ALIGN_LEFT);
+            tabla_enc.addCell(cell);
+
+            doc.add(tabla_enc);
+
+            LineSeparator lineSeparator = new LineSeparator();
+
+            lineSeparator.setLineColor(new BaseColor(255, 255, 255, 68));
+
+            doc.add(new Paragraph(""));
+            doc.add(new Chunk(lineSeparator));
+            doc.add(new Paragraph(""));
+
+
+            PdfPTable table1 = new PdfPTable(1);
+
+
+            cell = new PdfPCell(new Phrase("Nro: " + l_nro_turno,font));
+            cell.setBorder(Rectangle.NO_BORDER);
+            cell.setHorizontalAlignment(PdfPCell.ALIGN_LEFT);
+            table1.addCell(cell);
+
+            cell = new PdfPCell(new Phrase("Fecha: " + fecha,font));
+            cell.setBorder(Rectangle.NO_BORDER);
+            cell.setHorizontalAlignment(PdfPCell.ALIGN_LEFT);
+            table1.addCell(cell);
+
+            cell = new PdfPCell(new Phrase("Inicio: " + hora_inicio,font));
+            cell.setBorder(Rectangle.NO_BORDER);
+            cell.setHorizontalAlignment(PdfPCell.ALIGN_LEFT);
+            table1.addCell(cell);
+            cell = new PdfPCell(new Phrase("Fin: " + hora_fin,font));
+            cell.setBorder(Rectangle.NO_BORDER);
+            cell.setHorizontalAlignment(PdfPCell.ALIGN_LEFT);
+            table1.addCell(cell);
+
+            doc.add(table1);
+
+            doc.add(new Paragraph(""));
+            doc.add(new Chunk(lineSeparator));
+            doc.add(new Paragraph(""));
+
+
+            PdfPTable table2 = new PdfPTable(1);
+
+            String id;
+            String importe;
+
+            for (viaje Viaje : viajes) {
+                id = Viaje.getId();
+
+                cell = new PdfPCell(new Phrase("VIAJE " + id + " - " + Viaje.getNro_recibo(),font));
+                cell.setBorder(Rectangle.NO_BORDER);
+                cell.setHorizontalAlignment(PdfPCell.ALIGN_LEFT);
+                table2.addCell(cell);
+
+                importe = Viaje.getImporte();
+
+                cell = new PdfPCell(new Phrase("TOTAL:  " + importe,font));
+                cell.setBorder(Rectangle.NO_BORDER);
+                cell.setHorizontalAlignment(PdfPCell.ALIGN_LEFT);
+                table2.addCell(cell);
+            }
+
+            doc.add(table2);
+
+            doc.add(new Paragraph(""));
+            doc.add(new Chunk(lineSeparator));
+            doc.add(new Paragraph(""));
+
+
+            PdfPTable table = new PdfPTable(1);
+
+            cell = new PdfPCell(new Phrase("K.TOTAL:  ",font));
+            cell.setBorder(Rectangle.NO_BORDER);
+            cell.setHorizontalAlignment(PdfPCell.ALIGN_LEFT);
+            table.addCell(cell);
+
+            cell = new PdfPCell(new Phrase(kms,font));
+            cell.setBorder(Rectangle.NO_BORDER);
+            cell.setHorizontalAlignment(PdfPCell.ALIGN_LEFT);
+            table.addCell(cell);
+
+            cell = new PdfPCell(new Phrase("FIN TURNO: ",font));
+            cell.setBorder(Rectangle.NO_BORDER);
+            cell.setHorizontalAlignment(PdfPCell.ALIGN_LEFT);
+            table.addCell(cell);
+
+            cell = new PdfPCell(new Phrase(recaudacion,font));
+            cell.setBorder(Rectangle.NO_BORDER);
+            cell.setHorizontalAlignment(PdfPCell.ALIGN_LEFT);
+            table.addCell(cell);
+
+
+            doc.add(table);
+
+
+        } catch (DocumentException | IOException de) {
+            Log.e("PDFCreator", "DocumentException:" + de);
+        } finally {
+            doc.close();
+
+            success = true;
+        }
+
+        return success;
 
     }
 
@@ -2300,9 +2489,9 @@ public class fragment_principal extends Fragment {
                 printNewLine();
                 printText(getResources().getString(R.string.reporte_viaje));
                 printNewLine();
-                printText(getResources().getString(R.string.paradas));
-                printNewLine();
                 printText(getResources().getString(R.string.automatico));
+                printNewLine();
+                printText(getResources().getString(R.string.fin_turno));
                 printNewLine();
                 printText(getResources().getString(R.string.whatsapps));
 
@@ -2321,6 +2510,179 @@ public class fragment_principal extends Fragment {
         }
 
     }
+
+    private void directorio(){
+        checkFilePermissions();
+        path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).toString() + "/pdf";
+        dir = new File(path);
+        if (!dir.exists()) {
+            dir.mkdirs();
+        }
+    }
+
+    private void checkFilePermissions() {
+        if(Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP){
+            int permissionCheck = ContextCompat.checkSelfPermission(context,"Manifest.permission.READ_EXTERNAL_STORAGE");
+            permissionCheck += ContextCompat.checkSelfPermission(context,"Manifest.permission.WRITE_EXTERNAL_STORAGE");
+            if (permissionCheck != 0) {
+
+                ActivityCompat.requestPermissions(act,new String[]{android.Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE}, 1001); //Any number
+            }
+        }else{
+            Log.d(TAG, "checkBTPermissions: No need to check permissions. SDK version < LOLLIPOP.");
+        }
+    }
+
+    private void crear_pfd_cero()
+    {
+        directorio();
+        pdf_cero( );
+        Intent target = new Intent(Intent.ACTION_VIEW);
+        target.setDataAndType(FileProvider.getUriForFile(context, act.getPackageName() + ".my.package.name.provider", file), "application/pdf");
+        target.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+
+        try {
+            startActivity(target);
+        } catch (ActivityNotFoundException e) {
+            Intent intent = Intent.createChooser(target, "Open File");
+            startActivity(intent);
+        }
+    }
+
+    private Boolean pdf_cero()
+    {
+        boolean success = false;
+        PdfPCell cell;
+
+
+        //saldo=saldo.replace("\n","");
+        //create document file
+        Document doc = new Document(PageSize.A5, 14f, 10f, 10f, 10f);
+        try {
+            doc.left(10f);
+            //doc.top(15f);
+            file = new File(dir, "ayuda.pdf");
+            FileOutputStream fOut = new FileOutputStream(file);
+            PdfWriter writer = PdfWriter.getInstance(doc, fOut);
+
+            doc.open();
+
+            BaseFont bf = BaseFont.createFont(
+                    BaseFont.HELVETICA,
+                    BaseFont.CP1252,
+                    BaseFont.EMBEDDED);
+            Font font = new Font(bf, 15);
+
+            Font titulo = new Font(bf, 20);
+
+            float[] columnWidth;
+
+            columnWidth = new float[]{100};
+
+            PdfPTable tabla_enc = new PdfPTable(1);
+
+            cell = new PdfPCell(new Phrase(getResources().getString(R.string.empresa),titulo));
+            cell.setBorder(Rectangle.NO_BORDER);
+            cell.setHorizontalAlignment(PdfPCell.ALIGN_LEFT);
+            tabla_enc.addCell(cell);
+
+            cell = new PdfPCell(new Phrase(getResources().getString(R.string.menu_reportes),font));
+            cell.setBorder(Rectangle.NO_BORDER);
+            cell.setHorizontalAlignment(PdfPCell.ALIGN_LEFT);
+            tabla_enc.addCell(cell);
+
+            doc.add(tabla_enc);
+
+            LineSeparator lineSeparator = new LineSeparator();
+
+            lineSeparator.setLineColor(new BaseColor(255, 255, 255, 68));
+
+            doc.add(new Paragraph(""));
+            doc.add(new Chunk(lineSeparator));
+            doc.add(new Paragraph(""));
+
+
+            PdfPTable table = new PdfPTable(1);
+
+
+            cell = new PdfPCell(new Phrase(getResources().getString(R.string.reporte_ayuda),font));
+            cell.setBorder(Rectangle.NO_BORDER);
+            cell.setHorizontalAlignment(PdfPCell.ALIGN_LEFT);
+            table.addCell(cell);
+
+            cell = new PdfPCell(new Phrase(getResources().getString(R.string.reporte_parcial),font));
+            cell.setBorder(Rectangle.NO_BORDER);
+            cell.setHorizontalAlignment(PdfPCell.ALIGN_LEFT);
+            table.addCell(cell);
+
+            cell = new PdfPCell(new Phrase(getResources().getString(R.string.reporte_turno),font));
+            cell.setBorder(Rectangle.NO_BORDER);
+            cell.setHorizontalAlignment(PdfPCell.ALIGN_LEFT);
+            table.addCell(cell);
+
+            cell = new PdfPCell(new Phrase(getResources().getString(R.string.reporte_ultimos),font));
+            cell.setBorder(Rectangle.NO_BORDER);
+            cell.setHorizontalAlignment(PdfPCell.ALIGN_LEFT);
+            table.addCell(cell);
+
+            cell = new PdfPCell(new Phrase(getResources().getString(R.string.reporte_resumen),font));
+            cell.setBorder(Rectangle.NO_BORDER);
+            cell.setHorizontalAlignment(PdfPCell.ALIGN_LEFT);
+            table.addCell(cell);
+
+            cell = new PdfPCell(new Phrase(getResources().getString(R.string.reporte_impresora),font));
+            cell.setBorder(Rectangle.NO_BORDER);
+            cell.setHorizontalAlignment(PdfPCell.ALIGN_LEFT);
+            table.addCell(cell);
+
+            cell = new PdfPCell(new Phrase(getResources().getString(R.string.reporte_ticket),font));
+            cell.setBorder(Rectangle.NO_BORDER);
+            cell.setHorizontalAlignment(PdfPCell.ALIGN_LEFT);
+            table.addCell(cell);
+
+            cell = new PdfPCell(new Phrase(getResources().getString(R.string.reporte_fin_turno),font));
+            cell.setBorder(Rectangle.NO_BORDER);
+            cell.setHorizontalAlignment(PdfPCell.ALIGN_LEFT);
+            table.addCell(cell);
+
+            cell = new PdfPCell(new Phrase(getResources().getString(R.string.reporte_viajes),font));
+            cell.setBorder(Rectangle.NO_BORDER);
+            cell.setHorizontalAlignment(PdfPCell.ALIGN_LEFT);
+            table.addCell(cell);
+
+            cell = new PdfPCell(new Phrase(getResources().getString(R.string.reporte_viaje),font));
+            cell.setBorder(Rectangle.NO_BORDER);
+            cell.setHorizontalAlignment(PdfPCell.ALIGN_LEFT);
+            table.addCell(cell);
+
+            cell = new PdfPCell(new Phrase(getResources().getString(R.string.automatico),font));
+            cell.setBorder(Rectangle.NO_BORDER);
+            cell.setHorizontalAlignment(PdfPCell.ALIGN_LEFT);
+            table.addCell(cell);
+
+            cell = new PdfPCell(new Phrase(getResources().getString(R.string.fin_turno),font));
+            cell.setBorder(Rectangle.NO_BORDER);
+            cell.setHorizontalAlignment(PdfPCell.ALIGN_LEFT);
+            table.addCell(cell);
+
+            cell = new PdfPCell(new Phrase(getResources().getString(R.string.whatsapps),font));
+            cell.setBorder(Rectangle.NO_BORDER);
+            cell.setHorizontalAlignment(PdfPCell.ALIGN_LEFT);
+            table.addCell(cell);
+
+            doc.add(table);
+
+        } catch (DocumentException | IOException de) {
+            Log.e("PDFCreator", "DocumentException:" + de);
+        } finally {
+            doc.close();
+
+            success = true;
+        }
+
+        return success;
+
+        }
     //print custom
     private void printCustom(String msg, int size, int align) {
         //Print config "mode"
@@ -2701,7 +3063,11 @@ public class fragment_principal extends Fragment {
                     nro_recibo = object.getString("nro_recibo");
                     precio_km = object.getString("precio_km");
 
-                    repetirTicket();
+                    if(mBound) {
+                        repetirTicket();
+                    }else{
+                        crear_pfd_repetir_ticket();
+                    }
 
                 case "2":
                     Toast.makeText(
@@ -2761,26 +3127,24 @@ public class fragment_principal extends Fragment {
                 printCustom("Patente: " + patente, 1, 0);
                 printText(stringABytes(getResources().getString(R.string.chapa) + chapa));
                 printNewLine();
-                printText("SALIDA  " + hora_salida_ultimo);
+                printText("SALIDA:  " + hora_salida_ultimo);
                 printNewLine();
-                printText("DESDE  " + salida_ultimo);
+                printText("DESDE:  " + salida_ultimo);
                 printNewLine();
-                printText("HASTA  " + destino_ultimo);
+                printText("HASTA:  " + destino_ultimo);
                 printNewLine();
-                printText("LLEGADA  " + hora_destino_ultimo);
+                printText("LLEGADA:  " + hora_destino_ultimo);
                 printNewLine();
-                printText("RECORRIDO  " + String.format(Locale.GERMANY, "%.2f", Double.parseDouble(distancia_ultimo)) + " Kms.");
-                printNewLine();
-                printText("PRECIO/KM  " + precio_km);
+                printText("RECORRIDO:  " + String.format(Locale.GERMANY, "%.2f", Double.parseDouble(distancia_ultimo)) + " Kms.");
                 printNewLine();
                 printNewLine();
                 printText("TARIFA AL  " + fecha_tarifa_ultimo);
                 printNewLine();
-                printText("BAJADA  " + '$' + String.format(Locale.GERMAN, "%.2f", Double.parseDouble(bajada_ultimo)));
+                printText("BAJADA:  " + '$' + String.format(Locale.GERMAN, "%.2f", Double.parseDouble(bajada_ultimo)));
                 printNewLine();
-                printText("VIAJE  " + '$' + String.format(Locale.GERMANY, "%.2f", Double.parseDouble(fichas_ultimo)));
+                printText("VIAJE:  " + '$' + String.format(Locale.GERMANY, "%.2f", Double.parseDouble(fichas_ultimo)));
                 printNewLine();
-                printText("ESPERA  " + '$' + String.format(Locale.GERMANY, "%.2f", Double.parseDouble(espera_ultimo)));
+                printText("ESPERA:  " + '$' + String.format(Locale.GERMANY, "%.2f", Double.parseDouble(espera_ultimo)));
                 printNewLine();
                 printNewLine();
                 printCustom("TOTAL:  " + '$' + String.format(Locale.GERMANY, "%.2f", Double.parseDouble(importe_ultimo)), 2, 0);
@@ -2794,6 +3158,217 @@ public class fragment_principal extends Fragment {
                 e.printStackTrace();
             }
         }
+    }
+
+    private void crear_pfd_repetir_ticket()
+    {
+        directorio();
+        pdf_repetir_ticket( );
+        Intent target = new Intent(Intent.ACTION_VIEW);
+        target.setDataAndType(FileProvider.getUriForFile(context, act.getPackageName() + ".my.package.name.provider", file), "application/pdf");
+        target.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+
+        try {
+            startActivity(target);
+        } catch (ActivityNotFoundException e) {
+            Intent intent = Intent.createChooser(target, "Open File");
+            startActivity(intent);
+        }
+    }
+
+    private Boolean pdf_repetir_ticket()
+    {
+        boolean success = false;
+        PdfPCell cell;
+
+
+        //saldo=saldo.replace("\n","");
+        //create document file
+        Document doc = new Document(PageSize.A5, 14f, 10f, 10f, 10f);
+        try {
+            doc.left(10f);
+            //doc.top(15f);
+            file = new File(dir, "ticket-"+ nro_recibo +".pdf");
+            FileOutputStream fOut = new FileOutputStream(file);
+            PdfWriter writer = PdfWriter.getInstance(doc, fOut);
+
+            doc.open();
+
+            BaseFont bf = BaseFont.createFont(
+                    BaseFont.HELVETICA,
+                    BaseFont.CP1252,
+                    BaseFont.EMBEDDED);
+            Font font = new Font(bf, 15);
+
+            Font titulo = new Font(bf, 20);
+
+            float[] columnWidth;
+
+            columnWidth = new float[]{100};
+
+            PdfPTable tabla_enc = new PdfPTable(1);
+
+            cell = new PdfPCell(new Phrase(nombre_remiseria,titulo));
+            cell.setBorder(Rectangle.NO_BORDER);
+            cell.setHorizontalAlignment(PdfPCell.ALIGN_LEFT);
+            tabla_enc.addCell(cell);
+
+            cell = new PdfPCell(new Phrase("Tel. Remisería: " + telefono_remiseria,font));
+            cell.setBorder(Rectangle.NO_BORDER);
+            cell.setHorizontalAlignment(PdfPCell.ALIGN_LEFT);
+            tabla_enc.addCell(cell);
+
+            cell = new PdfPCell(new Phrase("Tel. Queja: " + telefono_queja,font));
+            cell.setBorder(Rectangle.NO_BORDER);
+            cell.setHorizontalAlignment(PdfPCell.ALIGN_LEFT);
+            tabla_enc.addCell(cell);
+
+            doc.add(tabla_enc);
+
+            LineSeparator lineSeparator = new LineSeparator();
+
+            lineSeparator.setLineColor(new BaseColor(255, 255, 255, 68));
+
+            doc.add(new Paragraph(""));
+            doc.add(new Chunk(lineSeparator));
+            doc.add(new Paragraph(""));
+
+
+            PdfPTable table1 = new PdfPTable(1);
+
+
+            cell = new PdfPCell(new Phrase(getResources().getString(R.string.recibo),font));
+            cell.setBorder(Rectangle.NO_BORDER);
+            cell.setHorizontalAlignment(PdfPCell.ALIGN_LEFT);
+            table1.addCell(cell);
+
+            cell = new PdfPCell(new Phrase("Nro Recibo: " + nro_recibo,font));
+            cell.setBorder(Rectangle.NO_BORDER);
+            cell.setHorizontalAlignment(PdfPCell.ALIGN_LEFT);
+            table1.addCell(cell);
+
+            cell = new PdfPCell(new Phrase(getResources().getString(R.string.servicio) + ' ' + localidad_abreviada,font));
+            cell.setBorder(Rectangle.NO_BORDER);
+            cell.setHorizontalAlignment(PdfPCell.ALIGN_LEFT);
+            table1.addCell(cell);
+
+            doc.add(table1);
+
+            doc.add(new Paragraph(""));
+            doc.add(new Chunk(lineSeparator));
+            doc.add(new Paragraph(""));
+
+
+            PdfPTable table2 = new PdfPTable(1);
+
+            cell = new PdfPCell(new Phrase(fecha_ultimo,font));
+            cell.setBorder(Rectangle.NO_BORDER);
+            cell.setHorizontalAlignment(PdfPCell.ALIGN_LEFT);
+            table2.addCell(cell);
+
+            cell = new PdfPCell(new Phrase("Chofer: " + chofer_ultimo,font));
+            cell.setBorder(Rectangle.NO_BORDER);
+            cell.setHorizontalAlignment(PdfPCell.ALIGN_LEFT);
+            table2.addCell(cell);
+
+            cell = new PdfPCell(new Phrase("Patente: " + patente,font));
+            cell.setBorder(Rectangle.NO_BORDER);
+            cell.setHorizontalAlignment(PdfPCell.ALIGN_LEFT);
+            table2.addCell(cell);
+
+            cell = new PdfPCell(new Phrase(getResources().getString(R.string.chapa) + chapa,font));
+            cell.setBorder(Rectangle.NO_BORDER);
+            cell.setHorizontalAlignment(PdfPCell.ALIGN_LEFT);
+            table2.addCell(cell);
+            doc.add(table2);
+
+            doc.add(new Paragraph(""));
+            doc.add(new Chunk(lineSeparator));
+            doc.add(new Paragraph(""));
+
+
+            PdfPTable table = new PdfPTable(1);
+
+            cell = new PdfPCell(new Phrase("SALIDA: " + hora_salida_ultimo,font));
+            cell.setBorder(Rectangle.NO_BORDER);
+            cell.setHorizontalAlignment(PdfPCell.ALIGN_LEFT);
+            table.addCell(cell);
+
+            cell = new PdfPCell(new Phrase("DESDE: " + salida_ultimo,font));
+            cell.setBorder(Rectangle.NO_BORDER);
+            cell.setHorizontalAlignment(PdfPCell.ALIGN_LEFT);
+            table.addCell(cell);
+
+            cell = new PdfPCell(new Phrase("HASTA: " + destino_ultimo,font));
+            cell.setBorder(Rectangle.NO_BORDER);
+            cell.setHorizontalAlignment(PdfPCell.ALIGN_LEFT);
+            table.addCell(cell);
+
+            cell = new PdfPCell(new Phrase("LLEGADA: " + hora_destino_ultimo,font));
+            cell.setBorder(Rectangle.NO_BORDER);
+            cell.setHorizontalAlignment(PdfPCell.ALIGN_LEFT);
+            table.addCell(cell);
+
+            cell = new PdfPCell(new Phrase("RECORRIDO: " + String.format(Locale.GERMANY, "%.2f", Double.parseDouble(distancia_ultimo)) + " Kms.",font));
+            cell.setBorder(Rectangle.NO_BORDER);
+            cell.setHorizontalAlignment(PdfPCell.ALIGN_LEFT);
+            table.addCell(cell);
+
+            doc.add(table);
+
+            doc.add(new Paragraph(""));
+            doc.add(new Chunk(lineSeparator));
+            doc.add(new Paragraph(""));
+
+
+            PdfPTable table3 = new PdfPTable(1);
+
+            cell = new PdfPCell(new Phrase("TARIFA AL " + fecha_tarifa_ultimo,font));
+            cell.setBorder(Rectangle.NO_BORDER);
+            cell.setHorizontalAlignment(PdfPCell.ALIGN_LEFT);
+            table3.addCell(cell);
+
+            cell = new PdfPCell(new Phrase("BAJADA: " + '$' + String.format(Locale.GERMAN, "%.2f", Double.parseDouble(bajada_ultimo)),font));
+            cell.setBorder(Rectangle.NO_BORDER);
+            cell.setHorizontalAlignment(PdfPCell.ALIGN_LEFT);
+            table3.addCell(cell);
+
+            cell = new PdfPCell(new Phrase("VIAJE: " + '$' + String.format(Locale.GERMANY, "%.2f", Double.parseDouble(fichas_ultimo)),font));
+            cell.setBorder(Rectangle.NO_BORDER);
+            cell.setHorizontalAlignment(PdfPCell.ALIGN_LEFT);
+            table3.addCell(cell);
+
+            cell = new PdfPCell(new Phrase("ESPERA: " + '$' + String.format(Locale.GERMANY, "%.2f", Double.parseDouble(espera_ultimo)),font));
+            cell.setBorder(Rectangle.NO_BORDER);
+            cell.setHorizontalAlignment(PdfPCell.ALIGN_LEFT);
+            table3.addCell(cell);
+
+            doc.add(table3);
+
+            doc.add(new Paragraph(""));
+            doc.add(new Chunk(lineSeparator));
+            doc.add(new Paragraph(""));
+
+
+            PdfPTable table4 = new PdfPTable(1);
+
+            cell = new PdfPCell(new Phrase("TOTAL: " + '$' + String.format(Locale.GERMANY, "%.2f", Double.parseDouble(importe_ultimo)),titulo));
+            cell.setBorder(Rectangle.NO_BORDER);
+            cell.setHorizontalAlignment(PdfPCell.ALIGN_LEFT);
+            table4.addCell(cell);
+
+            doc.add(table4);
+
+        } catch (DocumentException | IOException de) {
+            Log.e("PDFCreator", "DocumentException:" + de);
+        } finally {
+            doc.close();
+
+            success = true;
+        }
+
+        return success;
+
     }
 
     public void cargarIdVehiculo(final Context context) {

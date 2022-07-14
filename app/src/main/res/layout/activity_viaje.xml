@@ -99,45 +99,13 @@
             android:textSize="@dimen/tamanio_numero_chico"
             android:textStyle="bold" />
 
-        <RelativeLayout
-            android:id="@+id/id_datos_inferior"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/margin_boton"
-            android:layout_below="@id/precio"
-            android:orientation="horizontal">
-
-            <TextView
-                android:id="@+id/tiempo"
-                android:layout_width="wrap_content"
-                android:layout_height="@dimen/tamanio_numero_tiempo"
-                android:layout_alignParentStart="true"
-                android:fontFamily="@font/digital"
-                android:text="@string/cero_tiempo"
-                android:textAlignment="center"
-                android:textColor="@color/colorPrimary"
-                android:textSize="@dimen/tamanio_texto_tiempo"
-                android:textStyle="bold" />
-
-            <TextView
-                android:id="@+id/kms"
-                android:layout_width="wrap_content"
-                android:layout_height="@dimen/tamanio_numero_tiempo"
-                android:layout_alignParentEnd="true"
-                android:fontFamily="@font/digital"
-                android:text="@string/cero_distancia"
-                android:textAlignment="center"
-                android:textColor="@color/colorPrimary"
-                android:textSize="@dimen/tamanio_texto_tiempo"
-                android:textStyle="bold" />
-        </RelativeLayout>
 
         <LinearLayout
             android:id="@+id/id_datos_viaje"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/margin_boton"
-            android:layout_below="@id/id_datos_inferior"
+            android:layout_below="@id/precio"
             android:orientation="vertical">
             <LinearLayout
                 android:id="@+id/id_salida"
@@ -217,6 +185,23 @@
                     android:textColor="@color/colorPrimary"
                     android:textSize="@dimen/tamanio_texto" />
             </LinearLayout>
+        <LinearLayout
+            android:id="@+id/id_observaciones"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/margin_top_item"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/observaciones"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/nro_viaje"
+                android:textAlignment="textStart"
+                android:textColor="@color/colorPrimary"
+                android:textSize="@dimen/tamanio_texto"
+                android:textStyle="bold"/>
+        </LinearLayout>
         </LinearLayout>
     </RelativeLayout>
 

@@ -9,8 +9,8 @@ android {
         applicationId "com.rosario.hp.remisluna"
         minSdkVersion 19
         targetSdkVersion 32
-        versionCode 46
-        versionName "1.46"
+        versionCode 47
+        versionName "1.47"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         multiDexEnabled true
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
@@ -101,5 +101,7 @@ dependencies {
     implementation platform('com.google.firebase:firebase-bom:26.1.0')
     implementation 'com.google.firebase:firebase-analytics-ktx'
     implementation 'com.google.android.gms:play-services-location:20.0.0'
+    implementation 'com.google.firebase:firebase-messaging-directboot:20.2.0'
+    implementation 'com.itextpdf:itextg:5.5.10'
 }
 apply plugin: 'com.google.gms.google-services'

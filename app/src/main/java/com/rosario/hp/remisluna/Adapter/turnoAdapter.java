@@ -47,12 +47,14 @@ public class turnoAdapter extends RecyclerView.Adapter<turnoAdapter.HolderTurno>
         String hora_desde = turnos.get(position).getHora_inicio();
         String hora_hasta = turnos.get(position).getHora_fin();
         String l_hora = "Inicio: " + hora_desde;
+        String l_nro = "Turno Nro: " + turnos.get(position).getNro_turno();
 
         if(!hora_hasta.equals("null")){
             l_hora = l_hora + " - Fin: " + hora_hasta;
         }
 
         holder.hora.setText( l_hora);
+        holder.nro.setText(l_nro);
 
         if(!turnos.get(position).getRecaudacion().equals("null")) {
             holder.importe.setText(turnos.get(position).getRecaudacion());
@@ -77,6 +79,7 @@ public class turnoAdapter extends RecyclerView.Adapter<turnoAdapter.HolderTurno>
         public TextView hora;
         public TextView importe;
         public ImageView indicador;
+        public TextView nro;
         public ItemClickListener6 listener;
         public HolderTurno(View v, ItemClickListener6 listener) {
             super(v);
@@ -84,6 +87,7 @@ public class turnoAdapter extends RecyclerView.Adapter<turnoAdapter.HolderTurno>
             hora = v.findViewById(R.id.hora);
             importe = v.findViewById(R.id.importe);
             indicador = v.findViewById(R.id.indicador);
+            nro = v.findViewById(R.id.nro);
             this.listener = listener;
 
             v.setOnClickListener(this);

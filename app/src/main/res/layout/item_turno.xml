@@ -19,20 +19,24 @@
     <RelativeLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content">
+
         <RelativeLayout
+            android:id="@+id/id_nro"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:id="@+id/id_fecha"
             android:orientation="horizontal">
+
             <TextView
-                android:id="@+id/fecha"
+                android:id="@+id/nro"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_alignParentStart="true"
                 android:layout_alignParentLeft="true"
-                android:textStyle="bold"
+                android:text="TextView"
                 android:textSize="@dimen/tamanio_texto"
-                android:text="TextView" />
+                android:textStyle="bold" />
+
+
             <ImageView
                 android:id="@+id/indicador"
                 android:layout_width="wrap_content"
@@ -46,20 +50,34 @@
             android:id="@+id/hora"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_below="@id/id_fecha"
+            android:layout_below="@id/id_nro"
             android:textSize="@dimen/tamanio_texto"
             android:layout_alignParentStart="true"
             android:layout_alignParentLeft="true"
             android:text="TextView" />
-
-        <TextView
-            android:id="@+id/importe"
+        <RelativeLayout
+            android:id="@+id/id_fecha"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_below="@id/hora"
-            android:textSize="@dimen/tamanio_texto"
-            android:layout_alignParentStart="true"
-            android:layout_alignParentLeft="true"
-            android:text="TextView" />
+            android:orientation="horizontal">
+            <TextView
+                android:id="@+id/fecha"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentStart="true"
+                android:layout_alignParentLeft="true"
+                android:text="TextView"
+                android:textSize="@dimen/tamanio_texto" />
+            <TextView
+                android:id="@+id/importe"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentRight= "true"
+                android:text="TextView"
+                android:textSize="@dimen/tamanio_texto" />
+    </RelativeLayout>
     </RelativeLayout>
 </androidx.cardview.widget.CardView>

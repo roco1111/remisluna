@@ -5,6 +5,7 @@
       <map>
         <entry key="..\:/Users/hp/AndroidStudioProjects/remisluna/app/src/main/res/drawable-hdpi/selector_cinco.xml" value="0.1605" />
         <entry key="..\:/Users/hp/AndroidStudioProjects/remisluna/app/src/main/res/drawable-hdpi/selector_seis.xml" value="0.1605" />
+        <entry key="..\:/Users/hp/AndroidStudioProjects/remisluna/app/src/main/res/drawable-ldpi/selector_fin_turno.xml" value="0.1605" />
         <entry key="..\:/Users/hp/AndroidStudioProjects/remisluna/app/src/main/res/drawable-xhdpi/selector_parada.xml" value="0.20833333333333334" />
         <entry key="..\:/Users/hp/AndroidStudioProjects/remisluna/app/src/main/res/drawable-xxxhdpi/selector_whatsapp.xml" value="0.20833333333333334" />
         <entry key="..\:/Users/hp/AndroidStudioProjects/remisluna/app/src/main/res/drawable/selector_automatico.xml" value="0.1055" />
@@ -17,6 +18,7 @@
         <entry key="..\:/Users/hp/AndroidStudioProjects/remisluna/app/src/main/res/layout/activity_principal_previa.xml" value="0.13722826086956522" />
         <entry key="..\:/Users/hp/AndroidStudioProjects/remisluna/app/src/main/res/layout/activity_viaje.xml" value="0.5130597014925373" />
         <entry key="..\:/Users/hp/AndroidStudioProjects/remisluna/app/src/main/res/layout/activity_viaje_iniciado.xml" value="0.75" />
+        <entry key="..\:/Users/hp/AndroidStudioProjects/remisluna/app/src/main/res/layout/item_turno.xml" value="0.8425925925925926" />
         <entry key="..\:/Users/hp/AndroidStudioProjects/remisluna/app/src/main/res/layout/item_viaje.xml" value="0.7583333333333333" />
         <entry key="..\:/Users/hp/AndroidStudioProjects/remisluna/app/src/main/res/layout/main_content_basica.xml" value="0.1" />
         <entry key="..\:/Users/hp/AndroidStudioProjects/remisluna/app/src/main/res/layout/preferencias.xml" value="0.8425925925925926" />

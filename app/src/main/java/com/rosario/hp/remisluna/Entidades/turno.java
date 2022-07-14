@@ -10,6 +10,7 @@ public class turno {
     String distancia;
     String recaudacion;
     String estado;
+    String nro_turno;
 
     public String getId() {
         return id;
@@ -21,6 +22,14 @@ public class turno {
 
     public String getId_conductor() {
         return id_conductor;
+    }
+
+    public String getNro_turno() {
+        return nro_turno;
+    }
+
+    public void setNro_turno(String nro_turno) {
+        this.nro_turno = nro_turno;
     }
 
     public void setId_conductor(String id_conductor) {

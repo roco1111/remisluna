@@ -4,7 +4,7 @@ public class Constantes {
     private static final String PUERTO_HOST = "";
 
 
-    private static final String IP = "remisluna.com.ar/remiseria/app";
+    private static final String IP = "callisto.com.ar/remiseria/app";
 
     public static final String UPDATE_TOKEN = "https://" + IP + PUERTO_HOST + "/actualizar_token.php";
 
