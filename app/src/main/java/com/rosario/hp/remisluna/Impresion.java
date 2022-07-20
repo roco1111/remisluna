@@ -256,7 +256,7 @@ public class Impresion extends Service {
         Handler handler = new Handler(Looper.getMainLooper());
         handler.post(new Runnable() {
             public void run() {
-                Toast.makeText(ctx, "Debe conectar el bluetooth", Toast.LENGTH_SHORT).show();
+                Toast.makeText(ctx, "El bluetooth no está conectado", Toast.LENGTH_SHORT).show();
 
             }
         });

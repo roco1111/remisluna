@@ -281,6 +281,19 @@ public class MainActivity extends AppCompatActivity {
                     editor2.putString("id_viaje",object.getString("id"));
                     editor2.putString("estado_conductor",object.getString("estado_conductor"));
                     editor2.putString("estado_vehiculo",object.getString("estado_vehiculo"));
+
+                    String ls_remiseria = object.getString("remiseria");
+
+                    editor2.putString("nombre_remiseria",ls_remiseria);
+
+                    String ls_telefono_queja = object.getString("telefono_queja");
+
+                    editor2.putString("telefono_queja",ls_telefono_queja);
+
+                    String ls_telefono = object.getString("telefono");
+
+                    editor2.putString("telefono_remiseria",ls_telefono);
+
                     editor2.apply();
 
                     locationEnd();
@@ -459,6 +472,17 @@ public class MainActivity extends AppCompatActivity {
                     editor.putString("estado_conductor",object.getString("estado_conductor"));
                     editor.putString("estado_vehiculo",object.getString("estado_vehiculo"));
                     editor.putString("vehiculo",ls_vehiculo);
+                    String ls_remiseria = object.getString("remiseria");
+
+                    editor.putString("nombre_remiseria",ls_remiseria);
+
+                    String ls_telefono_queja = object.getString("telefono_queja");
+
+                    editor.putString("telefono_queja",ls_telefono_queja);
+
+                    String ls_telefono = object.getString("telefono");
+
+                    editor.putString("telefono_remiseria",ls_telefono);
                     editor.apply();
                     /*
                     Fragment fragment = new fragment_principal();

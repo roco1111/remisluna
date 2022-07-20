@@ -68,7 +68,7 @@ public class fragment_preferencias extends Fragment {
                 Intent intent;
 
 
-                editor.putString("url", "https://remisluna.com.ar/remiseria/paginas_ayuda.php");
+                editor.putString("url", "https://callisto.com.ar/remiseria/paginas_ayuda.php");
                 editor.apply();
                 intent = new Intent(context, WebActivity.class);
                 intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);

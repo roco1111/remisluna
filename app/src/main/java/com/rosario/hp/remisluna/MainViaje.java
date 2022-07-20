@@ -312,15 +312,27 @@ public class MainViaje extends AppCompatActivity {
 
                     SharedPreferences.Editor editor = settings1.edit();
 
-                    String ls_viaje;
+                    String ls_viaje, ls_remiseria, ls_telefono_queja, ls_telefono;
 
 
                     ls_viaje = object.getString("id");
 
                     editor.putString("id_viaje",ls_viaje);
+
+                    ls_remiseria = object.getString("remiseria");
+
+                    editor.putString("nombre_remiseria",ls_remiseria);
+
+                    ls_telefono_queja = object.getString("telefono_queja");
+
+                    editor.putString("telefono_queja",ls_telefono_queja);
+
+                    ls_telefono = object.getString("telefono");
+
+                    editor.putString("telefono_remiseria",ls_telefono);
+
                     editor.apply();
 
-                    editor.commit();
 
                     fragment = new fragment_viaje();
 
