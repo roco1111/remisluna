@@ -9,8 +9,9 @@ android {
         applicationId "com.rosario.hp.remisluna"
         minSdkVersion 19
         targetSdkVersion 32
-        versionCode 48
-        versionName "1.48"
+
+        versionCode 50
+        versionName "1.50"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         multiDexEnabled true
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"

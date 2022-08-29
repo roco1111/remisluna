@@ -321,8 +321,8 @@
             android:layout_width="@dimen/ancho_boton"
             android:layout_height="@dimen/ancho_boton"
             android:layout_marginStart="@dimen/campos_height"
-            android:background="@drawable/selector_fin_turno"
             android:layout_toEndOf="@id/imageautomatico"
+            android:background="@drawable/selector_fin_turno"
             android:scaleType="fitXY" />
     </RelativeLayout>
 </RelativeLayout>

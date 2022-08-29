@@ -188,7 +188,7 @@ public class fragment_principal extends Fragment {
     private String l_turno_parametro;
     private String precio_km;
     private boolean lb_ultimo;
-
+    private String l_turno_app;
     private File file;
 
 
@@ -233,7 +233,7 @@ public class fragment_principal extends Fragment {
 
             Impresion.LocalBinder binder = (Impresion.LocalBinder) service;
             impresion = binder.getService();
-            if(impresion.getBluetoothAdapter() !=null) {
+            if(impresion.getBluetoothAdapter() !=null && impresion.getbluetoothSocket() != null) {
                 if (impresion.getOutputStream() != null) {
                     impresora.setTextColor(context.getResources().getColor(R.color.colorPrimary));
                     mBound = true;
@@ -571,7 +571,7 @@ public class fragment_principal extends Fragment {
             // Obtener atributo "mensaje"
             ls_es_feriado= response.getString("feriado");
 
-            cargarParametroTarifaDesde(context);
+            cargarParametroTurno(context);
 
 
 
@@ -588,6 +588,107 @@ public class fragment_principal extends Fragment {
         }
         return false;
     }
+public void cargarParametroTurno(final Context context) {
+
+    HashMap<String, String> map = new HashMap<>();// Mapeo previo
+
+    map.put("parametro", "17");
+    map.put("remiseria", ls_remiseria);
+
+    JSONObject jobject = new JSONObject(map);
+
+
+    // Depurando objeto Json...
+    Log.d(TAG, jobject.toString());
+
+    StringBuilder encodedParams = new StringBuilder();
+    try {
+        for (Map.Entry<String, String> entry : map.entrySet()) {
+            encodedParams.append(URLEncoder.encode(entry.getKey(), "utf-8"));
+            encodedParams.append('=');
+            encodedParams.append(URLEncoder.encode(entry.getValue(), "utf-8"));
+            encodedParams.append('&');
+        }
+    } catch (UnsupportedEncodingException uee) {
+        throw new RuntimeException("Encoding not supported: " + "utf-8", uee);
+    }
+
+    encodedParams.setLength(Math.max(encodedParams.length() - 1, 0));
+
+    // Añadir parámetro a la URL del web service
+    String newURL = Constantes.GET_ID_PARAMETRO + "?" + encodedParams;
+    Log.d(TAG,newURL);
+
+    // Realizar petición GET_BY_ID
+    VolleySingleton.getInstance(context).addToRequestQueue(
+            myRequest = new JsonObjectRequest(
+                    Request.Method.POST,
+                    newURL,
+                    null,
+                    new Response.Listener<JSONObject>() {
+
+                        @Override
+                        public void onResponse(JSONObject response) {
+                            // Procesar respuesta Json
+                            procesarRespuestaParametroTurno(response, context);
+                        }
+                    },
+                    new Response.ErrorListener() {
+                        @Override
+                        public void onErrorResponse(VolleyError error) {
+                            Log.d(TAG, "Error Volley parámetro: " + error.getMessage());
+
+                        }
+                    }
+            )
+    );
+    myRequest.setRetryPolicy(new DefaultRetryPolicy(
+            50000,
+            5,//DefaultRetryPolicy.DEFAULT_MAX_RETRIES
+            DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+
+}
+
+private void procesarRespuestaParametroTurno(JSONObject response, Context context) {
+
+    try {
+        // Obtener atributo "mensaje"
+        String mensaje = response.getString("estado");
+
+        switch (mensaje) {
+            case "1":
+                JSONArray datos_parametro = response.getJSONArray("parametro");
+
+                for (int i = 0; i < datos_parametro.length(); i++) {
+                    JSONObject object = datos_parametro.getJSONObject(i);
+
+                    l_turno_app = object.getString("valor");
+
+                }
+                if(l_turno_app.equals("0")){
+                    boton_fin_turno.setVisibility(View.INVISIBLE);
+                }else{
+                    boton_fin_turno.setVisibility(View.VISIBLE);
+                }
+                cargarParametroTarifaDesde(context);
+
+                break;
+            case "2":
+                String mensaje2 = response.getString("mensaje");
+                Toast.makeText(
+                        context,
+                        mensaje2,
+                        Toast.LENGTH_LONG).show();
+                break;
+
+        }
+
+
+    } catch (JSONException e) {
+        e.printStackTrace();
+    }
+
+}
 
     public void cargarParametroTarifaDesde(final Context context) {
 
@@ -1960,7 +2061,6 @@ public class fragment_principal extends Fragment {
                     }
                     break;
 
-
             }
 
             cargarParada(context);
@@ -2023,8 +2123,6 @@ public class fragment_principal extends Fragment {
 
                         txt_parada.setText("Parada Nro: " + object.getString("id"));
                     }
-
-
 
                     break;
 
@@ -2184,13 +2282,9 @@ public class fragment_principal extends Fragment {
                         editor.apply();
 
                         if(!l_impresora.equals("")) {
-
-
                                 Intent intent = new Intent(context, Impresion.class);
                                 context.startService(intent);
                                 esperarYCerrar(1500, intent, context);
-
-
 
                         }else{
 

@@ -231,7 +231,7 @@ public class fragment_viaje extends Fragment {
             // We've bound to LocalService, cast the IBinder and get LocalService instance
             Impresion.LocalBinder binder = (Impresion.LocalBinder) service;
             impresion = binder.getService();
-            if(impresion.getBluetoothAdapter() !=null) {
+            if(impresion.getBluetoothAdapter() !=null && impresion.getbluetoothSocket() != null) {
                 if (impresion.getOutputStream() != null) {
                     impresora.setTextColor(context.getResources().getColor(R.color.colorPrimary));
                     mBound = true;

@@ -84,7 +84,7 @@ public class fragment_preferencias extends Fragment {
                 SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(context);
                 SharedPreferences.Editor editor = settings.edit();
 
-                editor.putString("url", "https://remisluna.com.ar/politicas/privacidad.php");
+                editor.putString("url", "https://callisto.com.ar/politicas/privacidad.php");
                 editor.apply();
 
                 Intent intent = new Intent(getContext(), WebActivity.class);
