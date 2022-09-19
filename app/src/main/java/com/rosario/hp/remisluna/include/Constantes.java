@@ -22,6 +22,7 @@ public class Constantes {
     public static final String GET_ULTIMOS_VIAJES = "https://" + IP + PUERTO_HOST + "/obtener_ultimos_viajes.php";
     public static final String GET_ULTIMO_VIAJE = "https://" + IP + PUERTO_HOST + "/obtener_ultimo_viaje.php";
     public static final String GET_VIAJE_BY_ID = "https://" + IP + PUERTO_HOST + "/obtener_un_viaje.php";
+    public static final String VERIFICAR_MOVIL_TURNO = "https://" + IP + PUERTO_HOST + "/verificar_movil_turno.php";
 
     public static final String INICIAR_VIAJE = "https://" + IP + PUERTO_HOST + "/iniciar_viaje.php";
     public static final String TERMINAR_VIAJE = "https://" + IP + PUERTO_HOST + "/terminar_viaje.php";

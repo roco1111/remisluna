@@ -192,6 +192,7 @@ public class fragment_viaje extends Fragment {
     private String telefono_queja;
     private String localidad_abreviada;
     private String telefono_remiseria;
+    private String habilitada;
 
     @Override
     public void onStart() {
@@ -319,24 +320,7 @@ public class fragment_viaje extends Fragment {
             @Override
             public void onClick(View v) {
                 mediaPlayer.start();
-                if(verificar_internet()) {
-                    if (!mLocationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
-                        Toast.makeText(
-                                context,
-                                R.string.no_gps,
-                                Toast.LENGTH_LONG).show();
-
-                    }else{
-
-                        iniciar_viaje(context);
-
-                    }
-                }else{
-                    Toast.makeText(
-                            context,
-                            R.string.no_internet,
-                            Toast.LENGTH_LONG).show();
-                }
+                cargarRemiseria(context);
 
             }
         });
@@ -522,7 +506,101 @@ public class fragment_viaje extends Fragment {
             Log.d(TAG, "checkBTPermissions: No need to check permissions. SDK version < LOLLIPOP.");
         }
     }
+    public void cargarRemiseria(final Context context) {
 
+        // Añadir parámetro a la URL del web service
+        String newURL = Constantes.GET_REMISERIA + "?remiseria=" + ls_remiseria;
+        Log.d(TAG,newURL);
+
+        // Realizar petición GET_BY_ID
+        VolleySingleton.getInstance(context).addToRequestQueue(
+                myRequest = new JsonObjectRequest(
+                        Request.Method.POST,
+                        newURL,
+                        null,
+                        new Response.Listener<JSONObject>() {
+
+                            @Override
+                            public void onResponse(JSONObject response) {
+                                // Procesar respuesta Json
+                                procesarRespuesta_remiserias(response, context);
+                            }
+                        },
+                        new Response.ErrorListener() {
+                            @Override
+                            public void onErrorResponse(VolleyError error) {
+                                Log.d(TAG, "Error Volley viaje: " + error.getMessage());
+
+                            }
+                        }
+                )
+        );
+        myRequest.setRetryPolicy(new DefaultRetryPolicy(
+                50000,
+                5,//DefaultRetryPolicy.DEFAULT_MAX_RETRIES
+                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+
+    }
+
+    private void procesarRespuesta_remiserias(JSONObject response, Context context) {
+
+        try {
+            // Obtener atributo "mensaje"
+            String mensaje = response.getString("estado");
+
+            switch (mensaje) {
+                case "1":
+                    // Obtener objeto "cliente"
+                    JSONArray mensaje1 = response.getJSONArray("remiseria");
+
+                    JSONObject object = mensaje1.getJSONObject(0);
+                    //Parsear objeto
+
+                    String habilitada = object.getString("HABILITADA");
+
+                    if(habilitada.equals("1"))
+                    {
+                        iniciar_viaje();
+                    }else{
+                        Toast.makeText(
+                                context,
+                                R.string.inhabilitada,
+                                Toast.LENGTH_LONG).show();
+                    }
+                    break;
+
+                case "2":
+
+                    break;
+
+            }
+
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+    }
+    public void iniciar_viaje(){
+        if (verificar_internet()) {
+            if (!mLocationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+                Toast.makeText(
+                        context,
+                        R.string.no_gps,
+                        Toast.LENGTH_LONG).show();
+
+            } else {
+
+                iniciar_viaje(context);
+
+            }
+        } else {
+            Toast.makeText(
+                    context,
+                    R.string.no_internet,
+                    Toast.LENGTH_LONG).show();
+        }
+    }
 
     public void cargarDatosRemiseria(final Context context) {
 
@@ -1599,6 +1677,7 @@ public class fragment_viaje extends Fragment {
                     String l_fecha = object.getString("fecha");
                     String l_hora_inicio = object.getString("hora_inicio");
                     String l_nro_turno = object.getString("nro_turno");
+                    habilitada = object.getString("habilitada");
 
                     turno.setText("T.N°: " + l_nro_turno + " - " + l_fecha + " - " + l_hora_inicio);
                     progress1.dismiss();
