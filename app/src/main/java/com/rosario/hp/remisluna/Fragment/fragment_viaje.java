@@ -4,6 +4,7 @@ import android.Manifest;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
+import android.bluetooth.BluetoothAdapter;
 import android.content.ActivityNotFoundException;
 import android.content.ComponentName;
 import android.content.Context;
@@ -97,6 +98,7 @@ import static com.rosario.hp.remisluna.include.Utils.stringABytes;
 
 public class fragment_viaje extends Fragment {
     private JsonObjectRequest myRequest;
+    private final static int REQUEST_ENABLE_BT = 1;
     private static final String TAG = fragment_viaje.class.getSimpleName();
     private String ls_id_conductor;
     private TextView solicitante;
@@ -184,7 +186,7 @@ public class fragment_viaje extends Fragment {
     private String ls_id_turno_ultimo;
     private String l_nro_turno;
     private boolean lb_ultimo;
-
+    private boolean lb_bluetooth;
     private File file;
     private File dir;
     private String path;
@@ -220,7 +222,9 @@ public class fragment_viaje extends Fragment {
         }else{
             gps.setTextColor(getResources().getColor(R.color.alarma));
         }
-        cargarImpresora(getContext());
+        if(lb_bluetooth) {
+            cargarImpresora(getContext());
+        }
     }
 
     /** Defines callbacks for service binding, passed to bindService() */
@@ -265,6 +269,19 @@ public class fragment_viaje extends Fragment {
         View v = inflater.inflate(R.layout.activity_viaje, container, false);
         act = getActivity();
         mLocationManager = (LocationManager) act.getSystemService(Context.LOCATION_SERVICE);
+
+        BluetoothAdapter bt = BluetoothAdapter.getDefaultAdapter();
+        if (bt == null)
+        { //Does not support Bluetooth
+            lb_bluetooth = false;
+        }else{
+            //Magic starts. Let's check if it's enabled
+            if (!bt.isEnabled())
+            { lb_bluetooth = false; }
+            else{
+                lb_bluetooth = true;
+            }
+        }
 
         solicitante = v.findViewById(R.id.dato_solicitante);
         dato_salida = v.findViewById(R.id.dato_salida);
@@ -426,7 +443,9 @@ public class fragment_viaje extends Fragment {
                 }
                 if(!mBound) {
 
-                    cargarImpresora(context);
+                    if(lb_bluetooth) {
+                        cargarImpresora(getContext());
+                    }
 
                 }
             }

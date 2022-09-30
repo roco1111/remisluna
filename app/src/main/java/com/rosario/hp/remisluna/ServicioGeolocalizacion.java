@@ -13,6 +13,7 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.location.LocationProvider;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -351,8 +352,10 @@ public class ServicioGeolocalizacion extends Service implements Runnable {
                 Toast.makeText(getApplicationContext(), "Error con GPS", Toast.LENGTH_LONG).show();
                 return;
             }
-            //mLocationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 1000, 0, mLocationListener);
-            mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000, 0, mLocationListener);
+            mLocationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 1000, 0, mLocationListener);
+            if(Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP) {
+                mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000, 0, mLocationListener);
+            }
             Log.d("geolicalizacion","LocationManager");
             Looper.loop();
             Looper.myLooper().quit();

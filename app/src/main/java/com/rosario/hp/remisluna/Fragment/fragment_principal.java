@@ -2,6 +2,7 @@ package com.rosario.hp.remisluna.Fragment;
 
 import android.Manifest;
 import android.app.Activity;
+import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.ActivityNotFoundException;
 import android.content.BroadcastReceiver;
@@ -106,7 +107,7 @@ public class fragment_principal extends Fragment {
 
     private static final String TAG = fragment_principal.class.getSimpleName();
     private JsonObjectRequest myRequest;
-
+    private final static int REQUEST_ENABLE_BT = 1;
     private ImageButton boton_cero;
     private ImageButton boton_uno;
     private ImageButton boton_dos;
@@ -190,6 +191,7 @@ public class fragment_principal extends Fragment {
     private boolean lb_ultimo;
     private String l_turno_app;
     private File file;
+    private boolean lb_bluetooth;
 
     @Override
     public void onStart() {
@@ -218,7 +220,9 @@ public class fragment_principal extends Fragment {
         }else{
             gps.setTextColor(getResources().getColor(R.color.alarma));
         }
-        cargarImpresora(context);
+        if(lb_bluetooth) {
+            cargarImpresora(getContext());
+        }
     }
 
     /** Defines callbacks for service binding, passed to bindService() */
@@ -293,6 +297,19 @@ public class fragment_principal extends Fragment {
             gps.setTextColor(getResources().getColor(R.color.colorPrimary));
         }else{
             gps.setTextColor(getResources().getColor(R.color.alarma));
+        }
+
+        BluetoothAdapter bt = BluetoothAdapter.getDefaultAdapter();
+        if (bt == null)
+        { //Does not support Bluetooth
+            lb_bluetooth = false;
+        }else{
+            //Magic starts. Let's check if it's enabled
+            if (!bt.isEnabled())
+            { lb_bluetooth = false; }
+            else{
+                lb_bluetooth = true;
+            }
         }
 
         datos = new ArrayList<>();
@@ -464,7 +481,9 @@ public class fragment_principal extends Fragment {
                     mBound = false;
                 }
                 if(!mBound) {
-                    cargarImpresora(context);
+                    if(lb_bluetooth) {
+                        cargarImpresora(getContext());
+                    }
                 }
             }
         });
@@ -509,7 +528,7 @@ public class fragment_principal extends Fragment {
             }
         });
         feriado(context);
-        //cargarImpresora(getContext());
+
         return v;
     }
 
@@ -2360,7 +2379,9 @@ private void procesarRespuestaParametroTurno(JSONObject response, Context contex
                         turno.setText("T.N°: " + l_nro_turno + " - " + l_fecha + " - " + l_hora_inicio);
                         this.boton_automatico.setBackground(act.getResources().getDrawable(R.drawable.selector_automatico));
                         this.boton_automatico.setEnabled(true);
-                        cargarImpresora(context);
+                        if(lb_bluetooth) {
+                            cargarImpresora(getContext());
+                        }
 
                     }else{
                         this.boton_uno.setEnabled(false);
