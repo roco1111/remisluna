@@ -352,10 +352,16 @@ public class ServicioGeolocalizacion extends Service implements Runnable {
                 Toast.makeText(getApplicationContext(), "Error con GPS", Toast.LENGTH_LONG).show();
                 return;
             }
-            mLocationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 1000, 0, mLocationListener);
+            Criteria criteria = new Criteria();
+            criteria.setAccuracy(Criteria.ACCURACY_FINE);
+            mLocationManager.getBestProvider(criteria, true);
+            mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000, 0, mLocationListener);
+
+
             if(Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP) {
-                mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000, 0, mLocationListener);
+                mLocationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 1000, 0, mLocationListener);
             }
+
             Log.d("geolicalizacion","LocationManager");
             Looper.loop();
             Looper.myLooper().quit();

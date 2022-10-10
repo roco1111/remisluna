@@ -600,10 +600,7 @@ public class fragment_principal extends Fragment {
     private boolean checkIfLocationOpened() {
         String provider = Settings.Secure.getString(context.getContentResolver(), Settings.Secure.LOCATION_PROVIDERS_ALLOWED);
         System.out.println("Provider contains=> " + provider);
-        if (provider.contains("gps") || provider.contains("network")){
-            return true;
-        }
-        return false;
+        return provider.contains("gps") || provider.contains("network");
     }
 public void cargarParametroTurno(final Context context) {
 
@@ -1348,7 +1345,7 @@ private void procesarRespuestaParametroTurno(JSONObject response, Context contex
 
     private void cerrar_turno(final Context context){
 
-        String newURL = Constantes.FIN_TURNO + "?id=" + ls_id_turno;
+        String newURL = Constantes.FIN_TURNO + "?id=" + ls_id_conductor;
         Log.d(TAG,newURL);
 
         // Actualizar datos en el servidor
