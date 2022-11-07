@@ -23,6 +23,7 @@ import android.location.LocationManager;
 import android.media.MediaPlayer;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
@@ -217,7 +218,7 @@ public class fragment_viaje extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-        if(checkIfLocationOpened()){
+        if(gps_habilitado()){
             gps.setTextColor(getResources().getColor(R.color.colorPrimary));
         }else{
             gps.setTextColor(getResources().getColor(R.color.alarma));
@@ -319,7 +320,7 @@ public class fragment_viaje extends Fragment {
         }
 
         this.gps = v.findViewById(R.id.gps);
-        if(checkIfLocationOpened()){
+        if(gps_habilitado()){
             gps.setTextColor(getResources().getColor(R.color.colorPrimary));
         }else{
             gps.setTextColor(getResources().getColor(R.color.alarma));
@@ -347,7 +348,7 @@ public class fragment_viaje extends Fragment {
             public void onClick(View v) {
 
                 mediaPlayer.start();
-                cargarDatosRemiseria(context);
+                cargarDatosRemiseria(context, v);
 
             }
         });
@@ -621,7 +622,7 @@ public class fragment_viaje extends Fragment {
         }
     }
 
-    public void cargarDatosRemiseria(final Context context) {
+    public void cargarDatosRemiseria(final Context context, final View v) {
 
         // Añadir parámetro a la URL del web service
         String newURL = Constantes.GET_REMISERIA + "?remiseria=" + ls_remiseria;
@@ -638,7 +639,7 @@ public class fragment_viaje extends Fragment {
                             @Override
                             public void onResponse(JSONObject response) {
                                 // Procesar respuesta Json
-                                procesarRespuesta_remiseria(response, context);
+                                procesarRespuesta_remiseria(response, v);
                             }
                         },
                         new Response.ErrorListener() {
@@ -657,7 +658,7 @@ public class fragment_viaje extends Fragment {
 
     }
 
-    private void procesarRespuesta_remiseria(JSONObject response, Context context) {
+    private void procesarRespuesta_remiseria(JSONObject response, View v) {
 
         try {
             // Obtener atributo "mensaje"
@@ -672,14 +673,7 @@ public class fragment_viaje extends Fragment {
                     //Parsear objeto
 
                     telefono_base = object.getString("TELEFONO_BASE");
-                    Intent intent = new Intent("android.intent.action.MAIN");
-                    intent.setAction(Intent.ACTION_SEND);
-                    intent.setType("text/plain");
-                    intent.putExtra(Intent.EXTRA_TEXT, "hola");
-                    intent.putExtra("jid", telefono_base + "@s.whatsapp.net"); //numero telefonico sin prefijo "+"!
-
-                    intent.setPackage("com.whatsapp");
-                    startActivity(intent);
+                    setClickToChat(v,telefono_base);
 
                     break;
 
@@ -694,6 +688,19 @@ public class fragment_viaje extends Fragment {
             e.printStackTrace();
         }
 
+    }
+
+    public static void setClickToChat(View v,String toNumber){
+        String url = "https://api.whatsapp.com/send?phone=" + toNumber;
+        try {
+            PackageManager pm = v.getContext().getPackageManager();
+            pm.getPackageInfo("com.whatsapp", PackageManager.GET_ACTIVITIES);
+            Intent i = new Intent(Intent.ACTION_VIEW);
+            i.setData(Uri.parse(url));
+            v.getContext().startActivity(i);
+        } catch (PackageManager.NameNotFoundException e) {
+            v.getContext().startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(url)));
+        }
     }
 
     public void feriado(final Context context){
@@ -752,10 +759,11 @@ public class fragment_viaje extends Fragment {
         }
     }
 
-    private boolean checkIfLocationOpened() {
-        String provider = Settings.Secure.getString(context.getContentResolver(), Settings.Secure.LOCATION_PROVIDERS_ALLOWED);
-        System.out.println("Provider contains=> " + provider);
-        if (provider.contains("gps") || provider.contains("network")){
+
+    private boolean gps_habilitado(){
+        LocationManager mlocManager = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
+        if(mlocManager.isProviderEnabled(LocationManager.GPS_PROVIDER))
+        {
             return true;
         }
         return false;

@@ -41,6 +41,7 @@
     <string name="cero_distancia">0</string>
     <string name="cero_tiempo">00:00</string>
     <string name="gps">GPS</string>
+    <string name="red">RED</string>
     <string name="parada">Sin Parada</string>
     <string name="tarifa">Tarifa</string>
     <string name="libre">Libre</string>

@@ -1,5 +1,6 @@
 package com.rosario.hp.remisluna;
 
+import android.Manifest;
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
@@ -7,6 +8,7 @@ import android.bluetooth.BluetoothSocket;
 import android.content.Intent;
 
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 
 import android.preference.PreferenceManager;
@@ -16,6 +18,7 @@ import android.widget.Switch;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -52,25 +55,35 @@ public class ListaBluetoohtActivity extends AppCompatActivity {
         dispositivos = new ArrayList<ItemDispositivo>();
 
         bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-        if(bluetoothAdapter != null){
-            if(!bluetoothAdapter.isEnabled()){// si no está activado
+        if (bluetoothAdapter != null) {
+            if (!bluetoothAdapter.isEnabled()) {// si no está activado
                 // Mandamos a activarlo
                 Intent habilitarBluIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
                 startActivityForResult(habilitarBluIntent, 243);
-            }else {
+            } else {
 
                 // Obtenemos la lista de dispositivos sincronizados
+                if (ActivityCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
+                    // TODO: Consider calling
+                    //    ActivityCompat#requestPermissions
+                    // here to request the missing permissions, and then overriding
+                    //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+                    //                                          int[] grantResults)
+                    // to handle the case where the user grants the permission. See the documentation
+                    // for ActivityCompat#requestPermissions for more details.
+                    return;
+                }
                 Set<BluetoothDevice> dispositivosSync = bluetoothAdapter.getBondedDevices();
 
                 // Si hay dispositivos sincronizados
-                if(dispositivosSync.size() > 0){
+                if (dispositivosSync.size() > 0) {
                     // Llenamos el array de dispositivos para pasarlo al adapter
-                    for(BluetoothDevice dispositivo : dispositivosSync){
-                        dispositivos.add(new ItemDispositivo(dispositivo.getName(),  dispositivo.getAddress()));
+                    for (BluetoothDevice dispositivo : dispositivosSync) {
+                        dispositivos.add(new ItemDispositivo(dispositivo.getName(), dispositivo.getAddress()));
                     }
                 }
             }
-        }else{
+        } else {
             Toast.makeText(this, "El dispositivo no soporta Bluetooth", Toast.LENGTH_SHORT).show();
         }
 
@@ -80,7 +93,7 @@ public class ListaBluetoohtActivity extends AppCompatActivity {
         recycler.setAdapter(adapterDispositivos);
     }
 
-    private class EscuchadorClick implements DispositivosAdapter.MiListenerClick{
+    private class EscuchadorClick implements DispositivosAdapter.MiListenerClick {
 
         @Override
         public void clickItem(View itemView, int posicion) {
@@ -88,7 +101,7 @@ public class ListaBluetoohtActivity extends AppCompatActivity {
             //Bundle bundle = new Bundle();
             SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
             SharedPreferences.Editor editor = settings.edit();
-            editor.putString("DireccionDispositivo",adapterDispositivos.getDispositivos().get(posicion).getDireccion());
+            editor.putString("DireccionDispositivo", adapterDispositivos.getDispositivos().get(posicion).getDireccion());
             editor.commit();
 
             startService(new Intent(getApplicationContext(), Impresion.class));
@@ -97,11 +110,11 @@ public class ListaBluetoohtActivity extends AppCompatActivity {
     }
 
     @Override
-    public void onBackPressed()  {
+    public void onBackPressed() {
 
         SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
         String tipo;
-        tipo = settings.getString("tipo_ventana","");
+        tipo = settings.getString("tipo_ventana", "");
 
         Intent mainIntent = null;
 
@@ -128,10 +141,20 @@ public class ListaBluetoohtActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        if( resultCode == RESULT_OK ) {
-            if ( requestCode == 243 ) {
-                if( bluetoothAdapter.isEnabled() ){
+        if (resultCode == RESULT_OK) {
+            if (requestCode == 243) {
+                if (bluetoothAdapter.isEnabled()) {
                     // Obtenemos la lista de dispositivos sincronizados
+                    if (ActivityCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
+                        // TODO: Consider calling
+                        //    ActivityCompat#requestPermissions
+                        // here to request the missing permissions, and then overriding
+                        //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+                        //                                          int[] grantResults)
+                        // to handle the case where the user grants the permission. See the documentation
+                        // for ActivityCompat#requestPermissions for more details.
+                        return;
+                    }
                     Set<BluetoothDevice> dispositivosSync = bluetoothAdapter.getBondedDevices();
 
                     // Si hay dispositivos sincronizados

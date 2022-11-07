@@ -193,7 +193,7 @@ public class ServicioGeolocalizacion extends Service implements Runnable {
                 return;
             }
 
-            if(distance > 2.8) {
+            if(distance > 3.5) {
                 l_tipo = 1;
             }else{
                 l_tipo = 2;
@@ -203,7 +203,7 @@ public class ServicioGeolocalizacion extends Service implements Runnable {
 
 
             if(l_tipo == 1) {//fichas
-
+                Log.d("Tipo","FICHA");
                 l_inicio = System.currentTimeMillis();
                 distancia_acumulada += distance;
                 distancia_acumulada = getValor(getTwoDecimals(distancia_acumulada));
@@ -242,11 +242,15 @@ public class ServicioGeolocalizacion extends Service implements Runnable {
                 }
                 l_inicio = System.currentTimeMillis();
             }else if (l_tipo == 2){
+                Log.d("Tipo","TIEMPO");
                 //distancia_acumulada = 0;
                 l_final = System.currentTimeMillis();
                 l_diferencia = l_final - l_inicio;
                 if(l_diferencia < 0) {
                     l_diferencia = 0L;
+                }
+                if(l_diferencia >= 3000){
+                    distancia_acumulada = 0L;
                 }
                 l_inicio = l_final;
                 if(lb_torerancia){
@@ -340,7 +344,7 @@ public class ServicioGeolocalizacion extends Service implements Runnable {
      */
     public void run() {
         if (mLocationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
-            Looper.prepare();
+
             if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
                 // TODO: Consider calling
                 //    ActivityCompat#requestPermissions
@@ -352,19 +356,16 @@ public class ServicioGeolocalizacion extends Service implements Runnable {
                 Toast.makeText(getApplicationContext(), "Error con GPS", Toast.LENGTH_LONG).show();
                 return;
             }
-            Criteria criteria = new Criteria();
-            criteria.setAccuracy(Criteria.ACCURACY_FINE);
-            mLocationManager.getBestProvider(criteria, true);
-            mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000, 0, mLocationListener);
+            Looper.prepare();
 
-
-            if(Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP) {
+            if(Build.VERSION.SDK_INT > Build.VERSION_CODES.O) {
                 mLocationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 1000, 0, mLocationListener);
             }
 
+            mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000, 0, mLocationListener);
             Log.d("geolicalizacion","LocationManager");
             Looper.loop();
-            Looper.myLooper().quit();
+            //Looper.myLooper().quit();
         } else {
             taxiActivity.runOnUiThread(new Runnable() {
                 @Override

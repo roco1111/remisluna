@@ -39,6 +39,7 @@
     <dimen name="headerbar_elevation">4dp</dimen>
     <dimen name="campos_height">42dp</dimen>
     <dimen name="alto_imagen">70dp</dimen>
+    <dimen name="alto_imagen_wa">80dp</dimen>
     <dimen name="alto_boton">60dp</dimen>
     <dimen name="ancho_boton_grande">180dp</dimen>
     <dimen name="alto_preferencias">60dp</dimen>

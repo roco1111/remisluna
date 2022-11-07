@@ -2,6 +2,7 @@ package com.rosario.hp.remisluna.Fragment;
 
 import android.Manifest;
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.ActivityNotFoundException;
@@ -21,6 +22,7 @@ import android.location.Geocoder;
 import android.location.Location;
 import android.location.LocationManager;
 import android.media.MediaPlayer;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
@@ -156,6 +158,7 @@ public class fragment_principal extends Fragment {
     private TextView impresora;
     private TextView texto_tarifa;
     private TextView gps;
+    private TextView red;
     private TextView txt_parada;
     private Impresion impresion;
     private ArrayList<turno> datos;
@@ -192,6 +195,7 @@ public class fragment_principal extends Fragment {
     private String l_turno_app;
     private File file;
     private boolean lb_bluetooth;
+    ProgressDialog progress1;
 
     @Override
     public void onStart() {
@@ -215,13 +219,18 @@ public class fragment_principal extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-        if(checkIfLocationOpened()){
+        if(gps_habilitado()){
             gps.setTextColor(getResources().getColor(R.color.colorPrimary));
         }else{
             gps.setTextColor(getResources().getColor(R.color.alarma));
         }
+        if(red_habilitada()){
+            red.setTextColor(getResources().getColor(R.color.colorPrimary));
+        }else{
+            red.setTextColor(getResources().getColor(R.color.alarma));
+        }
         if(lb_bluetooth) {
-            cargarImpresora(getContext());
+            cargarImpresora(context);
         }
     }
 
@@ -288,15 +297,22 @@ public class fragment_principal extends Fragment {
         this.boton_fin_turno = v.findViewById(R.id.fin_turno);
         this.txt_parada = v.findViewById(R.id.parada);
         this.gps = v.findViewById(R.id.gps);
+        this.red = v.findViewById(R.id.red);
         this.turno = v.findViewById(R.id.turno);
         texto_tarifa = v.findViewById(R.id.tarifa);
         paradas = new ArrayList<>();
         context = getContext();
         act = getActivity();
-        if(checkIfLocationOpened()){
+        if(gps_habilitado()){
             gps.setTextColor(getResources().getColor(R.color.colorPrimary));
         }else{
             gps.setTextColor(getResources().getColor(R.color.alarma));
+        }
+
+        if(red_habilitada()){
+            red.setTextColor(getResources().getColor(R.color.colorPrimary));
+        }else{
+            red.setTextColor(getResources().getColor(R.color.alarma));
         }
 
         BluetoothAdapter bt = BluetoothAdapter.getDefaultAdapter();
@@ -386,7 +402,7 @@ public class fragment_principal extends Fragment {
             public void onClick(View v) {
 
                 mediaPlayer.start();
-                cargarDatosRemiseria(context);
+                cargarDatosRemiseria(context, v);
 
             }
         });
@@ -482,7 +498,7 @@ public class fragment_principal extends Fragment {
                 }
                 if(!mBound) {
                     if(lb_bluetooth) {
-                        cargarImpresora(getContext());
+                        cargarImpresora(context);
                     }
                 }
             }
@@ -527,6 +543,7 @@ public class fragment_principal extends Fragment {
                 act.finish();
             }
         });
+
         feriado(context);
 
         return v;
@@ -597,11 +614,24 @@ public class fragment_principal extends Fragment {
         }
     }
 
-    private boolean checkIfLocationOpened() {
-        String provider = Settings.Secure.getString(context.getContentResolver(), Settings.Secure.LOCATION_PROVIDERS_ALLOWED);
-        System.out.println("Provider contains=> " + provider);
-        return provider.contains("gps") || provider.contains("network");
+    private boolean gps_habilitado(){
+        LocationManager mlocManager = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
+        if(mlocManager.isProviderEnabled(LocationManager.GPS_PROVIDER))
+        {
+            return true;
+        }
+        return false;
     }
+
+    private boolean red_habilitada(){
+        LocationManager mlocManager = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
+        if(mlocManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER))
+        {
+            return true;
+        }
+        return false;
+    }
+
 public void cargarParametroTurno(final Context context) {
 
     HashMap<String, String> map = new HashMap<>();// Mapeo previo
@@ -2332,7 +2362,7 @@ private void procesarRespuestaParametroTurno(JSONObject response, Context contex
 
     }
 
-    private void procesarRespuesta_inicial(JSONObject response, Context context) {
+    private void procesarRespuesta_inicial(JSONObject response, Context v) {
 
         try {
             // Obtener atributo "mensaje"
@@ -2377,7 +2407,7 @@ private void procesarRespuestaParametroTurno(JSONObject response, Context contex
                         this.boton_automatico.setBackground(act.getResources().getDrawable(R.drawable.selector_automatico));
                         this.boton_automatico.setEnabled(true);
                         if(lb_bluetooth) {
-                            cargarImpresora(getContext());
+                            cargarImpresora(context);
                         }
 
                     }else{
@@ -4155,7 +4185,7 @@ private void procesarRespuestaParametroTurno(JSONObject response, Context contex
 
     }
 
-    public void cargarDatosRemiseria(final Context context) {
+    public void cargarDatosRemiseria(final Context context, final View v) {
 
         // Añadir parámetro a la URL del web service
         String newURL = Constantes.GET_REMISERIA + "?remiseria=" + ls_remiseria;
@@ -4172,7 +4202,7 @@ private void procesarRespuestaParametroTurno(JSONObject response, Context contex
                             @Override
                             public void onResponse(JSONObject response) {
                                 // Procesar respuesta Json
-                                procesarRespuesta_remiseria(response, context);
+                                procesarRespuesta_remiseria(response, v);
                             }
                         },
                         new Response.ErrorListener() {
@@ -4191,7 +4221,7 @@ private void procesarRespuestaParametroTurno(JSONObject response, Context contex
 
     }
 
-    private void procesarRespuesta_remiseria(JSONObject response, Context context) {
+    private void procesarRespuesta_remiseria(JSONObject response, View v) {
 
         try {
             // Obtener atributo "mensaje"
@@ -4206,14 +4236,7 @@ private void procesarRespuestaParametroTurno(JSONObject response, Context contex
                     //Parsear objeto
 
                     telefono_base = object.getString("TELEFONO_BASE");
-                    Intent intent = new Intent("android.intent.action.MAIN");
-                    intent.setAction(Intent.ACTION_SEND);
-                    intent.setType("text/plain");
-                    intent.putExtra(Intent.EXTRA_TEXT, "hola");
-                    intent.putExtra("jid", telefono_base + "@s.whatsapp.net"); //numero telefonico sin prefijo "+"!
-
-                    intent.setPackage("com.whatsapp");
-                    startActivity(intent);
+                    setClickToChat(v,telefono_base);
 
                     break;
 
@@ -4228,6 +4251,19 @@ private void procesarRespuestaParametroTurno(JSONObject response, Context contex
             e.printStackTrace();
         }
 
+    }
+
+    public static void setClickToChat(View v,String toNumber){
+        String url = "https://api.whatsapp.com/send?phone=" + toNumber;
+        try {
+            PackageManager pm = v.getContext().getPackageManager();
+            pm.getPackageInfo("com.whatsapp", PackageManager.GET_ACTIVITIES);
+            Intent i = new Intent(Intent.ACTION_VIEW);
+            i.setData(Uri.parse(url));
+            v.getContext().startActivity(i);
+        } catch (PackageManager.NameNotFoundException e) {
+            v.getContext().startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(url)));
+        }
     }
 
 

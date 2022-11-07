@@ -34,7 +34,16 @@
                 android:textSize="@dimen/tamanio_parrafo"
                 android:textStyle="bold" />
 
-
+            <TextView
+                android:id="@+id/red"
+                android:layout_width="wrap_content"
+                android:layout_height="@dimen/icono_chico"
+                android:layout_centerHorizontal="true"
+                android:text="@string/red"
+                android:textAlignment="center"
+                android:textColor="@color/colorPrimary"
+                android:textSize="@dimen/tamanio_parrafo"
+                android:textStyle="bold" />
 
             <TextView
                 android:id="@+id/tarifa"

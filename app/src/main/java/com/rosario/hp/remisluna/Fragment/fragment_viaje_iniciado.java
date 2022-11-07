@@ -8,15 +8,19 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.location.LocationManager;
 import android.media.MediaPlayer;
+import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.provider.Settings;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -115,6 +119,9 @@ public class fragment_viaje_iniciado extends Fragment {
     private String l_nro_recibo;
     private String l_recibo_parametro;
 
+    private Button boton_whatsapp;
+    private String telefono_base;
+
     @Override
     public void onPause() {
         if(isMyServiceRunning(ServicioGeolocalizacion.class)) {
@@ -145,6 +152,7 @@ public class fragment_viaje_iniciado extends Fragment {
         dato_salida = v.findViewById(R.id.dato_salida);
         destino = v.findViewById(R.id.dato_destino);
         sin_ticket = v.findViewById(R.id.buttonSinTicket);
+        boton_whatsapp = v.findViewById(R.id.imageWa);
 
         suspender = v.findViewById(R.id.buttonSuspender);
         alarma = v.findViewById(R.id.buttonAlarma);
@@ -165,6 +173,7 @@ public class fragment_viaje_iniciado extends Fragment {
         l_hora_hasta= settings.getString("tarifa_hasta","");
         ls_es_feriado = settings.getString("feriado","");
         l_tolerancia_tope = settings.getLong("tolerancia_tope",0L);
+
 
         String l_hoy;
 
@@ -208,10 +217,21 @@ public class fragment_viaje_iniciado extends Fragment {
                 alarma_viaje(context);
             }
         });
+
+        this.boton_whatsapp.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                mediaPlayer.start();
+                cargarDatosRemiseria(context, v);
+
+            }
+        });
         cargarDatos(context);
 
         return v;
     }
+
 
     private boolean isMyServiceRunning(Class<?> serviceClass) {
         ActivityManager manager = (ActivityManager) getActivity().getSystemService(Context.ACTIVITY_SERVICE);
@@ -244,6 +264,88 @@ public class fragment_viaje_iniciado extends Fragment {
     private static String getTwoDecimals(double value){
         DecimalFormat df = new DecimalFormat("0.00");
         return df.format(value);
+    }
+
+    public void cargarDatosRemiseria(final Context context, final View v) {
+
+        // Añadir parámetro a la URL del web service
+        String newURL = Constantes.GET_REMISERIA + "?remiseria=" + ls_remiseria;
+        Log.d(TAG,newURL);
+
+        // Realizar petición GET_BY_ID
+        VolleySingleton.getInstance(context).addToRequestQueue(
+                myRequest = new JsonObjectRequest(
+                        Request.Method.POST,
+                        newURL,
+                        null,
+                        new Response.Listener<JSONObject>() {
+
+                            @Override
+                            public void onResponse(JSONObject response) {
+                                // Procesar respuesta Json
+                                procesarRespuesta_remiseria(response, context, v);
+                            }
+                        },
+                        new Response.ErrorListener() {
+                            @Override
+                            public void onErrorResponse(VolleyError error) {
+                                Log.d(TAG, "Error Volley viaje: " + error.getMessage());
+
+                            }
+                        }
+                )
+        );
+        myRequest.setRetryPolicy(new DefaultRetryPolicy(
+                50000,
+                5,//DefaultRetryPolicy.DEFAULT_MAX_RETRIES
+                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+
+    }
+
+    private void procesarRespuesta_remiseria(JSONObject response, Context context, View v) {
+
+        try {
+            // Obtener atributo "mensaje"
+            String mensaje = response.getString("estado");
+
+            switch (mensaje) {
+                case "1":
+                    // Obtener objeto "cliente"
+                    JSONArray mensaje1 = response.getJSONArray("remiseria");
+
+                    JSONObject object = mensaje1.getJSONObject(0);
+                    //Parsear objeto
+
+                    telefono_base = object.getString("TELEFONO_BASE");
+
+                    setClickToChat(v,telefono_base);
+
+                    break;
+
+                case "2":
+
+                    break;
+
+            }
+
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    public static void setClickToChat(View v,String toNumber){
+        String url = "https://api.whatsapp.com/send?phone=" + toNumber;
+        try {
+            PackageManager pm = v.getContext().getPackageManager();
+            pm.getPackageInfo("com.whatsapp", PackageManager.GET_ACTIVITIES);
+            Intent i = new Intent(Intent.ACTION_VIEW);
+            i.setData(Uri.parse(url));
+            v.getContext().startActivity(i);
+        } catch (PackageManager.NameNotFoundException e) {
+            v.getContext().startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(url)));
+        }
     }
 
     public void cargarTarifa(final Context context, final String[] tokens) {
