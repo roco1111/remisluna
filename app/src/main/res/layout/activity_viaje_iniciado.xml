@@ -231,8 +231,8 @@
                 android:id="@+id/id_wa"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="@dimen/margin_top"
                 android:layout_marginStart="@dimen/margin_top_menu2"
+                android:layout_marginBottom="@dimen/margin_top"
                 android:orientation="vertical">
 
                 <Button

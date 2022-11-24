@@ -66,11 +66,22 @@ public class viajeAdapter extends RecyclerView.Adapter<viajeAdapter.HolderTurno>
             case "6":
                 holder.indicador.setImageDrawable(context.getResources().getDrawable(R.drawable.asignado));
                 break;
+            case "7":
+                holder.indicador.setImageDrawable(context.getResources().getDrawable(R.drawable.eliminado));
+                break;
         }
 
 
 
         holder.importe.setText('$' + viajes.get(position).getImporte());
+
+        if(viajes.get(position).getEstado().equals("7")){
+            holder.importe.setVisibility(View.GONE);
+            holder.recibo.setVisibility(View.GONE);
+        }else{
+            holder.importe.setVisibility(View.VISIBLE);
+            holder.recibo.setVisibility(View.VISIBLE);
+        }
 
     }
 

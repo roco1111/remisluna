@@ -20,6 +20,7 @@ import android.os.IBinder;
 import android.preference.PreferenceManager;
 import android.provider.Settings;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
@@ -53,6 +54,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 
 import static com.rosario.hp.remisluna.include.Utils.stringABytes;
 
@@ -67,6 +69,7 @@ public class MainTurno extends AppCompatActivity {
     boolean mBound = false;
     private static OutputStream outputStream;
     byte FONT_TYPE;
+    Context context;
 
     @Override
     public void onStart() {
@@ -108,10 +111,14 @@ public class MainTurno extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main_basica);
 
-        SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        context = getApplicationContext();
+
+        SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(context);
         ls_id_turno     = settings.getString("id_turno","");
         ls_vehiculo         = settings.getString("vehiculo","");
-        getSupportActionBar().setTitle("Datos Turno");
+        Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(false);
+        Objects.requireNonNull(getSupportActionBar()).setDisplayShowHomeEnabled(false);
+        Objects.requireNonNull(getSupportActionBar()).setTitle("Datos Turno");
         ayudas = new ArrayList<>();
 
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
@@ -147,10 +154,29 @@ public class MainTurno extends AppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
 
-        Intent intent2 = new Intent(getApplicationContext(), activity_preferencias.class);
-        getApplicationContext().startActivity(intent2);
+        Intent intent2 = new Intent(context, activity_preferencias.class);
+        intent2.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        context.startActivity(intent2);
 
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        // TODO Auto-generated method stub
+        if (keyCode == event.KEYCODE_BACK) {
+            Intent intent2 = new Intent(context, MainActivity.class);
+            intent2.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            context.startActivity(intent2);
+        }
+        return super.onKeyDown(keyCode, event);
+    }
+
+    @Override
+    public void onBackPressed() {
+        Intent intent2 = new Intent(context, MainActivity.class);
+        intent2.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        context.startActivity(intent2);
     }
 
 
@@ -278,7 +304,7 @@ public class MainTurno extends AppCompatActivity {
         String newURL = Constantes.UPDATE_UBICACION + "?" + encodedParams;
 
         // Actualizar datos en el servidor
-        VolleySingleton.getInstance(getApplicationContext()).addToRequestQueue(
+        VolleySingleton.getInstance(context).addToRequestQueue(
                 new JsonObjectRequest(
                         Request.Method.GET,
                         newURL,
@@ -324,7 +350,7 @@ public class MainTurno extends AppCompatActivity {
                 case "2":
                     // Mostrar mensaje
                     Toast.makeText(
-                            getApplicationContext(),
+                            context,
                             mensaje,
                             Toast.LENGTH_LONG).show();
                     // Enviar código de falla

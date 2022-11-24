@@ -54,6 +54,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 
 import static com.rosario.hp.remisluna.include.Utils.stringABytes;
 
@@ -121,8 +122,9 @@ public class insertUsuario extends AppCompatActivity {
                     .commit();
 
         }
-
-        getSupportActionBar().setTitle("Perfil");
+        Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(false);
+        Objects.requireNonNull(getSupportActionBar()).setDisplayShowHomeEnabled(false);
+        Objects.requireNonNull(getSupportActionBar()).setTitle("Perfil");
     }
 
 

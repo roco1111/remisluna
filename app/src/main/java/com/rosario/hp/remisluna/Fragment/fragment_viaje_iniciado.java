@@ -467,7 +467,7 @@ public class fragment_viaje_iniciado extends Fragment {
                                 ls_tiempo = tokens[4];
                                 tiempo_tolerancia = Long.parseLong(tokens[5]);
                                 tiempo_viaje.setText( ls_tiempo);
-                                tiempo_viaje.setTextColor(getResources().getColor(R.color.suspender));
+                                tiempo_viaje.setTextColor(act.getResources().getColor(R.color.suspender));
                             }
                             break;
                         case "2"://espera
@@ -484,7 +484,7 @@ public class fragment_viaje_iniciado extends Fragment {
                             ls_tiempo = tokens[3];
                             tiempo_tolerancia = Long.parseLong(tokens[4]);
                             tiempo_viaje.setText( ls_tiempo);
-                            tiempo_viaje.setTextColor(getResources().getColor(R.color.suspender));
+                            tiempo_viaje.setTextColor(act.getResources().getColor(R.color.suspender));
                             valor_ficha = 0.00;
                             break;
                         case "4"://reloj en espera
@@ -493,7 +493,7 @@ public class fragment_viaje_iniciado extends Fragment {
                             tiempo_acumulado = Long.parseLong(tokens[4]);
                             tiempo_viaje.setText( ls_tiempo);
                             valor_ficha = 0.00;
-                            tiempo_viaje.setTextColor(getResources().getColor(R.color.colorPrimary));
+                            tiempo_viaje.setTextColor(act.getResources().getColor(R.color.colorPrimary));
                             break;
                         case "5"://termino tolerancia
                             tiempo_viaje.setText( "00:00");
@@ -507,7 +507,7 @@ public class fragment_viaje_iniciado extends Fragment {
                             }
 
                             tipo_espera = 1;
-                            tiempo_viaje.setTextColor(getResources().getColor(R.color.colorPrimary));
+                            tiempo_viaje.setTextColor(act.getResources().getColor(R.color.colorPrimary));
                             break;
                     }
 
@@ -860,9 +860,9 @@ public class fragment_viaje_iniciado extends Fragment {
                         precio_ficha = Double.parseDouble(object.getString("importe_fichas"));
                         precio_espera = Double.parseDouble(object.getString("importe_espera_viaje"));
                         if(tipo_espera == 0){
-                            tiempo_viaje.setTextColor(getResources().getColor(R.color.suspender));
+                            tiempo_viaje.setTextColor(act.getResources().getColor(R.color.suspender));
                         }else{
-                            tiempo_viaje.setTextColor(getResources().getColor(R.color.colorPrimary));
+                            tiempo_viaje.setTextColor(act.getResources().getColor(R.color.colorPrimary));
                         }
 
                     }

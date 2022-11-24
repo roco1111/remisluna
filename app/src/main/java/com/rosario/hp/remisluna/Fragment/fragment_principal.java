@@ -35,6 +35,7 @@ import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -50,7 +51,7 @@ import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.error.VolleyError;
 import com.android.volley.request.JsonObjectRequest;
-import com.google.firebase.auth.FirebaseAuth;
+
 import com.itextpdf.text.BaseColor;
 import com.itextpdf.text.Chunk;
 import com.itextpdf.text.DocumentException;
@@ -70,9 +71,9 @@ import com.rosario.hp.remisluna.Entidades.viaje;
 import com.rosario.hp.remisluna.Impresion;
 import com.rosario.hp.remisluna.MainActivity;
 import com.rosario.hp.remisluna.MainViaje;
-import com.rosario.hp.remisluna.Main_Login;
+
 import com.rosario.hp.remisluna.R;
-import com.rosario.hp.remisluna.activity_preferencias;
+
 import com.rosario.hp.remisluna.include.Constantes;
 import com.rosario.hp.remisluna.include.PrinterCommands;
 import com.rosario.hp.remisluna.include.Utils;
@@ -124,6 +125,7 @@ public class fragment_principal extends Fragment {
 
     private ImageButton boton_fin_turno;
     private ImageButton boton_whatsapp;
+    private ImageButton boton_impresora;
 
     private String l_hora_desde;
     private String l_hora_hasta;
@@ -196,6 +198,7 @@ public class fragment_principal extends Fragment {
     private File file;
     private boolean lb_bluetooth;
     ProgressDialog progress1;
+    private String l_impresion;
 
     @Override
     public void onStart() {
@@ -220,14 +223,14 @@ public class fragment_principal extends Fragment {
     public void onResume() {
         super.onResume();
         if(gps_habilitado()){
-            gps.setTextColor(getResources().getColor(R.color.colorPrimary));
+            gps.setTextColor(act.getResources().getColor(R.color.colorPrimary));
         }else{
-            gps.setTextColor(getResources().getColor(R.color.alarma));
+            gps.setTextColor(act.getResources().getColor(R.color.alarma));
         }
         if(red_habilitada()){
-            red.setTextColor(getResources().getColor(R.color.colorPrimary));
+            red.setTextColor(act.getResources().getColor(R.color.colorPrimary));
         }else{
-            red.setTextColor(getResources().getColor(R.color.alarma));
+            red.setTextColor(act.getResources().getColor(R.color.alarma));
         }
         if(lb_bluetooth) {
             cargarImpresora(context);
@@ -246,15 +249,15 @@ public class fragment_principal extends Fragment {
             impresion = binder.getService();
             if(impresion.getBluetoothAdapter() !=null && impresion.getbluetoothSocket() != null) {
                 if (impresion.getOutputStream() != null) {
-                    impresora.setTextColor(context.getResources().getColor(R.color.colorPrimary));
+                    impresora.setTextColor(act.getResources().getColor(R.color.colorPrimary));
                     mBound = true;
                 } else {
-                    impresora.setTextColor(context.getResources().getColor(R.color.alarma));
+                    impresora.setTextColor(act.getResources().getColor(R.color.alarma));
                     mBound = false;
 
                 }
             }else{
-                impresora.setTextColor(context.getResources().getColor(R.color.alarma));
+                impresora.setTextColor(act.getResources().getColor(R.color.alarma));
                 mBound = false;
             }
         }
@@ -262,13 +265,13 @@ public class fragment_principal extends Fragment {
         @Override
         public void onServiceDisconnected(ComponentName arg0) {
 
-            impresora.setTextColor(getResources().getColor(R.color.alarma));
+            impresora.setTextColor(act.getResources().getColor(R.color.alarma));
             mBound = false;
             Log.d("impresora", "desconectada");
         }
         @Override
         public void onBindingDied (ComponentName arg0) {
-            impresora.setTextColor(getResources().getColor(R.color.alarma));
+            impresora.setTextColor(act.getResources().getColor(R.color.alarma));
             mBound = false;
             Log.d("impresora", "onBindingDied");
         }
@@ -294,25 +297,25 @@ public class fragment_principal extends Fragment {
         this.impresora = v.findViewById(R.id.impresora);
         this.boton_whatsapp = v.findViewById(R.id.imageWa);
         this.boton_automatico = v.findViewById(R.id.imageautomatico);
-        this.boton_fin_turno = v.findViewById(R.id.fin_turno);
         this.txt_parada = v.findViewById(R.id.parada);
         this.gps = v.findViewById(R.id.gps);
         this.red = v.findViewById(R.id.red);
         this.turno = v.findViewById(R.id.turno);
         texto_tarifa = v.findViewById(R.id.tarifa);
+        this.boton_impresora = v.findViewById(R.id.imageImpresora);
         paradas = new ArrayList<>();
         context = getContext();
         act = getActivity();
         if(gps_habilitado()){
-            gps.setTextColor(getResources().getColor(R.color.colorPrimary));
+            gps.setTextColor(act.getResources().getColor(R.color.colorPrimary));
         }else{
-            gps.setTextColor(getResources().getColor(R.color.alarma));
+            gps.setTextColor(act.getResources().getColor(R.color.alarma));
         }
 
         if(red_habilitada()){
-            red.setTextColor(getResources().getColor(R.color.colorPrimary));
+            red.setTextColor(act.getResources().getColor(R.color.colorPrimary));
         }else{
-            red.setTextColor(getResources().getColor(R.color.alarma));
+            red.setTextColor(act.getResources().getColor(R.color.alarma));
         }
 
         BluetoothAdapter bt = BluetoothAdapter.getDefaultAdapter();
@@ -450,7 +453,7 @@ public class fragment_principal extends Fragment {
             }
         });
 
-        this.boton_fin_turno.setOnClickListener(new View.OnClickListener() {
+        this.boton_cinco.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 mediaPlayer.start();
@@ -483,7 +486,7 @@ public class fragment_principal extends Fragment {
             }
         });
 
-        this.boton_cinco.setOnClickListener(new View.OnClickListener() {
+        this.boton_impresora.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 mediaPlayer.start();
@@ -493,7 +496,7 @@ public class fragment_principal extends Fragment {
                 editor.apply();
                 if(mBound) {
                     act.unbindService(connection);
-                    impresora.setTextColor(getResources().getColor(R.color.alarma));
+                    impresora.setTextColor(act.getResources().getColor(R.color.alarma));
                     mBound = false;
                 }
                 if(!mBound) {
@@ -710,9 +713,11 @@ private void procesarRespuestaParametroTurno(JSONObject response, Context contex
 
                 }
                 if(l_turno_app.equals("0")){
-                    boton_fin_turno.setVisibility(View.INVISIBLE);
+                    boton_cinco.setBackground(act.getResources().getDrawable(R.drawable.cinco_gris));
+                    boton_cinco.setEnabled(false);
                 }else{
-                    boton_fin_turno.setVisibility(View.VISIBLE);
+                    boton_cinco.setBackground(act.getResources().getDrawable(R.drawable.cinco));
+                    boton_cinco.setEnabled(true);
                 }
                 cargarParametroTarifaDesde(context);
 
@@ -947,11 +952,110 @@ private void procesarRespuestaParametroTurno(JSONObject response, Context contex
                         editor.apply();
 
                     }
-                    cargarParadas( context);
+                    cargarParametroImpresora( context);
                     break;
 
             }
 
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    public void cargarParametroImpresora(final Context context) {
+
+        HashMap<String, String> map = new HashMap<>();// Mapeo previo
+
+        map.put("parametro", "18");
+        map.put("remiseria", ls_remiseria);
+
+        JSONObject jobject = new JSONObject(map);
+
+
+        // Depurando objeto Json...
+        Log.d(TAG, jobject.toString());
+
+        StringBuilder encodedParams = new StringBuilder();
+        try {
+            for (Map.Entry<String, String> entry : map.entrySet()) {
+                encodedParams.append(URLEncoder.encode(entry.getKey(), "utf-8"));
+                encodedParams.append('=');
+                encodedParams.append(URLEncoder.encode(entry.getValue(), "utf-8"));
+                encodedParams.append('&');
+            }
+        } catch (UnsupportedEncodingException uee) {
+            throw new RuntimeException("Encoding not supported: " + "utf-8", uee);
+        }
+
+        encodedParams.setLength(Math.max(encodedParams.length() - 1, 0));
+
+        // Añadir parámetro a la URL del web service
+        String newURL = Constantes.GET_ID_PARAMETRO + "?" + encodedParams;
+        Log.d(TAG,newURL);
+
+        // Realizar petición GET_BY_ID
+        VolleySingleton.getInstance(context).addToRequestQueue(
+                myRequest = new JsonObjectRequest(
+                        Request.Method.POST,
+                        newURL,
+                        null,
+                        new Response.Listener<JSONObject>() {
+
+                            @Override
+                            public void onResponse(JSONObject response) {
+                                // Procesar respuesta Json
+                                procesarRespuestaParametroimpresion(response, context);
+                            }
+                        },
+                        new Response.ErrorListener() {
+                            @Override
+                            public void onErrorResponse(VolleyError error) {
+                                Log.d(TAG, "Error Volley tarifa desde: " + error.getMessage());
+                                progress1.dismiss();
+
+                            }
+                        }
+                )
+        );
+        myRequest.setRetryPolicy(new DefaultRetryPolicy(
+                50000,
+                5,//DefaultRetryPolicy.DEFAULT_MAX_RETRIES
+                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+
+    }
+
+    private void procesarRespuestaParametroimpresion(JSONObject response, Context context) {
+
+        try {
+            // Obtener atributo "mensaje"
+            String mensaje = response.getString("estado");
+
+            switch (mensaje) {
+                case "1":
+                    JSONArray datos_parametro = response.getJSONArray("parametro");
+
+                    for(int i = 0; i < datos_parametro.length(); i++)
+                    {JSONObject object = datos_parametro.getJSONObject(i);
+
+                        l_impresion = object.getString("valor");
+
+                        if(l_impresion.equals("0")) {
+
+                            boton_impresora.setVisibility(View.GONE);
+                        }
+
+                        cargarParadas(context);
+
+                    }
+
+                    break;
+                case "2":
+                    progress1.dismiss();
+                    break;
+
+            }
 
         } catch (JSONException e) {
             e.printStackTrace();
@@ -1207,7 +1311,7 @@ private void procesarRespuestaParametroTurno(JSONObject response, Context contex
                 //print normal text
                 printCustom(nombre_remiseria, 2, 1);
                 printNewLine();
-                printCustom(getResources().getString(R.string.parcial_turno), 1, 0); // total 32 char in a single line
+                printCustom(act.getResources().getString(R.string.parcial_turno), 1, 0); // total 32 char in a single line
 
                 printNewLine();
                 printText("Nro: " + l_nro_turno);//nro
@@ -1293,7 +1397,7 @@ private void procesarRespuestaParametroTurno(JSONObject response, Context contex
             cell.setHorizontalAlignment(PdfPCell.ALIGN_LEFT);
             tabla_enc.addCell(cell);
 
-            cell = new PdfPCell(new Phrase(getResources().getString(R.string.parcial_turno),font));
+            cell = new PdfPCell(new Phrase(act.getResources().getString(R.string.parcial_turno),font));
             cell.setBorder(Rectangle.NO_BORDER);
             cell.setHorizontalAlignment(PdfPCell.ALIGN_LEFT);
             tabla_enc.addCell(cell);
@@ -2392,8 +2496,8 @@ private void procesarRespuestaParametroTurno(JSONObject response, Context contex
                         this.boton_seis.setBackground(act.getResources().getDrawable(R.drawable.selector_seis));
                         this.boton_siete.setEnabled(true);
                         this.boton_siete.setBackground(act.getResources().getDrawable(R.drawable.selector_siete));
-                        this.boton_fin_turno.setEnabled(true);
-                        this.boton_fin_turno.setBackground(act.getResources().getDrawable(R.drawable.fin_turno));
+                        this.boton_cinco.setEnabled(true);
+                        this.boton_cinco.setBackground(act.getResources().getDrawable(R.drawable.cinco));
                         ls_id_turno = object.getString("id");
 
                         editor.putString("id_turno_chofer",ls_id_turno);
@@ -2423,8 +2527,8 @@ private void procesarRespuestaParametroTurno(JSONObject response, Context contex
                         this.boton_seis.setBackground(act.getResources().getDrawable(R.drawable.seis_gris));
                         this.boton_siete.setEnabled(false);
                         this.boton_siete.setBackground(act.getResources().getDrawable(R.drawable.siete_gris));
-                        this.boton_fin_turno.setEnabled(false);
-                        this.boton_fin_turno.setBackground(act.getResources().getDrawable(R.drawable.fin_turno_gris));
+                        this.boton_cinco.setEnabled(false);
+                        this.boton_cinco.setBackground(act.getResources().getDrawable(R.drawable.cinco_gris));
                     }
 
 
@@ -2553,15 +2657,15 @@ private void procesarRespuestaParametroTurno(JSONObject response, Context contex
         context.bindService(intent, connection, Context.BIND_AUTO_CREATE);
         if(impresion.getBluetoothAdapter() !=null) {
             if (impresion.getOutputStream() != null) {
-                impresora.setTextColor(context.getResources().getColor(R.color.colorPrimary));
+                impresora.setTextColor(act.getResources().getColor(R.color.colorPrimary));
                 mBound = true;
             } else {
-                impresora.setTextColor(context.getResources().getColor(R.color.alarma));
+                impresora.setTextColor(act.getResources().getColor(R.color.alarma));
                 mBound = false;
 
             }
         }else{
-            impresora.setTextColor(context.getResources().getColor(R.color.alarma));
+            impresora.setTextColor(act.getResources().getColor(R.color.alarma));
             mBound = false;
         }
     }
@@ -2590,7 +2694,7 @@ private void procesarRespuestaParametroTurno(JSONObject response, Context contex
                 printCustom("Tel. Remisería: " + telefono_remiseria, 1, 1);
 
                 printNewLine();
-                printText(stringABytes(getResources().getString(R.string.ticket_recaudacion))); // total 32 char in a single line
+                printText(stringABytes(act.getResources().getString(R.string.ticket_recaudacion))); // total 32 char in a single line
 
                 printNewLine();
 
@@ -2690,7 +2794,7 @@ private void procesarRespuestaParametroTurno(JSONObject response, Context contex
             cell.setHorizontalAlignment(PdfPCell.ALIGN_LEFT);
             tabla_enc.addCell(cell);
 
-            cell = new PdfPCell(new Phrase(getResources().getString(R.string.ticket_recaudacion),font));
+            cell = new PdfPCell(new Phrase(act.getResources().getString(R.string.ticket_recaudacion),font));
             cell.setBorder(Rectangle.NO_BORDER);
             cell.setHorizontalAlignment(PdfPCell.ALIGN_LEFT);
             tabla_enc.addCell(cell);
@@ -2794,15 +2898,15 @@ private void procesarRespuestaParametroTurno(JSONObject response, Context contex
                 //print title
                 printUnicode();
                 //print normal text
-                printCustom(getResources().getString(R.string.empresa), 2, 1);
+                printCustom(act.getResources().getString(R.string.empresa), 2, 1);
                 printNewLine();
                 printPhoto(R.drawable.remisluna_logo_impresion);
-                printCustom(getResources().getString(R.string.telefono), 1, 1);
+                printCustom(act.getResources().getString(R.string.telefono), 1, 1);
 
                 printNewLine();
                 printUnicode();
                 printNewLine();
-                printText(getResources().getString(R.string.ticket_turno)); // total 32 char in a single line
+                printText(act.getResources().getString(R.string.ticket_turno)); // total 32 char in a single line
 
                 printNewLine();
                 printText("Nro: " + l_nro_turno);//nro
@@ -2904,7 +3008,7 @@ private void procesarRespuestaParametroTurno(JSONObject response, Context contex
             cell.setHorizontalAlignment(PdfPCell.ALIGN_LEFT);
             tabla_enc.addCell(cell);
 
-            cell = new PdfPCell(new Phrase(getResources().getString(R.string.ticket_turno),font));
+            cell = new PdfPCell(new Phrase(act.getResources().getString(R.string.ticket_turno),font));
             cell.setBorder(Rectangle.NO_BORDER);
             cell.setHorizontalAlignment(PdfPCell.ALIGN_LEFT);
             tabla_enc.addCell(cell);
@@ -3037,44 +3141,46 @@ private void procesarRespuestaParametroTurno(JSONObject response, Context contex
                 //print title
                 printUnicode();
                 //print normal text
-                printCustom(getResources().getString(R.string.empresa), 2, 1);
+                printCustom(act.getResources().getString(R.string.empresa), 2, 1);
                 printNewLine();
 
                 String fecha_hoy = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(new Date());
                 printCustom(fecha_hoy, 0, 1);
                 printNewLine();
                 printUnicode();
-                printText(getResources().getString(R.string.menu_reportes)); // total 32 char in a single line
+                printText(act.getResources().getString(R.string.menu_reportes)); // total 32 char in a single line
 
                 printNewLine();
                 printUnicode();
                 printNewLine();
 
-                printCustom(getResources().getString(R.string.reporte_ayuda), 0, 0);
+                printCustom(act.getResources().getString(R.string.reporte_ayuda), 0, 0);
                 printNewLine();
-                printText(getResources().getString(R.string.reporte_parcial));
+                printText(act.getResources().getString(R.string.reporte_parcial));
                 printNewLine();
-                printText(getResources().getString(R.string.reporte_turno));
+                printText(act.getResources().getString(R.string.reporte_turno));
                 printNewLine();
-                printText(stringABytes(getResources().getString(R.string.reporte_ultimos)));
+                printText(stringABytes(act.getResources().getString(R.string.reporte_ultimos)));
                 printNewLine();
-                printText(getResources().getString(R.string.reporte_resumen));
+                printText(act.getResources().getString(R.string.reporte_resumen));
                 printNewLine();
-                printText(getResources().getString(R.string.reporte_impresora));
+                printText(act.getResources().getString(R.string.fin_turno));
                 printNewLine();
-                printText(stringABytes(getResources().getString(R.string.reporte_ticket)));
+                printText(stringABytes(act.getResources().getString(R.string.reporte_ticket)));
                 printNewLine();
-                printText(getResources().getString(R.string.reporte_fin_turno));
+                printText(act.getResources().getString(R.string.reporte_fin_turno));
                 printNewLine();
-                printText(getResources().getString(R.string.reporte_viajes));
+                printText(act.getResources().getString(R.string.reporte_viajes));
                 printNewLine();
-                printText(getResources().getString(R.string.reporte_viaje));
+                printText(act.getResources().getString(R.string.reporte_viaje));
                 printNewLine();
-                printText(getResources().getString(R.string.automatico));
+                printText(act.getResources().getString(R.string.automatico));
                 printNewLine();
-                printText(getResources().getString(R.string.fin_turno));
+                printText(act.getResources().getString(R.string.mapa));
                 printNewLine();
-                printText(getResources().getString(R.string.whatsapps));
+                printText(act.getResources().getString(R.string.reporte_impresora));
+                printNewLine();
+                printText(act.getResources().getString(R.string.automatico));
 
                 printNewLine();
                 printNewLine();
@@ -3162,12 +3268,12 @@ private void procesarRespuestaParametroTurno(JSONObject response, Context contex
 
             PdfPTable tabla_enc = new PdfPTable(1);
 
-            cell = new PdfPCell(new Phrase(getResources().getString(R.string.empresa),titulo));
+            cell = new PdfPCell(new Phrase(act.getResources().getString(R.string.empresa),titulo));
             cell.setBorder(Rectangle.NO_BORDER);
             cell.setHorizontalAlignment(PdfPCell.ALIGN_LEFT);
             tabla_enc.addCell(cell);
 
-            cell = new PdfPCell(new Phrase(getResources().getString(R.string.menu_reportes),font));
+            cell = new PdfPCell(new Phrase(act.getResources().getString(R.string.menu_reportes),font));
             cell.setBorder(Rectangle.NO_BORDER);
             cell.setHorizontalAlignment(PdfPCell.ALIGN_LEFT);
             tabla_enc.addCell(cell);
@@ -3186,70 +3292,71 @@ private void procesarRespuestaParametroTurno(JSONObject response, Context contex
             PdfPTable table = new PdfPTable(1);
 
 
-            cell = new PdfPCell(new Phrase(getResources().getString(R.string.reporte_ayuda),font));
+            cell = new PdfPCell(new Phrase(act.getResources().getString(R.string.reporte_ayuda),font));
             cell.setBorder(Rectangle.NO_BORDER);
             cell.setHorizontalAlignment(PdfPCell.ALIGN_LEFT);
             table.addCell(cell);
 
-            cell = new PdfPCell(new Phrase(getResources().getString(R.string.reporte_parcial),font));
+            cell = new PdfPCell(new Phrase(act.getResources().getString(R.string.reporte_parcial),font));
             cell.setBorder(Rectangle.NO_BORDER);
             cell.setHorizontalAlignment(PdfPCell.ALIGN_LEFT);
             table.addCell(cell);
 
-            cell = new PdfPCell(new Phrase(getResources().getString(R.string.reporte_turno),font));
+            cell = new PdfPCell(new Phrase(act.getResources().getString(R.string.reporte_turno),font));
             cell.setBorder(Rectangle.NO_BORDER);
             cell.setHorizontalAlignment(PdfPCell.ALIGN_LEFT);
             table.addCell(cell);
 
-            cell = new PdfPCell(new Phrase(getResources().getString(R.string.reporte_ultimos),font));
+            cell = new PdfPCell(new Phrase(act.getResources().getString(R.string.reporte_ultimos),font));
             cell.setBorder(Rectangle.NO_BORDER);
             cell.setHorizontalAlignment(PdfPCell.ALIGN_LEFT);
             table.addCell(cell);
 
-            cell = new PdfPCell(new Phrase(getResources().getString(R.string.reporte_resumen),font));
+            cell = new PdfPCell(new Phrase(act.getResources().getString(R.string.reporte_resumen),font));
             cell.setBorder(Rectangle.NO_BORDER);
             cell.setHorizontalAlignment(PdfPCell.ALIGN_LEFT);
             table.addCell(cell);
 
-            cell = new PdfPCell(new Phrase(getResources().getString(R.string.reporte_impresora),font));
+            cell = new PdfPCell(new Phrase(act.getResources().getString(R.string.fin_turno),font));
             cell.setBorder(Rectangle.NO_BORDER);
             cell.setHorizontalAlignment(PdfPCell.ALIGN_LEFT);
             table.addCell(cell);
 
-            cell = new PdfPCell(new Phrase(getResources().getString(R.string.reporte_ticket),font));
+            cell = new PdfPCell(new Phrase(act.getResources().getString(R.string.reporte_ticket),font));
             cell.setBorder(Rectangle.NO_BORDER);
             cell.setHorizontalAlignment(PdfPCell.ALIGN_LEFT);
             table.addCell(cell);
 
-            cell = new PdfPCell(new Phrase(getResources().getString(R.string.reporte_fin_turno),font));
+            cell = new PdfPCell(new Phrase(act.getResources().getString(R.string.reporte_fin_turno),font));
             cell.setBorder(Rectangle.NO_BORDER);
             cell.setHorizontalAlignment(PdfPCell.ALIGN_LEFT);
             table.addCell(cell);
 
-            cell = new PdfPCell(new Phrase(getResources().getString(R.string.reporte_viajes),font));
+            cell = new PdfPCell(new Phrase(act.getResources().getString(R.string.reporte_viajes),font));
             cell.setBorder(Rectangle.NO_BORDER);
             cell.setHorizontalAlignment(PdfPCell.ALIGN_LEFT);
             table.addCell(cell);
 
-            cell = new PdfPCell(new Phrase(getResources().getString(R.string.reporte_viaje),font));
+            cell = new PdfPCell(new Phrase(act.getResources().getString(R.string.reporte_viaje),font));
             cell.setBorder(Rectangle.NO_BORDER);
             cell.setHorizontalAlignment(PdfPCell.ALIGN_LEFT);
             table.addCell(cell);
 
-            cell = new PdfPCell(new Phrase(getResources().getString(R.string.automatico),font));
+            cell = new PdfPCell(new Phrase(act.getResources().getString(R.string.automatico),font));
             cell.setBorder(Rectangle.NO_BORDER);
             cell.setHorizontalAlignment(PdfPCell.ALIGN_LEFT);
             table.addCell(cell);
 
-            cell = new PdfPCell(new Phrase(getResources().getString(R.string.fin_turno),font));
+            cell = new PdfPCell(new Phrase(act.getResources().getString(R.string.reporte_impresora),font));
             cell.setBorder(Rectangle.NO_BORDER);
             cell.setHorizontalAlignment(PdfPCell.ALIGN_LEFT);
             table.addCell(cell);
 
-            cell = new PdfPCell(new Phrase(getResources().getString(R.string.whatsapps),font));
+            cell = new PdfPCell(new Phrase(act.getResources().getString(R.string.mapa),font));
             cell.setBorder(Rectangle.NO_BORDER);
             cell.setHorizontalAlignment(PdfPCell.ALIGN_LEFT);
             table.addCell(cell);
+
 
             doc.add(table);
 
@@ -3359,7 +3466,7 @@ private void procesarRespuestaParametroTurno(JSONObject response, Context contex
     //print photo
     public void printPhoto(int img) {
         try {
-            Bitmap bmp = BitmapFactory.decodeResource(getResources(),
+            Bitmap bmp = BitmapFactory.decodeResource(act.getResources(),
                     img);
             if(bmp!=null){
                 byte[] command = Utils.decodeBitmap(bmp);
@@ -3498,7 +3605,7 @@ private void procesarRespuestaParametroTurno(JSONObject response, Context contex
                 printNewLine();
                 printUnicode();
                 printNewLine();
-                printText(getResources().getString(R.string.ticket_ultimos_viajes)); // total 32 char in a single line
+                printText(act.getResources().getString(R.string.ticket_ultimos_viajes)); // total 32 char in a single line
                 printNewLine();
 
                 String id;
@@ -3598,7 +3705,7 @@ private void procesarRespuestaParametroTurno(JSONObject response, Context contex
             cell.setHorizontalAlignment(PdfPCell.ALIGN_LEFT);
             tabla_enc.addCell(cell);
 
-            cell = new PdfPCell(new Phrase(getResources().getString(R.string.ticket_ultimos_viajes),font));
+            cell = new PdfPCell(new Phrase(act.getResources().getString(R.string.ticket_ultimos_viajes),font));
             cell.setBorder(Rectangle.NO_BORDER);
             cell.setHorizontalAlignment(PdfPCell.ALIGN_LEFT);
             tabla_enc.addCell(cell);
@@ -3861,18 +3968,18 @@ private void procesarRespuestaParametroTurno(JSONObject response, Context contex
                 printNewLine();
                 printCustom("Tel. Queja: " + telefono_queja, 1, 1);
                 printNewLine();
-                printText(getResources().getString(R.string.recibo)); // total 32 char in a single line
+                printText(act.getResources().getString(R.string.recibo)); // total 32 char in a single line
                 printNewLine();
                 printText("Nro Recibo: " + nro_recibo ); // total 32 char in a single line
                 printNewLine();
-                printText(stringABytes(getResources().getString(R.string.servicio) + ' ' + localidad_abreviada));
+                printText(stringABytes(act.getResources().getString(R.string.servicio) + ' ' + localidad_abreviada));
                 printNewLine();
                 printText(fecha_ultimo);//fecha
                 printNewLine();
                 printCustom("Chofer: " + chofer_ultimo, 1, 0);
-                printText(stringABytes(getResources().getString(R.string.nro_movil) + movil_ultimo));
+                printText(stringABytes(act.getResources().getString(R.string.nro_movil) + movil_ultimo));
                 printCustom("Patente: " + patente, 1, 0);
-                printText(stringABytes(getResources().getString(R.string.chapa) + chapa));
+                printText(stringABytes(act.getResources().getString(R.string.chapa) + chapa));
                 printNewLine();
                 printText("SALIDA:  " + hora_salida_ultimo);
                 printNewLine();
@@ -3984,7 +4091,7 @@ private void procesarRespuestaParametroTurno(JSONObject response, Context contex
             PdfPTable table1 = new PdfPTable(1);
 
 
-            cell = new PdfPCell(new Phrase(getResources().getString(R.string.recibo),font));
+            cell = new PdfPCell(new Phrase(act.getResources().getString(R.string.recibo),font));
             cell.setBorder(Rectangle.NO_BORDER);
             cell.setHorizontalAlignment(PdfPCell.ALIGN_LEFT);
             table1.addCell(cell);
@@ -3994,7 +4101,7 @@ private void procesarRespuestaParametroTurno(JSONObject response, Context contex
             cell.setHorizontalAlignment(PdfPCell.ALIGN_LEFT);
             table1.addCell(cell);
 
-            cell = new PdfPCell(new Phrase(getResources().getString(R.string.servicio) + ' ' + localidad_abreviada,font));
+            cell = new PdfPCell(new Phrase(act.getResources().getString(R.string.servicio) + ' ' + localidad_abreviada,font));
             cell.setBorder(Rectangle.NO_BORDER);
             cell.setHorizontalAlignment(PdfPCell.ALIGN_LEFT);
             table1.addCell(cell);
@@ -4023,7 +4130,7 @@ private void procesarRespuestaParametroTurno(JSONObject response, Context contex
             cell.setHorizontalAlignment(PdfPCell.ALIGN_LEFT);
             table2.addCell(cell);
 
-            cell = new PdfPCell(new Phrase(getResources().getString(R.string.chapa) + chapa,font));
+            cell = new PdfPCell(new Phrase(act.getResources().getString(R.string.chapa) + chapa,font));
             cell.setBorder(Rectangle.NO_BORDER);
             cell.setHorizontalAlignment(PdfPCell.ALIGN_LEFT);
             table2.addCell(cell);

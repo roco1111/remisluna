@@ -11,6 +11,7 @@ import android.webkit.WebViewClient;
 import androidx.appcompat.app.AppCompatActivity;
 
 import java.io.File;
+import java.util.Objects;
 
 public class WebActivity extends AppCompatActivity {
     String url;
@@ -24,11 +25,16 @@ public class WebActivity extends AppCompatActivity {
         SharedPreferences settings3 = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
         url = settings3.getString("url", "");
 
+        Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(false);
+        Objects.requireNonNull(getSupportActionBar()).setDisplayShowHomeEnabled(false);
+
         WebView view = findViewById(R.id.web);
 
         view.getSettings().setJavaScriptEnabled(true);
         view.getSettings().setBuiltInZoomControls(true);
         view.loadUrl(url);
+
+        Log.d("mapa", url);
 
         view.setWebViewClient(new WebViewClient() {
             public boolean shouldOverrideUrlLoading(WebView view, String url) {

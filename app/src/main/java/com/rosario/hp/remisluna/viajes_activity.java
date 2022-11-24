@@ -1,9 +1,11 @@
 package com.rosario.hp.remisluna;
 
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;;
 import android.preference.PreferenceManager;
+import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 
@@ -18,7 +20,7 @@ import java.util.Objects;
 public class viajes_activity extends AppCompatActivity {
 
 
-
+    Context context;
 
 
     @Override
@@ -30,13 +32,17 @@ public class viajes_activity extends AppCompatActivity {
         Fragment fragment ;
         fragment = new fragment_viajes();
 
+
+        context = getApplicationContext();
+
         if (savedInstanceState == null) {
             getSupportFragmentManager().beginTransaction()
                     .replace(R.id.main_content, fragment)
                     .commit();
 
         }
-
+        Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(false);
+        Objects.requireNonNull(getSupportActionBar()).setDisplayShowHomeEnabled(false);
         Objects.requireNonNull(getSupportActionBar()).setTitle("Viajes");
     }
     @Override
@@ -55,11 +61,29 @@ public class viajes_activity extends AppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
 
-        Intent intent2 = new Intent(getApplicationContext(), activity_preferencias.class);
+        Intent intent2 = new Intent(context, activity_preferencias.class);
         intent2.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         getApplicationContext().startActivity(intent2);
 
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onBackPressed() {
+        Intent intent2 = new Intent(context, turnos_activity.class);
+        intent2.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        context.startActivity(intent2);
+    }
+
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        // TODO Auto-generated method stub
+        if (keyCode == event.KEYCODE_BACK) {
+            Intent intent2 = new Intent(context, turnos_activity.class);
+            intent2.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            context.startActivity(intent2);
+        }
+        return super.onKeyDown(keyCode, event);
     }
 
 

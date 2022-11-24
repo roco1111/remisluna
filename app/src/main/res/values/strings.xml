@@ -83,6 +83,8 @@
     <string name="ticket">Emitir Ticket</string>
     <string name="importe">Importe</string>
     <string name="subtotal">Subtotal</string>
+    <string name="bajada">Bajada</string>
+    <string name="fichas">Fichas</string>
     <string name="descuento">Descuento</string>
     <string name="espera">Espera</string>
     <string name="total">Total</string>
@@ -102,22 +104,24 @@
 
     <string name="reporte_ayuda">0: Ayuda</string>
     <string name="reporte_parcial">1: Parcial</string>
-    <string name="reporte_turno">2: Final Turno</string>
+    <string name="reporte_turno">2: Último Final Turno</string>
     <string name="reporte_ultimos">3: Últimos 10 Finales de Turno</string>
     <string name="reporte_resumen">4: Viaje x Viaje</string>
-    <string name="reporte_impresora">5: Habilitar Ticket</string>
+    <string name="reporte_impresora">I: Habilitar Ticket</string>
     <string name="reporte_ticket">6: Repetir Ticket</string>
     <string name="reporte_fin_turno">7: Paradas</string>
-    <string name="reporte_viajes">8: Historial</string>
-    <string name="reporte_viaje">9:Ver Viaje Asignado</string>
+    <string name="reporte_viajes">8: Historial Turnos</string>
+    <string name="reporte_viaje">9:Refresco Pantalla</string>
     <string name="paradas">P:Paradas</string>
-    <string name="fin_turno">T:Turnos</string>
+    <string name="fin_turno">5: Inicio y Fin Turnos</string>
     <string name="automatico">A:Viaje de Prueba </string>
     <string name="whatsapps">W:Whatsapps </string>
+    <string name="mapa">M:Mapa Ubicación </string>
 
     <string name="diurno">T. Diurna</string>
     <string name="nocturno">T. Nocturna</string>
     <string name="turno_finalizado">Turno Finalizado</string>
+    <string name="viaje_anulado">Viaje Anulado</string>
 
 
 </resources>

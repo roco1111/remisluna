@@ -29,7 +29,8 @@ public class activity_preferencias extends AppCompatActivity {
                     .commit();
 
         }
-
+        Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(false);
+        Objects.requireNonNull(getSupportActionBar()).setDisplayShowHomeEnabled(false);
         Objects.requireNonNull(getSupportActionBar()).setTitle(getString(R.string.menu_preferencias));
     }
 
@@ -37,26 +38,6 @@ public class activity_preferencias extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_principal, menu);
-
-
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-
-
-        Intent intent2 = new Intent(getApplicationContext(), activity_preferencias.class);
-        intent2.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        getApplicationContext().startActivity(intent2);
-
-        return super.onOptionsItemSelected(item);
     }
 
 

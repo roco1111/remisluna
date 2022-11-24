@@ -29,7 +29,7 @@
                 android:text="@string/nro_recibo"
                 android:textAlignment="center"
                 android:textColor="@color/black"
-                android:textSize="@dimen/tamanio_texto"
+                android:textSize="@dimen/tamanio_parrafo"
                 android:textStyle="bold"/>
 
             <TextView
@@ -218,31 +218,33 @@
             android:layout_below="@id/id_destino"
             android:orientation="horizontal">
 
-        <LinearLayout
-            android:id="@+id/id_importe"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:orientation="vertical">
-            <TextView
-                android:id="@+id/importe"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/subtotal"
-                android:textAlignment="center"
-                android:textColor="@color/black"
-                android:textSize="@dimen/tamanio_texto"
-                android:textStyle="bold"/>
 
-            <TextView
-                android:id="@+id/dato_importe"
-                android:layout_width="wrap_content"
+            <LinearLayout
+                android:id="@+id/id_bajada"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:textAlignment="center"
-                android:textColor="@color/black"
-                android:text="@string/nro_viaje"
-                android:textSize="@dimen/tamanio_texto" />
-        </LinearLayout>
+                android:layout_weight="1"
+
+                android:orientation="vertical">
+                <TextView
+                    android:id="@+id/bajada"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/bajada"
+                    android:textAlignment="center"
+                    android:textColor="@color/black"
+                    android:textSize="@dimen/tamanio_texto"
+                    android:textStyle="bold"/>
+
+                <TextView
+                    android:id="@+id/dato_bajada"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textAlignment="center"
+                    android:textColor="@color/black"
+                    android:text="@string/nro_viaje"
+                    android:textSize="@dimen/tamanio_texto" />
+            </LinearLayout>
             <LinearLayout
             android:id="@+id/id_espera"
             android:layout_width="match_parent"
@@ -277,34 +279,33 @@
             android:layout_marginTop="@dimen/margin_top_item_grande"
             android:layout_below="@id/id_importe_inicial"
             android:orientation="horizontal">
-
-             <LinearLayout
-            android:id="@+id/id_descuento"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-                 android:layout_weight="1"
-            android:layout_marginTop="@dimen/margin_top_item_grande"
-
-            android:orientation="vertical">
-            <TextView
-                android:id="@+id/descuento"
-                android:layout_width="wrap_content"
+            <LinearLayout
+                android:id="@+id/id_importe"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="@string/descuento"
-                android:textAlignment="center"
-                android:textColor="@color/black"
-                android:textSize="@dimen/tamanio_texto"
-                android:textStyle="bold"/>
+                android:layout_weight="1"
+                android:layout_marginTop="@dimen/margin_top_item_grande"
+                android:orientation="vertical">
+                <TextView
+                    android:id="@+id/importe"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/fichas"
+                    android:textAlignment="center"
+                    android:textColor="@color/black"
+                    android:textSize="@dimen/tamanio_texto"
+                    android:textStyle="bold"/>
 
-            <TextView
-                android:id="@+id/dato_descuento"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textAlignment="center"
-                android:textColor="@color/black"
-                android:text="@string/nro_viaje"
-                android:textSize="@dimen/tamanio_texto" />
-        </LinearLayout>
+                <TextView
+                    android:id="@+id/dato_importe"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textAlignment="center"
+                    android:textColor="@color/black"
+                    android:text="@string/nro_viaje"
+                    android:textSize="@dimen/tamanio_texto" />
+            </LinearLayout>
+
             <LinearLayout
                 android:id="@+id/id_total"
                 android:layout_width="match_parent"
@@ -319,7 +320,7 @@
                     android:text="@string/total"
                     android:textAlignment="center"
                     android:textColor="@color/black"
-                    android:textSize="@dimen/tamanio_texto"
+                    android:textSize="@dimen/tamanio_parrafo"
                     android:textStyle="bold"/>
 
                 <TextView
@@ -382,16 +383,16 @@
         </LinearLayout>
 
 
-            <Button
-                android:id="@+id/buttonTicket"
-                android:layout_width="@dimen/campos_width_medio"
-                android:layout_height="@dimen/alto_imagen"
-                android:background="@android:color/transparent"
-                android:drawableTop="@drawable/emitir_ticket"
-                android:layout_alignParentBottom="true"
-                android:layout_centerHorizontal="true"
-                android:layout_marginBottom="14dp"
-                tools:ignore="RtlHardcoded" />
+        <Button
+            android:id="@+id/buttonTicket"
+            android:layout_width="@dimen/campos_width_medio"
+            android:layout_height="@dimen/alto_imagen"
+            android:layout_alignParentBottom="true"
+            android:layout_centerHorizontal="true"
+            android:layout_marginBottom="14dp"
+            android:background="@android:color/transparent"
+            android:drawableTop="@drawable/emitir_ticket"
+            tools:ignore="RtlHardcoded" />
 
 
 

@@ -3,6 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:tools="http://schemas.android.com/tools"
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingBottom="@dimen/activity_vertical_margin"
@@ -305,33 +306,37 @@
             android:layout_height="@dimen/ancho_boton"
             android:layout_marginStart="@dimen/campos_height"
             android:layout_toEndOf="@id/imageButtonCero"
-            android:background="@drawable/selector_whatsapp"
-            android:scaleType="fitXY" />
-    </RelativeLayout>
+            android:background="@drawable/wa"
 
+            tools:ignore="RtlHardcoded" />
+
+        <ImageButton
+            android:id="@+id/imageImpresora"
+            android:layout_width="@dimen/ancho_boton"
+            android:layout_height="@dimen/ancho_boton"
+            android:layout_marginStart="@dimen/campos_height"
+            android:layout_toEndOf="@id/imageWa"
+            android:background="@drawable/selector_impresora"
+            android:scaleType="fitXY" />
+
+    </RelativeLayout>
     <RelativeLayout
+        android:id="@+id/id_teclado_automatico"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_centerHorizontal="true"
         android:layout_below="@id/id_teclado_cero"
+        android:layout_centerHorizontal="true"
         android:layout_marginTop="@dimen/margin_top_item"
-        android:id="@+id/id_teclado_automatico"
         android:orientation="horizontal">
 
         <ImageButton
             android:id="@+id/imageautomatico"
             android:layout_width="@dimen/ancho_boton"
             android:layout_height="@dimen/ancho_boton"
+
             android:background="@drawable/selector_automatico"
+
             android:scaleType="fitXY" />
 
-        <ImageButton
-            android:id="@+id/fin_turno"
-            android:layout_width="@dimen/ancho_boton"
-            android:layout_height="@dimen/ancho_boton"
-            android:layout_marginStart="@dimen/campos_height"
-            android:layout_toEndOf="@id/imageautomatico"
-            android:background="@drawable/selector_fin_turno"
-            android:scaleType="fitXY" />
     </RelativeLayout>
 </RelativeLayout>

@@ -1,5 +1,6 @@
 package com.rosario.hp.remisluna;
 
+import android.content.Context;
 import android.content.Intent;
 
 import android.content.SharedPreferences;
@@ -7,6 +8,7 @@ import android.os.Bundle;
 
 import android.preference.PreferenceManager;
 
+import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 
@@ -20,14 +22,19 @@ import java.util.Objects;
 
 public class Main_datos_viaje extends AppCompatActivity {
     String ls_id_viaje;
+    Context context;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main_basica);
 
-        SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        context = getApplicationContext();
+
+        SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(context);
         ls_id_viaje     = settings.getString("id_turno","");
+        Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(false);
+        Objects.requireNonNull(getSupportActionBar()).setDisplayShowHomeEnabled(false);
         Objects.requireNonNull(getSupportActionBar()).setTitle("Datos Viaje");
 
         Fragment fragment;
@@ -57,11 +64,29 @@ public class Main_datos_viaje extends AppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
 
-        Intent intent2 = new Intent(getApplicationContext(), activity_preferencias.class);
+        Intent intent2 = new Intent(context, activity_preferencias.class);
         intent2.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        getApplicationContext().startActivity(intent2);
+        context.startActivity(intent2);
 
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        // TODO Auto-generated method stub
+        if (keyCode == event.KEYCODE_BACK) {
+            Intent intent2 = new Intent(context, viajes_activity.class);
+            intent2.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            context.startActivity(intent2);
+        }
+        return super.onKeyDown(keyCode, event);
+    }
+
+    @Override
+    public void onBackPressed() {
+        Intent intent2 = new Intent(context, viajes_activity.class);
+        intent2.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        context.startActivity(intent2);
     }
 
 }

@@ -9,7 +9,6 @@ import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.error.VolleyError;
 import com.android.volley.request.JsonObjectRequest;
-import com.google.firebase.iid.FirebaseInstanceId;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.rosario.hp.remisluna.include.Constantes;
 import com.rosario.hp.remisluna.include.VolleySingleton;
@@ -27,13 +26,14 @@ public class FCMInstanceIdService extends FirebaseMessagingService {
     private static final String TAG = "MyFirebaseIIDService";
     private String ls_id_conductor;
 
-
-    public void onTokenRefresh() {
-        String refreshedToken = FirebaseInstanceId.getInstance().getToken();
-        Log.d(TAG, "Refreshed token: " + refreshedToken);
-
-        sendRegistrationToServer(refreshedToken);
+    @Override
+    public void onNewToken(String token) {
+        super.onNewToken(token);
+        Log.d("Refreshed token:",token);
+        sendRegistrationToServer(token);
     }
+
+
 
     private void sendRegistrationToServer(String token) {
         // TODO: Send any registration to your app's servers.

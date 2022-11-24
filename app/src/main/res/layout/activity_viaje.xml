@@ -99,109 +99,139 @@
             android:textSize="@dimen/tamanio_numero_chico"
             android:textStyle="bold" />
 
-
         <LinearLayout
-            android:id="@+id/id_datos_viaje"
+            android:id="@+id/id_viaje"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/margin_boton"
             android:layout_below="@id/precio"
-            android:orientation="vertical">
-            <LinearLayout
-                android:id="@+id/id_salida"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-
-                android:orientation="horizontal">
-                <TextView
-                    android:id="@+id/salida"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/salida"
-                    android:textAlignment="center"
-                    android:textColor="@color/colorPrimary"
-                    android:textSize="@dimen/tamanio_texto"
-                    android:textStyle="bold"/>
-
-                <TextView
-                    android:id="@+id/dato_salida"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/nro_viaje"
-                    android:layout_marginStart="@dimen/margin_start"
-                    android:textAlignment="center"
-                    android:textColor="@color/colorPrimary"
-                    android:textSize="@dimen/tamanio_texto" />
-            </LinearLayout>
-
-            <LinearLayout
-                android:id="@+id/id_destino"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-
-                android:orientation="horizontal">
-                <TextView
-                    android:id="@+id/destino"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/destino"
-                    android:textAlignment="center"
-                    android:textColor="@color/colorPrimary"
-                    android:textSize="@dimen/tamanio_texto"
-                    android:textStyle="bold"/>
-
-                <TextView
-                    android:id="@+id/dato_destino"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/nro_viaje"
-                    android:layout_marginStart="@dimen/margin_start"
-                    android:textAlignment="center"
-                    android:textColor="@color/colorPrimary"
-                    android:textSize="@dimen/tamanio_texto" />
-            </LinearLayout>
-            <LinearLayout
-                android:id="@+id/id_solicitante"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal">
-                <TextView
-                    android:id="@+id/solicitante"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/solicitante"
-                    android:textAlignment="center"
-                    android:textColor="@color/colorPrimary"
-                    android:textSize="@dimen/tamanio_texto"
-                    android:textStyle="bold"/>
-
-                <TextView
-                    android:id="@+id/dato_solicitante"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/nro_viaje"
-                    android:layout_marginStart="@dimen/margin_start"
-                    android:textAlignment="center"
-                    android:textColor="@color/colorPrimary"
-                    android:textSize="@dimen/tamanio_texto" />
-            </LinearLayout>
-        <LinearLayout
-            android:id="@+id/id_observaciones"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/margin_top_item"
+            android:layout_marginTop="@dimen/margin_top"
             android:orientation="horizontal">
-
-            <TextView
-                android:id="@+id/observaciones"
+            <LinearLayout
+                android:id="@+id/id_datos_viaje"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/nro_viaje"
-                android:textAlignment="textStart"
-                android:textColor="@color/colorPrimary"
-                android:textSize="@dimen/tamanio_texto"
-                android:textStyle="bold"/>
-        </LinearLayout>
+
+                android:layout_marginTop="@dimen/margin_boton"
+                android:orientation="vertical">
+
+                <LinearLayout
+                    android:id="@+id/id_salida"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:id="@+id/salida"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/salida"
+                        android:textAlignment="center"
+                        android:textColor="@color/colorPrimary"
+                        android:textSize="@dimen/tamanio_texto"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/dato_salida"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="@dimen/margin_start"
+                        android:text="@string/nro_viaje"
+                        android:textAlignment="center"
+                        android:textColor="@color/colorPrimary"
+                        android:textSize="@dimen/tamanio_texto" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/id_destino"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:id="@+id/destino"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/destino"
+                        android:textAlignment="center"
+                        android:textColor="@color/colorPrimary"
+                        android:textSize="@dimen/tamanio_texto"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/dato_destino"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="@dimen/margin_start"
+                        android:text="@string/nro_viaje"
+                        android:textAlignment="center"
+                        android:textColor="@color/colorPrimary"
+                        android:textSize="@dimen/tamanio_texto" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/id_solicitante"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:id="@+id/solicitante"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/solicitante"
+                        android:textAlignment="center"
+                        android:textColor="@color/colorPrimary"
+                        android:textSize="@dimen/tamanio_texto"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/dato_solicitante"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="@dimen/margin_start"
+                        android:text="@string/nro_viaje"
+                        android:textAlignment="center"
+                        android:textColor="@color/colorPrimary"
+                        android:textSize="@dimen/tamanio_texto" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/id_observaciones"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/margin_top_item"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:id="@+id/observaciones"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/nro_viaje"
+                        android:textAlignment="textStart"
+                        android:textColor="@color/colorPrimary"
+                        android:textSize="@dimen/tamanio_texto"
+                        android:textStyle="bold" />
+                </LinearLayout>
+            </LinearLayout>
+                <LinearLayout
+                    android:id="@+id/id_wa"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/margin_top_menu2"
+                    android:layout_marginBottom="@dimen/margin_top"
+                    android:orientation="vertical">
+
+                    <Button
+                        android:id="@+id/imageWa"
+                        android:layout_width="@dimen/alto_imagen_wa"
+                        android:layout_height="@dimen/alto_imagen_wa"
+                        android:background="@android:color/transparent"
+                        android:drawableTop="@drawable/wa"
+                        tools:ignore="RtlHardcoded" />
+                </LinearLayout>
+
         </LinearLayout>
     </RelativeLayout>
 
@@ -295,7 +325,7 @@
             android:layout_height="@dimen/ancho_boton"
             android:layout_marginStart="@dimen/campos_height"
             android:layout_toEndOf="@id/imageButtonCuatro"
-            android:background="@drawable/selector_cinco"
+            android:background="@drawable/cinco_gris"
             android:scaleType="fitXY" />
 
         <ImageButton
@@ -364,13 +394,23 @@
             android:background="@drawable/selector_cero"
             android:scaleType="fitXY" />
 
+
         <ImageButton
-            android:id="@+id/imageWa"
+            android:id="@+id/imageMapa"
             android:layout_width="@dimen/ancho_boton"
             android:layout_height="@dimen/ancho_boton"
             android:layout_marginStart="@dimen/campos_height"
             android:layout_toEndOf="@id/imageButtonCero"
-            android:background="@drawable/selector_whatsapp"
+            android:background="@drawable/selector_mapa"
+            android:scaleType="fitXY" />
+
+        <ImageButton
+            android:id="@+id/imageImpresora"
+            android:layout_width="@dimen/ancho_boton"
+            android:layout_height="@dimen/ancho_boton"
+            android:layout_marginStart="@dimen/campos_height"
+            android:layout_toEndOf="@id/imageMapa"
+            android:background="@drawable/selector_impresora"
             android:scaleType="fitXY" />
 
 

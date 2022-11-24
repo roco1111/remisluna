@@ -164,26 +164,37 @@ public class ServicioGeolocalizacion extends Service implements Runnable {
     };
 
 
-    /**
-     * metodo para actualizar la localizaci—n
-     *
-     * @param currentLocation
-     * @return void
-     */
+
+    public float distancia(double lat_original, double long_original, double lat_nueva, double long_nueva){
+        Location locationA = new Location("punto A");
+        locationA.setLatitude(lat_original);
+        locationA.setLongitude(long_original);
+
+        Location locationB = new Location("punto B");
+        locationB.setLatitude(lat_nueva);
+        locationB.setLongitude(long_nueva);
+
+        float distance = locationA.distanceTo(locationB) ;
+        return distance;
+    }
+
+    public double distancia_equirectangular(double lat_original, double long_original, double lat_nueva, double long_nueva){
+        int R = 6371; // km
+        double x = (long_nueva - long_original) * Math.cos((lat_original + lat_nueva) / 2);
+        double y = (lat_nueva - lat_original);
+        double distance = Math.sqrt(x * x + y * y) * R;
+        return distance;
+    }
+
+
     public void updateLocation(Location currentLocation) {
         if (currentLocation != null && latitud_inicial != 0) {
             double latitud = Double.parseDouble(currentLocation.getLatitude() + "");
             double longitud = Double.parseDouble(currentLocation.getLongitude() + "");
 
-            Location locationA = new Location("punto A");
-            locationA.setLatitude(latitud_inicial);
-            locationA.setLongitude(longitud_inicial);
+            //float distance = distancia(latitud_inicial,longitud_inicial, latitud, longitud );
 
-            Location locationB = new Location("punto B");
-            locationB.setLatitude(latitud);
-            locationB.setLongitude(longitud);
-
-            float distance = locationA.distanceTo(locationB) ;
+            double distance = distancia_equirectangular(latitud_inicial,longitud_inicial,latitud, longitud );
 
             latitud_inicial = latitud;
             longitud_inicial = longitud;

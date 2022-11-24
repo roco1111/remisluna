@@ -79,6 +79,7 @@ public class fragment_datos_viaje extends Fragment{
     private static final String TAG = fragment_datos_viaje.class.getSimpleName();
     private TextView fecha;
     private TextView nro_viaje;
+    private TextView etiqueta_viaje;
     private TextView solicitante;
     private TextView documento;
     private TextView salida;
@@ -86,6 +87,7 @@ public class fragment_datos_viaje extends Fragment{
     private TextView hora_salida;
     private TextView hora_destino;
     private TextView importe;
+    private TextView datos_bajada;
     private TextView motivo;
     private String chofer;
     private String distancia;
@@ -95,7 +97,6 @@ public class fragment_datos_viaje extends Fragment{
     private String telefono_remiseria;
     private String nombre_remiseria;
     private TextView total;
-    private TextView descuento;
     private TextView espera;
     private LinearLayout suspension;
     private Button imprimir;
@@ -168,6 +169,7 @@ public class fragment_datos_viaje extends Fragment{
 
         fecha = v.findViewById(R.id.dato_fecha);
         nro_viaje = v.findViewById(R.id.dato_viaje);
+        etiqueta_viaje = v.findViewById(R.id.viaje);
         solicitante = v.findViewById(R.id.dato_solicitante);
         documento = v.findViewById(R.id.dato_documento);
         salida = v.findViewById(R.id.dato_salida);
@@ -181,7 +183,7 @@ public class fragment_datos_viaje extends Fragment{
         suspension = v.findViewById(R.id.id_suspension);
         espera = v.findViewById(R.id.dato_espera);
         total = v.findViewById(R.id.dato_total);
-        descuento = v.findViewById(R.id.dato_descuento);
+        datos_bajada = v.findViewById(R.id.dato_bajada);
 
         context = getContext();
 
@@ -262,7 +264,7 @@ public class fragment_datos_viaje extends Fragment{
                     destino.setText(object.getString("destino"));
                     hora_salida.setText(object.getString("hora_inicio"));
                     localidad_abreviada = object.getString("abreviada");
-                    if(object.getString("estado").equals("6")){
+                    if(object.getString("estado").equals("6") || object.getString("estado").equals("7") ){
                         hora_destino.setVisibility(View.INVISIBLE);
                     }else{
                         hora_destino.setVisibility(View.VISIBLE);
@@ -274,7 +276,24 @@ public class fragment_datos_viaje extends Fragment{
                     {
                         ls_importe = "0,00";
                     }
+
+                    total.setText(ls_importe);
+
+                    ls_importe = object.getString("importe_fichas");
+                    if(ls_importe.equals("null"))
+                    {
+                        ls_importe = "0,00";
+                    }
+
                     importe.setText(ls_importe);
+
+                    ls_importe = object.getString("bajada");
+                    if(ls_importe.equals("null"))
+                    {
+                        ls_importe = "0,00";
+                    }
+
+                    datos_bajada.setText(ls_importe);
 
 
                     ls_importe = object.getString("importe_espera");
@@ -284,19 +303,6 @@ public class fragment_datos_viaje extends Fragment{
                     }
                     espera.setText(ls_importe);
 
-                    ls_importe = object.getString("descuento");
-                    if(ls_importe.equals("null"))
-                    {
-                        ls_importe = "0,00";
-                    }
-                    descuento.setText(ls_importe);
-
-                    ls_importe = object.getString("total");
-                    if(ls_importe.equals("null"))
-                    {
-                        ls_importe = "0,00";
-                    }
-                    total.setText(ls_importe);
 
                     motivo.setText(object.getString("motivo"));
                     chofer = object.getString("chofer");
@@ -318,6 +324,19 @@ public class fragment_datos_viaje extends Fragment{
                         suspension.setVisibility(View.VISIBLE);
                     }else{
                         suspension.setVisibility(View.INVISIBLE);
+                    }
+
+                    if( object.getString("estado").equals("7") ){
+                        nro_viaje.setVisibility(View.GONE);
+                        etiqueta_viaje.setText(R.string.viaje_anulado);
+                        hora_salida.setVisibility(View.INVISIBLE);
+                        imprimir.setVisibility(View.INVISIBLE);
+
+                    }else{
+                        hora_salida.setVisibility(View.VISIBLE);
+                        etiqueta_viaje.setText(R.string.nro_recibo);
+                        imprimir.setVisibility(View.VISIBLE);
+                        nro_viaje.setVisibility(View.VISIBLE);
                     }
 
                     cargarImpresora(context);
@@ -532,7 +551,7 @@ public class fragment_datos_viaje extends Fragment{
 
             PdfPTable table4 = new PdfPTable(1);
 
-            cell = new PdfPCell(new Phrase("TOTAL: " + '$' + String.format(Locale.GERMANY,"%.2f",Double.parseDouble(importe.getText().toString())),titulo));
+            cell = new PdfPCell(new Phrase("TOTAL: " + '$' + String.format(Locale.GERMANY,"%.2f",Double.parseDouble(total.getText().toString())),titulo));
             cell.setBorder(Rectangle.NO_BORDER);
             cell.setHorizontalAlignment(PdfPCell.ALIGN_LEFT);
             table4.addCell(cell);

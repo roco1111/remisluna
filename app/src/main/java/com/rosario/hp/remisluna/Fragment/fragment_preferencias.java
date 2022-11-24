@@ -90,7 +90,7 @@ public class fragment_preferencias extends Fragment {
                 Intent intent = new Intent(getContext(), WebActivity.class);
                 intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 act.startActivity(intent);
-                editor.commit();
+
             }
         });
 

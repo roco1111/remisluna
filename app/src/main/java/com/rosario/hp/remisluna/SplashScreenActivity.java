@@ -15,9 +15,10 @@ import android.view.Window;
 
 import androidx.multidex.MultiDex;
 
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.iid.FirebaseInstanceId;
+import com.google.firebase.messaging.FirebaseMessaging;
 
 public class SplashScreenActivity extends Activity {
  
@@ -54,7 +55,9 @@ public class SplashScreenActivity extends Activity {
             @Override
             public void run() {
 
-                id_firebase = FirebaseInstanceId.getInstance().getToken();
+                Task<String> l_id_firebase;
+                l_id_firebase = FirebaseMessaging.getInstance().getToken();
+                id_firebase = l_id_firebase.toString();
                 currentUser = mAuth.getCurrentUser();
 
                 if (currentUser == null) {
