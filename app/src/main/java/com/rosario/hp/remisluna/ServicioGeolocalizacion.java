@@ -55,6 +55,7 @@ public class ServicioGeolocalizacion extends Service implements Runnable {
     private double latitud_inicial = 0;
     private double longitud_inicial = 0;
     private double distancia_acumulada = 0;
+    private double l_tiempo_limpieza = 0;
     private Location currentLocation = null;
     private Thread thread;
     private String ls_id_conductor;
@@ -66,7 +67,7 @@ public class ServicioGeolocalizacion extends Service implements Runnable {
     private Long l_diferencia = 0L;
     private Long tiempo_acumulado = 0L;
     private Long tiempo_tolerancia = 0L;
-    private Long l_tolerancia_tope, l_tiempo_espera;
+    private Long l_tolerancia_tope, l_tiempo_espera ;
     private boolean lb_torerancia = true;
     private Integer minutos;
     private Integer segundos;
@@ -77,6 +78,7 @@ public class ServicioGeolocalizacion extends Service implements Runnable {
     private boolean lb_diferencia;
     private boolean lb_tolerancia = true;
     private Integer l_gps = 0;
+    private static final float MIN_CAMBIO_DISTANCIA_PARA_UPDATES = 0;
 
 
     @Override
@@ -183,8 +185,10 @@ public class ServicioGeolocalizacion extends Service implements Runnable {
         double x = (long_nueva - long_original) * Math.cos((lat_original + lat_nueva) / 2);
         double y = (lat_nueva - lat_original);
         double distance = Math.sqrt(x * x + y * y) * R;
-        return distance;
+        return distance / 1000;
     }
+
+
 
 
     public void updateLocation(Location currentLocation) {
@@ -192,9 +196,9 @@ public class ServicioGeolocalizacion extends Service implements Runnable {
             double latitud = Double.parseDouble(currentLocation.getLatitude() + "");
             double longitud = Double.parseDouble(currentLocation.getLongitude() + "");
 
-            //float distance = distancia(latitud_inicial,longitud_inicial, latitud, longitud );
+            float distance = distancia(latitud_inicial,longitud_inicial, latitud, longitud );
 
-            double distance = distancia_equirectangular(latitud_inicial,longitud_inicial,latitud, longitud );
+            //double distance = distancia_equirectangular(latitud_inicial,longitud_inicial,latitud, longitud );
 
             latitud_inicial = latitud;
             longitud_inicial = longitud;
@@ -204,10 +208,11 @@ public class ServicioGeolocalizacion extends Service implements Runnable {
                 return;
             }
 
-            if(distance > 3.5) {
+            if(distance > 2) {//probar con 2.5
                 l_tipo = 1;
             }else{
                 l_tipo = 2;
+
             }
 
             Log.d("DISTANCIA recorrida",String.valueOf(distance));
@@ -217,6 +222,7 @@ public class ServicioGeolocalizacion extends Service implements Runnable {
                 Log.d("Tipo","FICHA");
                 l_inicio = System.currentTimeMillis();
                 distancia_acumulada += distance;
+                l_tiempo_limpieza = 0.00;
                 distancia_acumulada = getValor(getTwoDecimals(distancia_acumulada));
                 if (distancia_acumulada >= l_metros_ficha) {
                     tiempo_acumulado = 0L;
@@ -260,8 +266,11 @@ public class ServicioGeolocalizacion extends Service implements Runnable {
                 if(l_diferencia < 0) {
                     l_diferencia = 0L;
                 }
-                if(l_diferencia >= 3000){
+                l_tiempo_limpieza += l_diferencia;
+
+                if(l_tiempo_limpieza >= 15000){
                     distancia_acumulada = 0L;
+                    l_tiempo_limpieza = 0.00;
                 }
                 l_inicio = l_final;
                 if(lb_torerancia){
@@ -370,10 +379,10 @@ public class ServicioGeolocalizacion extends Service implements Runnable {
             Looper.prepare();
 
             if(Build.VERSION.SDK_INT > Build.VERSION_CODES.O) {
-                mLocationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 1000, 0, mLocationListener);
+                mLocationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 1000, MIN_CAMBIO_DISTANCIA_PARA_UPDATES, mLocationListener);
             }
 
-            mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000, 0, mLocationListener);
+            mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000, MIN_CAMBIO_DISTANCIA_PARA_UPDATES, mLocationListener);
             Log.d("geolicalizacion","LocationManager");
             Looper.loop();
             //Looper.myLooper().quit();

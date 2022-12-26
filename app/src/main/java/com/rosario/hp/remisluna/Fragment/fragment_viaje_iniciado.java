@@ -432,7 +432,7 @@ public class fragment_viaje_iniciado extends Fragment {
                         texto_tarifa.setText(R.string.nocturno);
                     }
 
-                    SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getContext());
+                    SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(context);
                     SharedPreferences.Editor editor = settings.edit();
                     editor.putString("nocturno",l_nocturno);
                     editor.apply();
@@ -819,7 +819,7 @@ public class fragment_viaje_iniciado extends Fragment {
                     destino.setText(object.getString("destino"));
                     id_vehiculo = object.getString("id_movil");
                     ldb_porcentaje_titular = Double.parseDouble(object.getString("porc_titular"));
-                    SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getContext());
+                    SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(context);
                     String l_nocturno;
                     l_nocturno     = settings.getString("nocturno","");
                     if(l_nocturno.equals("0")) {

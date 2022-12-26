@@ -331,7 +331,7 @@ public class fragment_viaje extends Fragment {
             gps.setTextColor(act.getResources().getColor(R.color.alarma));
         }
 
-        SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getContext());
+        SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(context);
         ls_id_conductor     = settings.getString("id","");
         ls_id_turno     = settings.getString("id_turno_chofer","");
         ls_remiseria     = settings.getString("remiseria","");
@@ -451,7 +451,7 @@ public class fragment_viaje extends Fragment {
             @Override
             public void onClick(View v) {
                 mediaPlayer.start();
-                SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getContext());
+                SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(context);
                 SharedPreferences.Editor editor = settings.edit();
                 editor.putString("tipo_ventana","main");
                 editor.apply();
@@ -474,7 +474,7 @@ public class fragment_viaje extends Fragment {
             @Override
             public void onClick(View v) {
                 mediaPlayer.start();
-                SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getContext());
+                SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(context);
                 SharedPreferences.Editor editor = settings.edit();
                 editor.putString("tipo_ventana","main");
                 editor.apply();
@@ -1933,7 +1933,7 @@ public class fragment_viaje extends Fragment {
                     String latitud_salida = object.getString("latitud_salida");
                     String longitud_salida = object.getString("longitud_salida");
 
-                    SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getContext());
+                    SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(context);
                     SharedPreferences.Editor editor = settings.edit();
                     editor.putString("latitud_salida",latitud_salida);
                     editor.putString("longitud_salida",longitud_salida);

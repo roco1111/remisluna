@@ -2967,7 +2967,7 @@ private void procesarRespuestaParametroTurno(JSONObject response, Context contex
             startActivity(target);
         } catch (ActivityNotFoundException e) {
             Intent intent = Intent.createChooser(target, "Open File");
-            startActivity(intent);
+            act.startActivity(intent);
         }
     }
 
@@ -4535,7 +4535,7 @@ private void procesarRespuestaParametroTurno(JSONObject response, Context contex
         // Actualizar datos en el servidor
         VolleySingleton.getInstance(context).addToRequestQueue(
                 new JsonObjectRequest(
-                        Request.Method.GET,
+                        Request.Method.POST,
                         newURL,
                         null,
                         new Response.Listener<JSONObject>() {
