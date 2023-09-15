@@ -48,8 +48,8 @@
     <string name="impresora_lista">IMP</string>
     <string name="cero_pesos">0.00</string>
     <string name="nombre_usuario">Nombre y Apellido</string>
-    <string name="nombre">Nombre y Apellido</string>
-    <string name="apellido">Nombre y Apellido</string>
+    <string name="nombre">Nombre</string>
+    <string name="apellido">Apellido</string>
 
     <string name="confirmar_cliente">Confirmar Contraseña</string>
     <string name="foto">Foto Perfil</string>
@@ -118,9 +118,9 @@
     <string name="whatsapps">W:Whatsapps </string>
     <string name="mapa">M:Mapa Ubicación </string>
 
-    <string name="diurno">T. Diurna</string>
-    <string name="nocturno">T. Nocturna</string>
-    <string name="turno_finalizado">Turno Finalizado</string>
+    <string name="diurno">Tar. Diurna</string>
+    <string name="nocturno">Tar. Nocturna</string>
+    <string name="turno_finalizado">SIN TURNO ACTIVO</string>
     <string name="viaje_anulado">Viaje Anulado</string>
 
 

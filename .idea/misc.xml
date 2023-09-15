@@ -5,14 +5,44 @@
       <map>
         <entry key="..\:/Users/hp/AndroidStudioProjects/remisluna/app/src/main/res/drawable-hdpi/selector_cinco.xml" value="0.1605" />
         <entry key="..\:/Users/hp/AndroidStudioProjects/remisluna/app/src/main/res/drawable-hdpi/selector_seis.xml" value="0.1605" />
+        <entry key="..\:/Users/hp/AndroidStudioProjects/remisluna/app/src/main/res/drawable-ldpi/selector_automatico_moto.xml" value="0.128" />
+        <entry key="..\:/Users/hp/AndroidStudioProjects/remisluna/app/src/main/res/drawable-ldpi/selector_automatico_taxi.xml" value="0.1155" />
+        <entry key="..\:/Users/hp/AndroidStudioProjects/remisluna/app/src/main/res/drawable-ldpi/selector_cero_taxi.xml" value="0.1155" />
+        <entry key="..\:/Users/hp/AndroidStudioProjects/remisluna/app/src/main/res/drawable-ldpi/selector_cinco_moto.xml" value="0.128" />
+        <entry key="..\:/Users/hp/AndroidStudioProjects/remisluna/app/src/main/res/drawable-ldpi/selector_cinco_taxi.xml" value="0.1155" />
+        <entry key="..\:/Users/hp/AndroidStudioProjects/remisluna/app/src/main/res/drawable-ldpi/selector_cuatro_moto.xml" value="0.128" />
+        <entry key="..\:/Users/hp/AndroidStudioProjects/remisluna/app/src/main/res/drawable-ldpi/selector_cuatro_taxi.xml" value="0.1155" />
+        <entry key="..\:/Users/hp/AndroidStudioProjects/remisluna/app/src/main/res/drawable-ldpi/selector_dos_moto.xml" value="0.128" />
+        <entry key="..\:/Users/hp/AndroidStudioProjects/remisluna/app/src/main/res/drawable-ldpi/selector_dos_taxi.xml" value="0.1155" />
         <entry key="..\:/Users/hp/AndroidStudioProjects/remisluna/app/src/main/res/drawable-ldpi/selector_fin_turno.xml" value="0.1605" />
+        <entry key="..\:/Users/hp/AndroidStudioProjects/remisluna/app/src/main/res/drawable-ldpi/selector_fin_turno_moto.xml" value="0.128" />
+        <entry key="..\:/Users/hp/AndroidStudioProjects/remisluna/app/src/main/res/drawable-ldpi/selector_fin_turno_taxi.xml" value="0.1315" />
+        <entry key="..\:/Users/hp/AndroidStudioProjects/remisluna/app/src/main/res/drawable-ldpi/selector_impresora_moto.xml" value="0.1315" />
+        <entry key="..\:/Users/hp/AndroidStudioProjects/remisluna/app/src/main/res/drawable-ldpi/selector_impresora_taxi.xml" value="0.1315" />
+        <entry key="..\:/Users/hp/AndroidStudioProjects/remisluna/app/src/main/res/drawable-ldpi/selector_nueve_taxi.xml" value="0.1155" />
+        <entry key="..\:/Users/hp/AndroidStudioProjects/remisluna/app/src/main/res/drawable-ldpi/selector_ocho_taxi.xml" value="0.1155" />
+        <entry key="..\:/Users/hp/AndroidStudioProjects/remisluna/app/src/main/res/drawable-ldpi/selector_seis_moto.xml" value="0.128" />
+        <entry key="..\:/Users/hp/AndroidStudioProjects/remisluna/app/src/main/res/drawable-ldpi/selector_seis_taxi.xml" value="0.1155" />
+        <entry key="..\:/Users/hp/AndroidStudioProjects/remisluna/app/src/main/res/drawable-ldpi/selector_siete_moto.xml" value="0.128" />
+        <entry key="..\:/Users/hp/AndroidStudioProjects/remisluna/app/src/main/res/drawable-ldpi/selector_siete_taxi.xml" value="0.1155" />
+        <entry key="..\:/Users/hp/AndroidStudioProjects/remisluna/app/src/main/res/drawable-ldpi/selector_tres_moto.xml" value="0.128" />
+        <entry key="..\:/Users/hp/AndroidStudioProjects/remisluna/app/src/main/res/drawable-ldpi/selector_tres_taxi.xml" value="0.1155" />
+        <entry key="..\:/Users/hp/AndroidStudioProjects/remisluna/app/src/main/res/drawable-ldpi/selector_uno_moto.xml" value="0.128" />
+        <entry key="..\:/Users/hp/AndroidStudioProjects/remisluna/app/src/main/res/drawable-ldpi/selector_uno_taxi.xml" value="0.1155" />
         <entry key="..\:/Users/hp/AndroidStudioProjects/remisluna/app/src/main/res/drawable-mdpi/selector_mapa.xml" value="0.193" />
+        <entry key="..\:/Users/hp/AndroidStudioProjects/remisluna/app/src/main/res/drawable-mdpi/selector_mapa_moto.xml" value="0.119" />
+        <entry key="..\:/Users/hp/AndroidStudioProjects/remisluna/app/src/main/res/drawable-mdpi/selector_mapa_taxi.xml" value="0.119" />
+        <entry key="..\:/Users/hp/AndroidStudioProjects/remisluna/app/src/main/res/drawable-xhdpi/selector_cero_moto.xml" value="0.1" />
         <entry key="..\:/Users/hp/AndroidStudioProjects/remisluna/app/src/main/res/drawable-xhdpi/selector_impresora.xml" value="0.1925" />
+        <entry key="..\:/Users/hp/AndroidStudioProjects/remisluna/app/src/main/res/drawable-xhdpi/selector_nueve_moto.xml" value="0.1" />
+        <entry key="..\:/Users/hp/AndroidStudioProjects/remisluna/app/src/main/res/drawable-xhdpi/selector_ocho_moto.xml" value="0.1" />
         <entry key="..\:/Users/hp/AndroidStudioProjects/remisluna/app/src/main/res/drawable-xhdpi/selector_parada.xml" value="0.20833333333333334" />
         <entry key="..\:/Users/hp/AndroidStudioProjects/remisluna/app/src/main/res/drawable-xxxhdpi/selector_whatsapp.xml" value="0.20833333333333334" />
         <entry key="..\:/Users/hp/AndroidStudioProjects/remisluna/app/src/main/res/drawable/selector_automatico.xml" value="0.1055" />
         <entry key="..\:/Users/hp/AndroidStudioProjects/remisluna/app/src/main/res/drawable/selector_uno.xml" value="0.20833333333333334" />
         <entry key="..\:/Users/hp/AndroidStudioProjects/remisluna/app/src/main/res/font/digital.xml" value="0.8791666666666667" />
+        <entry key="..\:/Users/hp/AndroidStudioProjects/remisluna/app/src/main/res/layout/acerca.xml" value="0.75" />
+        <entry key="..\:/Users/hp/AndroidStudioProjects/remisluna/app/src/main/res/layout/activity_configuracion_usuario.xml" value="0.8425925925925926" />
         <entry key="..\:/Users/hp/AndroidStudioProjects/remisluna/app/src/main/res/layout/activity_datos_viaje.xml" value="0.9" />
         <entry key="..\:/Users/hp/AndroidStudioProjects/remisluna/app/src/main/res/layout/activity_login.xml" value="0.67" />
         <entry key="..\:/Users/hp/AndroidStudioProjects/remisluna/app/src/main/res/layout/activity_main_basica.xml" value="0.1" />
@@ -23,11 +53,15 @@
         <entry key="..\:/Users/hp/AndroidStudioProjects/remisluna/app/src/main/res/layout/item_turno.xml" value="0.8425925925925926" />
         <entry key="..\:/Users/hp/AndroidStudioProjects/remisluna/app/src/main/res/layout/item_viaje.xml" value="0.7583333333333333" />
         <entry key="..\:/Users/hp/AndroidStudioProjects/remisluna/app/src/main/res/layout/lista_main_inicial.xml" value="0.8425925925925926" />
+        <entry key="..\:/Users/hp/AndroidStudioProjects/remisluna/app/src/main/res/layout/main_content.xml" value="0.8425925925925926" />
         <entry key="..\:/Users/hp/AndroidStudioProjects/remisluna/app/src/main/res/layout/main_content_basica.xml" value="0.1" />
         <entry key="..\:/Users/hp/AndroidStudioProjects/remisluna/app/src/main/res/layout/mapa.xml" value="0.8425925925925926" />
+        <entry key="..\:/Users/hp/AndroidStudioProjects/remisluna/app/src/main/res/layout/nav_header_main.xml" value="0.8425925925925926" />
         <entry key="..\:/Users/hp/AndroidStudioProjects/remisluna/app/src/main/res/layout/network_security_config.xml" value="0.44675925925925924" />
         <entry key="..\:/Users/hp/AndroidStudioProjects/remisluna/app/src/main/res/layout/preferencias.xml" value="0.8425925925925926" />
         <entry key="..\:/Users/hp/AndroidStudioProjects/remisluna/app/src/main/res/layout/splash.xml" value="0.12635869565217392" />
+        <entry key="..\:/Users/hp/AndroidStudioProjects/remisluna/app/src/main/res/menu/menu_inicio.xml" value="0.8425925925925926" />
+        <entry key="..\:/Users/hp/AndroidStudioProjects/remisluna/app/src/main/res/menu/menu_principal.xml" value="0.8425925925925926" />
         <entry key="..\:/Users/hp/AndroidStudioProjects/remisluna/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml" value="0.1625" />
       </map>
     </option>

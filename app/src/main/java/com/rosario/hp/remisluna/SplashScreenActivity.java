@@ -1,5 +1,9 @@
 package com.rosario.hp.remisluna;
  
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
  
@@ -11,22 +15,34 @@ import android.content.pm.ActivityInfo;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 
+import android.util.Log;
 import android.view.Window;
 
 import androidx.multidex.MultiDex;
 
+import com.android.volley.Request;
+import com.android.volley.Response;
+import com.android.volley.error.VolleyError;
+import com.android.volley.request.JsonObjectRequest;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.messaging.FirebaseMessaging;
+import com.rosario.hp.remisluna.include.Constantes;
+import com.rosario.hp.remisluna.include.VolleySingleton;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 public class SplashScreenActivity extends Activity {
  
     // Set the duration of the splash screen
+    private static final String TAG = SplashScreenActivity.class.getSimpleName();
     private static final long SPLASH_SCREEN_DELAY = 3000;
     private FirebaseAuth mAuth;
     FirebaseUser currentUser;
     String id_firebase;
+    Activity act;
 
     @Override
     protected void attachBaseContext(Context context) {
@@ -39,6 +55,8 @@ public class SplashScreenActivity extends Activity {
         super.onCreate(savedInstanceState);
 
         crearAccesoDirectoAlInstalar(this);
+
+        act = this;
  
         // Set portrait orientation
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
@@ -66,20 +84,18 @@ public class SplashScreenActivity extends Activity {
                     Intent mainIntent = new Intent().setClass(
                            SplashScreenActivity.this,Main_Login.class);
                    startActivity(mainIntent);
-
+                    finish();
 
 
 
                 }else{
 
-                   Intent mainIntent = new Intent().setClass(
-                            SplashScreenActivity.this, MainActivity.class);
-                    startActivity(mainIntent);
+                    actualizar_token(String.valueOf(id_firebase));
 
               }
                 // Close the activity so the user won't able to go back this
                 // activity pressing Back button
-                finish();
+
             }
         };
  
@@ -129,6 +145,91 @@ public class SplashScreenActivity extends Activity {
         // Check if user is signed in (non-null) and update UI accordingly.
         currentUser = mAuth.getCurrentUser();
 
+    }
+
+    private void actualizar_token(String token){
+        // TODO: Send any registration to your app's servers.
+
+        SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        String ls_id_conductor     = settings.getString("id","");
+
+        HashMap<String, String> map = new HashMap<>();// Mapeo previo
+
+        map.put("id", ls_id_conductor);
+        map.put("id_firebase", token);
+
+        JSONObject jobject = new JSONObject(map);
+
+        // Depurando objeto Json...
+        Log.d(TAG, jobject.toString());
+
+        StringBuilder encodedParams = new StringBuilder();
+        try {
+            for (Map.Entry<String, String> entry : map.entrySet()) {
+                encodedParams.append(URLEncoder.encode(entry.getKey(), "utf-8"));
+                encodedParams.append('=');
+                encodedParams.append(URLEncoder.encode(entry.getValue(), "utf-8")).toString();
+                encodedParams.append('&');
+            }
+        } catch (UnsupportedEncodingException uee) {
+            throw new RuntimeException("Encoding not supported: " + "utf-8", uee);
+        }
+
+        encodedParams.setLength(Math.max(encodedParams.length() - 1, 0));
+
+        String newURL = Constantes.UPDATE_TOKEN + "?" + encodedParams;
+
+        // Actualizar datos en el servidor
+        VolleySingleton.getInstance(act).addToRequestQueue(
+                new JsonObjectRequest(
+                        Request.Method.GET,
+                        newURL,
+                        null,
+                        new Response.Listener<JSONObject>() {
+                            @Override
+                            public void onResponse(JSONObject response) {
+                                procesarRespuestaActualizar(response);
+                            }
+                        },
+                        new Response.ErrorListener() {
+                            @Override
+                            public void onErrorResponse(VolleyError error) {
+                                Log.d(TAG, "Error Volley Token: " + error.getMessage());
+
+                            }
+                        }
+
+                ) {
+                    @Override
+                    public Map<String, String> getHeaders() {
+                        Map<String, String> headers = new HashMap<>();
+                        headers.put("Content-Type", "application/json; charset=utf-8");
+                        return headers;
+                    }
+
+                    @Override
+                    public String getBodyContentType() {
+                        return "application/json; charset=utf-8" + getParamsEncoding();
+                    }
+                }
+        );
+    }
+    private void procesarRespuestaActualizar(JSONObject response) {
+
+        try {
+            // Obtener estado
+            String estado = response.getString("estado");
+            // Obtener mensaje
+            String mensaje = response.getString("mensaje");
+
+            Intent mainIntent = new Intent().setClass(
+                    SplashScreenActivity.this, MainActivity.class);
+            startActivity(mainIntent);
+            finish();
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
     }
 
 }

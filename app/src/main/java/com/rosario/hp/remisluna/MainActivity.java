@@ -23,6 +23,7 @@ import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.view.WindowManager;
 import android.widget.Toast;
 
@@ -50,6 +51,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
+import android.media.MediaPlayer;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -107,20 +109,113 @@ public class MainActivity extends AppCompatActivity {
         Objects.requireNonNull(getSupportActionBar()).setDisplayShowHomeEnabled(false);
         Objects.requireNonNull(getSupportActionBar()).setTitle(getResources().getString(R.string.app_name));
 
-         fragmentManager = getSupportFragmentManager();
 
-        Fragment fragment = new fragment_principal();
-
-         fragmentManager.beginTransaction()
-                .replace(R.id.main_content, fragment)
-                .commit();
-
-        cargarDatos(getApplicationContext());
+         cargarParametroImpresora(getApplicationContext());
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+
+    }
+
+    public void cargarParametroImpresora(final Context context) {
+
+        SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(context);
+        String ls_remiseria = settings.getString("remiseria","");
+
+        HashMap<String, String> map = new HashMap<>();// Mapeo previo
+
+        map.put("parametro", "18");
+        map.put("remiseria", ls_remiseria);
+
+        JSONObject jobject = new JSONObject(map);
+
+
+        // Depurando objeto Json...
+        Log.d(TAG, jobject.toString());
+
+        StringBuilder encodedParams = new StringBuilder();
+        try {
+            for (Map.Entry<String, String> entry : map.entrySet()) {
+                encodedParams.append(URLEncoder.encode(entry.getKey(), "utf-8"));
+                encodedParams.append('=');
+                encodedParams.append(URLEncoder.encode(entry.getValue(), "utf-8"));
+                encodedParams.append('&');
+            }
+        } catch (UnsupportedEncodingException uee) {
+            throw new RuntimeException("Encoding not supported: " + "utf-8", uee);
+        }
+
+        encodedParams.setLength(Math.max(encodedParams.length() - 1, 0));
+
+        // Añadir parámetro a la URL del web service
+        String newURL = Constantes.GET_ID_PARAMETRO + "?" + encodedParams;
+        Log.d(TAG,newURL);
+
+        // Realizar petición GET_BY_ID
+        VolleySingleton.getInstance(context).addToRequestQueue(
+                myRequest = new JsonObjectRequest(
+                        Request.Method.POST,
+                        newURL,
+                        null,
+                        new Response.Listener<JSONObject>() {
+
+                            @Override
+                            public void onResponse(JSONObject response) {
+                                // Procesar respuesta Json
+                                procesarRespuestaParametroimpresion(response, context);
+                            }
+                        },
+                        new Response.ErrorListener() {
+                            @Override
+                            public void onErrorResponse(VolleyError error) {
+                                Log.d(TAG, "Error Volley tarifa desde: " + error.getMessage());
+
+                            }
+                        }
+                )
+        );
+        myRequest.setRetryPolicy(new DefaultRetryPolicy(
+                50000,
+                5,//DefaultRetryPolicy.DEFAULT_MAX_RETRIES
+                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+
+    }
+
+    private void procesarRespuestaParametroimpresion(JSONObject response, Context context) {
+
+        try {
+            // Obtener atributo "mensaje"
+            String mensaje = response.getString("estado");
+
+            switch (mensaje) {
+                case "1":
+                    JSONArray datos_parametro = response.getJSONArray("parametro");
+
+                    for(int i = 0; i < datos_parametro.length(); i++)
+                    {JSONObject object = datos_parametro.getJSONObject(i);
+
+                        SharedPreferences settings1 = PreferenceManager.getDefaultSharedPreferences(context);
+
+                        SharedPreferences.Editor editor = settings1.edit();
+
+
+                        editor.putString("impresion",object.getString("valor"));
+
+                        cargarDatos(context);
+
+                    }
+
+                    break;
+                case "2":
+                    break;
+
+            }
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
 
     }
 
@@ -183,6 +278,7 @@ public class MainActivity extends AppCompatActivity {
 
                     editor.putString("id_turno_chofer",object.getString("id"));
                     editor.putString("viajes_automaticos",object.getString("viajes_automaticos"));
+                    editor.putString("tipo_empresa",object.getString("tipo"));
                     editor.apply();
 
                     cargarViajes(context);
@@ -194,6 +290,14 @@ public class MainActivity extends AppCompatActivity {
 
 
             }
+
+            fragmentManager = getSupportFragmentManager();
+
+            Fragment fragment = new fragment_principal();
+
+            fragmentManager.beginTransaction()
+                    .replace(R.id.main_content, fragment)
+                    .commit();
 
 
         } catch (JSONException e) {
@@ -483,6 +587,10 @@ public class MainActivity extends AppCompatActivity {
                     String ls_telefono = object.getString("telefono");
 
                     editor.putString("telefono_remiseria",ls_telefono);
+
+                    String ls_tipo_empresa = object.getString("tipo");
+
+                    editor.putString("tipo_empresa",ls_tipo_empresa);
                     editor.apply();
                     /*
                     Fragment fragment = new fragment_principal();
@@ -690,10 +798,113 @@ public class MainActivity extends AppCompatActivity {
                             mensaje,
                             Toast.LENGTH_LONG).show();
                     // Enviar código de falla
+            }else if (estado.equals("1")){
+                cargarDatos_solicitados_revisar(getApplicationContext());
             }
         } catch (JSONException e) {
             e.printStackTrace();
         }
+    }
+
+    public void cargarDatos_solicitados_revisar(final Context context) {
+
+        // Añadir parámetro a la URL del web service
+        String newURL = Constantes.GET_VIAJE_SOLICITADOS + "?conductor=" + ls_id_conductor;
+        Log.d(TAG,newURL);
+
+        // Realizar petición GET_BY_ID
+        VolleySingleton.getInstance(context).addToRequestQueue(
+                myRequest = new JsonObjectRequest(
+                        Request.Method.POST,
+                        newURL,
+                        null,
+                        new Response.Listener<JSONObject>() {
+
+                            @Override
+                            public void onResponse(JSONObject response) {
+                                // Procesar respuesta Json
+                                procesarRespuesta_solicitados_revisar(response, context);
+                            }
+                        },
+                        new Response.ErrorListener() {
+                            @Override
+                            public void onErrorResponse(VolleyError error) {
+                                Log.d(TAG, "Error Volley viaje solicitado: " + error.getMessage());
+                                /*
+                                Fragment fragment = new fragment_principal();
+
+                                fragmentManager.beginTransaction()
+                                        .replace(R.id.main_content, fragment)
+                                        .commit();
+                                */
+                            }
+                        }
+                )
+        );
+        myRequest.setRetryPolicy(new DefaultRetryPolicy(
+                50000,
+                5,//DefaultRetryPolicy.DEFAULT_MAX_RETRIES
+                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+
+    }
+
+    private void procesarRespuesta_solicitados_revisar(JSONObject response, Context context) {
+
+        try {
+            // Obtener atributo "mensaje"
+            String mensaje = response.getString("estado");
+            Fragment fragment ;
+            switch (mensaje) {
+                case "1":
+                    JSONArray mensaje1 = response.getJSONArray("viaje");
+                    JSONObject object = mensaje1.getJSONObject(0);
+
+                    ls_vehiculo = object.getString("id_movil");
+
+                    /*
+                    fragment = new fragment_principal();
+
+                    fragmentManager.beginTransaction()
+                            .replace(R.id.main_content, fragment)
+                            .commit();
+                    */
+                    SharedPreferences settings1 = PreferenceManager.getDefaultSharedPreferences(context);
+
+                    SharedPreferences.Editor editor = settings1.edit();
+
+                    String ls_viaje;
+
+
+
+                    ls_viaje = object.getString("id");
+
+                    editor.putString("id_viaje",ls_viaje);
+                    editor.putString("estado_conductor",object.getString("estado_conductor"));
+                    editor.putString("estado_vehiculo",object.getString("estado_vehiculo"));
+                    editor.apply();
+
+                    locationEnd();
+
+                    MediaPlayer mediaPlayer = MediaPlayer.create(this, R.raw.everblue);
+
+                    mediaPlayer.start();
+
+                    Intent intent2 = new Intent(context, MainViaje.class);
+                    intent2.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK );
+                    context.startActivity(intent2);
+                    finish();
+
+                    break;
+
+                case "2":
+
+                    break;
+
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
     }
 
 }

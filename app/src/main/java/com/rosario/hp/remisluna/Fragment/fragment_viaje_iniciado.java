@@ -57,6 +57,7 @@ public class fragment_viaje_iniciado extends Fragment {
     private String ls_id_conductor;
     private TextView id_viaje;
     private TextView solicitante;
+    private TextView texto_solicitante;
     private TextView dato_salida;
     private TextView destino;
     private TextView kms;
@@ -64,6 +65,9 @@ public class fragment_viaje_iniciado extends Fragment {
     private TextView texto_tarifa;
     private TextView tiempo_viaje;
     private TextView ficha_espera;
+    private TextView salida;
+    private TextView texto_destino;
+    private TextView gps;
     private String hora_inicio;
     private String hora_fin;
     private String fecha_tarifa;
@@ -118,6 +122,7 @@ public class fragment_viaje_iniciado extends Fragment {
     private Iniciar_servicio_tiempo Iniciar_servicio_tiempo;
     private String l_nro_recibo;
     private String l_recibo_parametro;
+    private String tipo_empresa;
 
     private Button boton_whatsapp;
     private String telefono_base;
@@ -145,24 +150,6 @@ public class fragment_viaje_iniciado extends Fragment {
         act = getActivity();
 
         context = getContext();
-        //((MainActivity) getActivity()).locationEnd();
-
-        id_viaje = v.findViewById(R.id.dato_viaje);
-        solicitante = v.findViewById(R.id.dato_solicitante);
-        dato_salida = v.findViewById(R.id.dato_salida);
-        destino = v.findViewById(R.id.dato_destino);
-        sin_ticket = v.findViewById(R.id.buttonSinTicket);
-        boton_whatsapp = v.findViewById(R.id.imageWa);
-
-        suspender = v.findViewById(R.id.buttonSuspender);
-        alarma = v.findViewById(R.id.buttonAlarma);
-        kms = v.findViewById(R.id.kms);
-        importe = v.findViewById(R.id.precio);
-        texto_tarifa = v.findViewById(R.id.tarifa);
-        tiempo_viaje = v.findViewById(R.id.tiempo);
-        ficha_espera = v.findViewById(R.id.ficha_espera);
-        sdf = new SimpleDateFormat("MM/dd/yyyy HH:mm");
-        lb_viaje_terminado = false;
 
         SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(context);
         ls_id_conductor     = settings.getString("id","");
@@ -173,7 +160,77 @@ public class fragment_viaje_iniciado extends Fragment {
         l_hora_hasta= settings.getString("tarifa_hasta","");
         ls_es_feriado = settings.getString("feriado","");
         l_tolerancia_tope = settings.getLong("tolerancia_tope",0L);
+        tipo_empresa = settings.getString("tipo_empresa","");
+        //((MainActivity) getActivity()).locationEnd();
 
+        id_viaje = v.findViewById(R.id.dato_viaje);
+        solicitante = v.findViewById(R.id.dato_solicitante);
+        texto_solicitante = v.findViewById(R.id.solicitante);
+        dato_salida = v.findViewById(R.id.dato_salida);
+        destino = v.findViewById(R.id.dato_destino);
+        texto_destino = v.findViewById(R.id.destino);
+        sin_ticket = v.findViewById(R.id.buttonSinTicket);
+        boton_whatsapp = v.findViewById(R.id.imageWa);
+
+        suspender = v.findViewById(R.id.buttonSuspender);
+        alarma = v.findViewById(R.id.buttonAlarma);
+        kms = v.findViewById(R.id.kms);
+        importe = v.findViewById(R.id.precio);
+        texto_tarifa = v.findViewById(R.id.tarifa);
+        tiempo_viaje = v.findViewById(R.id.tiempo);
+        ficha_espera = v.findViewById(R.id.ficha_espera);
+        salida = v.findViewById(R.id.salida);
+        gps = v.findViewById(R.id.gps);
+        sdf = new SimpleDateFormat("MM/dd/yyyy HH:mm");
+        lb_viaje_terminado = false;
+
+        switch (tipo_empresa) {
+            case "1":
+                id_viaje.setTextColor(act.getResources().getColor(R.color.colorPrimary));
+                importe.setTextColor(act.getResources().getColor(R.color.colorPrimary));
+                tiempo_viaje.setTextColor(act.getResources().getColor(R.color.colorPrimary));
+                ficha_espera.setTextColor(act.getResources().getColor(R.color.colorPrimary));
+                kms.setTextColor(act.getResources().getColor(R.color.colorPrimary));
+                salida.setTextColor(act.getResources().getColor(R.color.colorPrimary));
+                dato_salida.setTextColor(act.getResources().getColor(R.color.colorPrimary));
+                texto_destino.setTextColor(act.getResources().getColor(R.color.colorPrimary));
+                destino.setTextColor(act.getResources().getColor(R.color.colorPrimary));
+                solicitante.setTextColor(act.getResources().getColor(R.color.colorPrimary));
+                texto_solicitante.setTextColor(act.getResources().getColor(R.color.colorPrimary));
+                texto_tarifa.setTextColor(act.getResources().getColor(R.color.colorPrimary));
+                gps.setTextColor(act.getResources().getColor(R.color.colorPrimary));
+                break;
+            case "2":
+                id_viaje.setTextColor(act.getResources().getColor(R.color.colorMoto));
+                importe.setTextColor(act.getResources().getColor(R.color.colorMoto));
+                tiempo_viaje.setTextColor(act.getResources().getColor(R.color.colorMoto));
+                ficha_espera.setTextColor(act.getResources().getColor(R.color.colorMoto));
+                kms.setTextColor(act.getResources().getColor(R.color.colorMoto));
+                salida.setTextColor(act.getResources().getColor(R.color.colorMoto));
+                dato_salida.setTextColor(act.getResources().getColor(R.color.colorMoto));
+                texto_destino.setTextColor(act.getResources().getColor(R.color.colorMoto));
+                destino.setTextColor(act.getResources().getColor(R.color.colorMoto));
+                solicitante.setTextColor(act.getResources().getColor(R.color.colorMoto));
+                texto_solicitante.setTextColor(act.getResources().getColor(R.color.colorMoto));
+                texto_tarifa.setTextColor(act.getResources().getColor(R.color.colorMoto));
+                gps.setTextColor(act.getResources().getColor(R.color.colorMoto));
+                break;
+            case "3":
+                id_viaje.setTextColor(act.getResources().getColor(R.color.colorTaxi));
+                importe.setTextColor(act.getResources().getColor(R.color.colorTaxi));
+                tiempo_viaje.setTextColor(act.getResources().getColor(R.color.colorTaxi));
+                ficha_espera.setTextColor(act.getResources().getColor(R.color.colorTaxi));
+                kms.setTextColor(act.getResources().getColor(R.color.colorTaxi));
+                salida.setTextColor(act.getResources().getColor(R.color.colorTaxi));
+                dato_salida.setTextColor(act.getResources().getColor(R.color.colorTaxi));
+                texto_destino.setTextColor(act.getResources().getColor(R.color.colorTaxi));
+                destino.setTextColor(act.getResources().getColor(R.color.colorTaxi));
+                solicitante.setTextColor(act.getResources().getColor(R.color.colorTaxi));
+                texto_solicitante.setTextColor(act.getResources().getColor(R.color.colorTaxi));
+                texto_tarifa.setTextColor(act.getResources().getColor(R.color.colorTaxi));
+                gps.setTextColor(act.getResources().getColor(R.color.colorTaxi));
+                break;
+        }
 
         String l_hoy;
 

@@ -22,5 +22,7 @@
     <color name="colorNormalMini">#00b0ff</color>
     <color name="colorPressedMini">#40C4FF</color>
     <color name="colorRippleMini">#e1f5fe</color>
+    <color name="colorMoto">#1877F2</color>
+    <color name="colorTaxi">#FFEB3B</color>
 
 </resources>

@@ -17,6 +17,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.rosario.hp.remisluna.R;
 import com.rosario.hp.remisluna.WebActivity;
 import com.rosario.hp.remisluna.Main_Login;
+import com.rosario.hp.remisluna.acerca;
 import com.rosario.hp.remisluna.insertUsuario;
 
 import java.util.Objects;
@@ -55,6 +56,15 @@ public class fragment_preferencias extends Fragment {
             @Override
             public void onClick(View v) {
                 Intent intent2 = new Intent(getActivity(), insertUsuario.class);
+
+                act.startActivity(intent2);
+            }
+        });
+
+        this.acerca.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent2 = new Intent(getActivity(), acerca.class);
 
                 act.startActivity(intent2);
             }

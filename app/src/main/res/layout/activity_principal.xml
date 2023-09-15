@@ -50,12 +50,12 @@
                 android:id="@+id/tarifa"
                 android:layout_width="wrap_content"
                 android:layout_height="@dimen/icono_chico"
+                android:layout_alignParentEnd="true"
                 android:text="@string/tarifa"
                 android:textAlignment="center"
-                android:layout_alignParentEnd="true"
                 android:textColor="@color/colorPrimary"
-                android:textStyle="bold"
-                android:textSize="@dimen/tamanio_parrafo" />
+                android:textSize="@dimen/tamanio_parrafo"
+                android:textStyle="bold" />
         </RelativeLayout>
 
         <RelativeLayout

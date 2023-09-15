@@ -130,6 +130,12 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".MainActivity" />
         </activity>
+        <activity android:name=".acerca"
+            android:screenOrientation="portrait">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".activity_preferencias" />
+        </activity>
         <activity android:name=".MainTurno"
             android:screenOrientation="portrait">
             <meta-data

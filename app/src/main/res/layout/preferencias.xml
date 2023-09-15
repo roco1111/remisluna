@@ -17,6 +17,7 @@
             android:layout_height="wrap_content"
             android:layout_centerVertical="true"
             android:layout_marginStart="5dp"
+            android:textColor="@color/colorPrimaryText"
             android:text="@string/menu_perfil"
             android:textSize="@dimen/tamanio_parrafo" />
 
@@ -25,6 +26,7 @@
         <View
             android:id="@+id/divider_perfil"
             android:layout_width="fill_parent"
+            android:textColor="@color/colorPrimaryText"
             android:layout_height="1dp"
             android:layout_alignParentBottom="true"
 
@@ -43,6 +45,7 @@
             android:layout_height="wrap_content"
             android:layout_centerVertical="true"
             android:layout_marginStart="5dp"
+            android:textColor="@color/colorPrimaryText"
             android:text="@string/menu_ayuda"
             android:textSize="@dimen/tamanio_parrafo" />
 
@@ -52,6 +55,7 @@
             android:id="@+id/divider_ayuda"
             android:layout_width="fill_parent"
             android:layout_height="1dp"
+            android:textColor="@color/colorPrimaryText"
             android:layout_alignParentBottom="true"
 
             android:background="@android:color/darker_gray" />
@@ -68,6 +72,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textSize="@dimen/tamanio_parrafo"
+            android:textColor="@color/colorPrimaryText"
             android:layout_centerVertical="true"
             android:text="@string/menu_politicas" />
 
@@ -75,6 +80,7 @@
             android:id="@+id/divider_politicas"
             android:layout_width="fill_parent"
             android:layout_height="1dp"
+            android:textColor="@color/colorPrimaryText"
             android:layout_alignParentBottom="true"
 
             android:background="@android:color/darker_gray" />
@@ -91,6 +97,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textSize="@dimen/tamanio_parrafo"
+            android:textColor="@color/colorPrimaryText"
             android:layout_centerVertical="true"
             android:text="@string/menu_terminos" />
 
@@ -98,6 +105,7 @@
             android:id="@+id/divider_terminos"
             android:layout_width="fill_parent"
             android:layout_height="1dp"
+            android:textColor="@color/colorPrimaryText"
             android:layout_alignParentBottom="true"
 
             android:background="@android:color/darker_gray" />
@@ -113,6 +121,7 @@
             android:layout_marginStart="5dp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:textColor="@color/colorPrimaryText"
             android:textSize="@dimen/tamanio_parrafo"
             android:layout_centerVertical="true"
             android:text="@string/acerca" />
@@ -121,6 +130,7 @@
             android:id="@+id/divider_acerca"
             android:layout_width="fill_parent"
             android:layout_height="1dp"
+            android:textColor="@color/colorPrimaryText"
             android:layout_alignParentBottom="true"
 
             android:background="@android:color/darker_gray" />
@@ -136,6 +146,7 @@
             android:layout_marginStart="5dp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:textColor="@color/colorPrimaryText"
             android:textSize="@dimen/tamanio_parrafo"
             android:layout_centerVertical="true"
             android:text="@string/cerrar" />
@@ -143,6 +154,7 @@
         <View
             android:id="@+id/divider_salir"
             android:layout_width="fill_parent"
+            android:textColor="@color/colorPrimaryText"
             android:layout_height="1dp"
             android:layout_alignParentBottom="true"
 

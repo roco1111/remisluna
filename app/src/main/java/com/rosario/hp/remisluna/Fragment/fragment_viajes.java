@@ -181,6 +181,10 @@ public class fragment_viajes extends Fragment {
 
                         String nro_recibo = object.getString("nro_recibo");
 
+                        if(nro_recibo.equals("null")){
+                            nro_recibo = "Sin Nro";
+                        }
+
                         via.setNro_recibo(nro_recibo);
 
                         datos.add(via);
