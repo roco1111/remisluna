@@ -1,5 +1,7 @@
 package com.rosario.hp.remisluna;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.Fragment;
@@ -63,7 +65,9 @@ public class MainActivity extends AppCompatActivity {
     String ls_vehiculo;
     private ArrayList<ayuda> ayudas;
     Localizacion Local;
+    private String l_turno_app;
     private static FragmentManager fragmentManager;
+    private String ls_remiseria;
 
     @Override
     public void onStart() {
@@ -108,9 +112,10 @@ public class MainActivity extends AppCompatActivity {
         Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(false);
         Objects.requireNonNull(getSupportActionBar()).setDisplayShowHomeEnabled(false);
         Objects.requireNonNull(getSupportActionBar()).setTitle(getResources().getString(R.string.app_name));
+        ls_remiseria = settings.getString("remiseria","");
 
 
-         cargarParametroImpresora(getApplicationContext());
+         cargarParametroTurno(getApplicationContext());
     }
 
     @Override
@@ -119,10 +124,114 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    public void cargarParametroTurno(final Context context) {
+
+        HashMap<String, String> map = new HashMap<>();// Mapeo previo
+
+        map.put("parametro", "17");
+        map.put("remiseria", ls_remiseria);
+
+        JSONObject jobject = new JSONObject(map);
+
+
+        // Depurando objeto Json...
+        Log.d(TAG, jobject.toString());
+
+        StringBuilder encodedParams = new StringBuilder();
+        try {
+            for (Map.Entry<String, String> entry : map.entrySet()) {
+                encodedParams.append(URLEncoder.encode(entry.getKey(), "utf-8"));
+                encodedParams.append('=');
+                encodedParams.append(URLEncoder.encode(entry.getValue(), "utf-8"));
+                encodedParams.append('&');
+            }
+        } catch (UnsupportedEncodingException uee) {
+            throw new RuntimeException("Encoding not supported: " + "utf-8", uee);
+        }
+
+        encodedParams.setLength(Math.max(encodedParams.length() - 1, 0));
+
+        // Añadir parámetro a la URL del web service
+        String newURL = Constantes.GET_ID_PARAMETRO + "?" + encodedParams;
+        Log.d(TAG,newURL);
+
+        // Realizar petición GET_BY_ID
+        VolleySingleton.getInstance(context).addToRequestQueue(
+                myRequest = new JsonObjectRequest(
+                        Request.Method.POST,
+                        newURL,
+                        null,
+                        new Response.Listener<JSONObject>() {
+
+                            @Override
+                            public void onResponse(JSONObject response) {
+                                // Procesar respuesta Json
+                                procesarRespuestaParametroTurno(response, context);
+                            }
+                        },
+                        new Response.ErrorListener() {
+                            @Override
+                            public void onErrorResponse(VolleyError error) {
+                                Log.d(TAG, "Error Volley parámetro: " + error.getMessage());
+
+                            }
+                        }
+                )
+        );
+        myRequest.setRetryPolicy(new DefaultRetryPolicy(
+                50000,
+                5,//DefaultRetryPolicy.DEFAULT_MAX_RETRIES
+                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+
+    }
+
+    private void procesarRespuestaParametroTurno(JSONObject response, Context context) {
+
+        try {
+            // Obtener atributo "mensaje"
+            String mensaje = response.getString("estado");
+
+            switch (mensaje) {
+                case "1":
+                    JSONArray datos_parametro = response.getJSONArray("parametro");
+
+                    for (int i = 0; i < datos_parametro.length(); i++) {
+                        JSONObject object = datos_parametro.getJSONObject(i);
+
+                        l_turno_app = object.getString("valor");
+
+                    }
+
+                    SharedPreferences settings1 = PreferenceManager.getDefaultSharedPreferences(context);
+
+                    SharedPreferences.Editor editor = settings1.edit();
+
+
+                    editor.putString("turnos_app",l_turno_app);
+                    editor.apply();
+
+                    cargarParametroImpresora(context);
+
+                    break;
+                case "2":
+                    String mensaje2 = response.getString("mensaje");
+                    Toast.makeText(
+                            context,
+                            mensaje2,
+                            Toast.LENGTH_LONG).show();
+                    break;
+
+            }
+
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+    }
+
     public void cargarParametroImpresora(final Context context) {
 
-        SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(context);
-        String ls_remiseria = settings.getString("remiseria","");
 
         HashMap<String, String> map = new HashMap<>();// Mapeo previo
 
@@ -202,6 +311,7 @@ public class MainActivity extends AppCompatActivity {
 
 
                         editor.putString("impresion",object.getString("valor"));
+                        editor.apply();
 
                         cargarDatos(context);
 
@@ -599,12 +709,8 @@ public class MainActivity extends AppCompatActivity {
                             .replace(R.id.main_content, fragment)
                             .commit();
                     */
-                    if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                        ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION,}, 1000);
 
-                    } else {
-                        locationStart();
-                    }
+                    habilitar_gps();
 
                     break;
             }
@@ -615,6 +721,61 @@ public class MainActivity extends AppCompatActivity {
         }
 
     }
+
+    private void habilitar_gps(){
+        LocationManager mlocManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+
+        final boolean gpsEnabled = mlocManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
+        if (!gpsEnabled) {
+            Intent settingsIntent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+            startActivity(settingsIntent);
+        }
+        if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.N) {
+            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION,}, 1000);
+                return;
+            }
+            locationStart();
+        }else{
+            locationPermissionRequest.launch(new String[] {
+                    Manifest.permission.ACCESS_FINE_LOCATION,
+                    Manifest.permission.ACCESS_COARSE_LOCATION
+            });
+        }
+
+
+    }
+
+    ActivityResultLauncher<String[]> locationPermissionRequest =
+            registerForActivityResult(new ActivityResultContracts
+                            .RequestMultiplePermissions(), result -> {
+                Boolean fineLocationGranted = null;
+                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
+                    fineLocationGranted = result.getOrDefault(
+                            Manifest.permission.ACCESS_FINE_LOCATION, false);
+                }
+                Boolean coarseLocationGranted = null;
+                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
+                    coarseLocationGranted = result.getOrDefault(
+                                    Manifest.permission.ACCESS_COARSE_LOCATION,false);
+                }
+                String l_mensaje;
+                if (fineLocationGranted != null && fineLocationGranted) {
+                            locationStart();
+                            l_mensaje = "Permiso Localización precisa";
+                        } else if (coarseLocationGranted != null && coarseLocationGranted) {
+                            locationStart();
+                    l_mensaje = "Permiso Localización no precisa";
+                        } else {
+                    l_mensaje = "Sin Permiso Localización";
+                        }
+                Toast.makeText(
+                        getApplicationContext(),
+                        l_mensaje,
+                        Toast.LENGTH_LONG).show();
+                    }
+            );
+
 
     public void locationEnd() {
 

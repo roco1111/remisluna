@@ -1,6 +1,7 @@
 package com.rosario.hp.remisluna;
 
 import android.Manifest;
+import android.app.Activity;
 import android.bluetooth.BluetoothSocket;
 import android.content.ComponentName;
 import android.content.Context;
@@ -76,6 +77,7 @@ public class MainViaje extends AppCompatActivity {
     private static final long MIN_TIEMPO_ENTRE_UPDATES = 1000 * 12;
     private static final long MIN_CAMBIO_DISTANCIA_PARA_UPDATES = 0;
     private static FragmentManager fragmentManager;
+    private Activity act;
 
     @Override
     protected void onStart() {
@@ -115,6 +117,7 @@ public class MainViaje extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main_basica);
+        act = MainViaje.this;
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         ayudas = new ArrayList<>();
         SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
@@ -132,7 +135,7 @@ public class MainViaje extends AppCompatActivity {
                 .replace(R.id.main_content, fragment)
                 .commit();
 
-        cargarDatos(getApplicationContext());
+        cargarParametroImpresora(getApplicationContext());
 
     }
     private void habilitar_gps(){
@@ -146,6 +149,12 @@ public class MainViaje extends AppCompatActivity {
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION,}, 1000);
             return;
+        }
+    }
+
+    private void permiso_back(){
+        if (ActivityCompat.checkSelfPermission(act, Manifest.permission.ACCESS_BACKGROUND_LOCATION) != PackageManager.PERMISSION_GRANTED ) {
+            ActivityCompat.requestPermissions(act, new String[]{Manifest.permission.ACCESS_BACKGROUND_LOCATION,}, 1000);
         }
     }
 
@@ -185,6 +194,106 @@ public class MainViaje extends AppCompatActivity {
     @Override
     public void onBackPressed() {
         this.finish();
+    }
+
+    public void cargarParametroImpresora(final Context context) {
+
+        SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(context);
+        String ls_remiseria = settings.getString("remiseria","");
+
+        HashMap<String, String> map = new HashMap<>();// Mapeo previo
+
+        map.put("parametro", "18");
+        map.put("remiseria", ls_remiseria);
+
+        JSONObject jobject = new JSONObject(map);
+
+
+        // Depurando objeto Json...
+        Log.d(TAG, jobject.toString());
+
+        StringBuilder encodedParams = new StringBuilder();
+        try {
+            for (Map.Entry<String, String> entry : map.entrySet()) {
+                encodedParams.append(URLEncoder.encode(entry.getKey(), "utf-8"));
+                encodedParams.append('=');
+                encodedParams.append(URLEncoder.encode(entry.getValue(), "utf-8"));
+                encodedParams.append('&');
+            }
+        } catch (UnsupportedEncodingException uee) {
+            throw new RuntimeException("Encoding not supported: " + "utf-8", uee);
+        }
+
+        encodedParams.setLength(Math.max(encodedParams.length() - 1, 0));
+
+        // Añadir parámetro a la URL del web service
+        String newURL = Constantes.GET_ID_PARAMETRO + "?" + encodedParams;
+        Log.d(TAG,newURL);
+
+        // Realizar petición GET_BY_ID
+        VolleySingleton.getInstance(context).addToRequestQueue(
+                myRequest = new JsonObjectRequest(
+                        Request.Method.POST,
+                        newURL,
+                        null,
+                        new Response.Listener<JSONObject>() {
+
+                            @Override
+                            public void onResponse(JSONObject response) {
+                                // Procesar respuesta Json
+                                procesarRespuestaParametroimpresion(response, context);
+                            }
+                        },
+                        new Response.ErrorListener() {
+                            @Override
+                            public void onErrorResponse(VolleyError error) {
+                                Log.d(TAG, "Error Volley tarifa desde: " + error.getMessage());
+
+                            }
+                        }
+                )
+        );
+        myRequest.setRetryPolicy(new DefaultRetryPolicy(
+                50000,
+                5,//DefaultRetryPolicy.DEFAULT_MAX_RETRIES
+                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+
+    }
+
+    private void procesarRespuestaParametroimpresion(JSONObject response, Context context) {
+
+        try {
+            // Obtener atributo "mensaje"
+            String mensaje = response.getString("estado");
+
+            switch (mensaje) {
+                case "1":
+                    JSONArray datos_parametro = response.getJSONArray("parametro");
+
+                    for(int i = 0; i < datos_parametro.length(); i++)
+                    {JSONObject object = datos_parametro.getJSONObject(i);
+
+                        SharedPreferences settings1 = PreferenceManager.getDefaultSharedPreferences(context);
+
+                        SharedPreferences.Editor editor = settings1.edit();
+
+
+                        editor.putString("impresion",object.getString("valor"));
+
+                        cargarDatos(context);
+
+                    }
+
+                    break;
+                case "2":
+                    break;
+
+            }
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
     }
 
     public void cargarDatos(final Context context) {
@@ -241,7 +350,7 @@ public class MainViaje extends AppCompatActivity {
                             .replace(R.id.main_content, fragment)
                             .commit();
 
-                    habilitar_gps();
+                    permiso_back();
                     break;
 
                 case "2":

@@ -200,6 +200,7 @@ public class fragment_viaje extends Fragment {
     private boolean lb_bluetooth;
     private File file;
     private File dir;
+    private String l_turno_app;
 
     @Override
     public void onStart() {
@@ -331,6 +332,7 @@ public class fragment_viaje extends Fragment {
         telefono_remiseria = settings.getString("telefono_remiseria","");
         tipo_empresa = settings.getString("tipo_empresa","");
         l_impresion = settings.getString("impresion","");
+        l_turno_app = settings.getString("turnos_app","");
 
         BluetoothAdapter bt = BluetoothAdapter.getDefaultAdapter();
         if (bt == null)
@@ -496,6 +498,64 @@ public class fragment_viaje extends Fragment {
                     this.boton_impresora.setBackground(act.getResources().getDrawable(R.drawable.selector_impresora_taxi));
                     break;
             }
+        }
+
+        if(l_turno_app.equals("0")){
+
+            boton_dos.setEnabled(false);
+            switch (tipo_empresa)
+            {
+                case "1":
+                    boton_dos.setBackground(act.getResources().getDrawable(R.drawable.dos_gris));
+                    break;
+                case "2":
+                    boton_dos.setBackground(act.getResources().getDrawable(R.drawable.dos_gris_moto));
+                    break;
+                case "3":
+                    boton_dos.setBackground(act.getResources().getDrawable(R.drawable.dos_gris));
+                    break;
+            }
+            boton_uno.setEnabled(false);
+            switch (tipo_empresa)
+            {
+                case "1":
+                    boton_uno.setBackground(act.getResources().getDrawable(R.drawable.uno_gris));
+                    break;
+                case "2":
+                    boton_uno.setBackground(act.getResources().getDrawable(R.drawable.uno_gris_moto));
+                    break;
+                case "3":
+                    boton_uno.setBackground(act.getResources().getDrawable(R.drawable.uno_gris));
+                    break;
+            }
+        }else{
+
+            boton_dos.setEnabled(true);
+            switch (tipo_empresa) {
+                case "1":
+                    boton_dos.setBackground(act.getResources().getDrawable(R.drawable.selector_dos));
+                    break;
+                case "2":
+                    boton_dos.setBackground(act.getResources().getDrawable(R.drawable.selector_dos_moto));
+                    break;
+                case "3":
+                    boton_dos.setBackground(act.getResources().getDrawable(R.drawable.selector_dos_taxi));
+                    break;
+            }
+
+            boton_uno.setEnabled(true);
+            switch (tipo_empresa) {
+                case "1":
+                    boton_uno.setBackground(act.getResources().getDrawable(R.drawable.selector_uno));
+                    break;
+                case "2":
+                    boton_uno.setBackground(act.getResources().getDrawable(R.drawable.selector_uno_moto));
+                    break;
+                case "3":
+                    boton_uno.setBackground(act.getResources().getDrawable(R.drawable.selector_uno_taxi));
+                    break;
+            }
+
         }
 
         datos = new ArrayList<>();
@@ -2145,12 +2205,12 @@ public class fragment_viaje extends Fragment {
                     progress1.dismiss();
                     actualizar_coordenadas(context);
 
-
+                    break;
                 case "2":
                     progress1.dismiss();
                     Toast.makeText(
                             context,
-                            mensaje,
+                            "Error al obtener datos turno",
                             Toast.LENGTH_LONG).show();
 
                     break;

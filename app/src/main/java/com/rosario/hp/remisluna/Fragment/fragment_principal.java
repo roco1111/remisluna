@@ -84,6 +84,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import com.itextpdf.text.Document;
+import com.rosario.hp.remisluna.viajes_activity;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -335,6 +336,7 @@ public class fragment_principal extends Fragment {
         telefono_remiseria = settings.getString("telefono_remiseria","");
         tipo_empresa = settings.getString("tipo_empresa","");
         l_impresion = settings.getString("impresion","");
+        l_turno_app = settings.getString("turnos_app","");
         this.boton_cero = v.findViewById(R.id.imageButtonCero);
         this.boton_uno = v.findViewById(R.id.imageButtonUno);
         this.boton_dos = v.findViewById(R.id.imageButtonDos);
@@ -415,8 +417,6 @@ public class fragment_principal extends Fragment {
 
         if(movil_habilitado.equals("1") && chofer_habilitado.equals("1"))
         {
-            this.boton_uno.setEnabled(true);
-            this.boton_dos.setEnabled(true);
             this.boton_tres.setEnabled(true);
             this.boton_cuatro.setEnabled(true);
             this.boton_seis.setEnabled(true);
@@ -431,8 +431,6 @@ public class fragment_principal extends Fragment {
                     this.texto_kms.setTextColor(act.getResources().getColor(R.color.colorPrimary));
                     this.texto_tiempo.setTextColor(act.getResources().getColor(R.color.colorPrimary));
                     this.red.setTextColor(act.getResources().getColor(R.color.colorPrimary));
-                    this.boton_uno.setBackground(act.getResources().getDrawable(R.drawable.selector_uno));
-                    this.boton_dos.setBackground(act.getResources().getDrawable(R.drawable.selector_dos));
                     this.boton_tres.setBackground(act.getResources().getDrawable(R.drawable.selector_tres));
                     this.boton_cuatro.setBackground(act.getResources().getDrawable(R.drawable.selector_cuatro));
                     this.boton_seis.setBackground(act.getResources().getDrawable(R.drawable.selector_seis));
@@ -449,8 +447,6 @@ public class fragment_principal extends Fragment {
                     this.texto_kms.setTextColor(act.getResources().getColor(R.color.colorMoto));
                     this.texto_tiempo.setTextColor(act.getResources().getColor(R.color.colorMoto));
                     this.red.setTextColor(act.getResources().getColor(R.color.colorMoto));
-                    this.boton_uno.setBackground(act.getResources().getDrawable(R.drawable.selector_uno_moto));
-                    this.boton_dos.setBackground(act.getResources().getDrawable(R.drawable.selector_dos_moto));
                     this.boton_tres.setBackground(act.getResources().getDrawable(R.drawable.selector_tres_moto));
                     this.boton_cuatro.setBackground(act.getResources().getDrawable(R.drawable.selector_cuatro_moto));
                     this.boton_seis.setBackground(act.getResources().getDrawable(R.drawable.selector_seis_moto));
@@ -467,8 +463,6 @@ public class fragment_principal extends Fragment {
                     this.texto_kms.setTextColor(act.getResources().getColor(R.color.colorTaxi));
                     this.texto_tiempo.setTextColor(act.getResources().getColor(R.color.colorTaxi));
                     this.red.setTextColor(act.getResources().getColor(R.color.colorTaxi));
-                    this.boton_uno.setBackground(act.getResources().getDrawable(R.drawable.selector_uno_taxi));
-                    this.boton_dos.setBackground(act.getResources().getDrawable(R.drawable.selector_dos_taxi));
                     this.boton_tres.setBackground(act.getResources().getDrawable(R.drawable.selector_tres_taxi));
                     this.boton_cuatro.setBackground(act.getResources().getDrawable(R.drawable.selector_cuatro_taxi));
                     this.boton_seis.setBackground(act.getResources().getDrawable(R.drawable.selector_seis_taxi));
@@ -481,32 +475,25 @@ public class fragment_principal extends Fragment {
 
 
         }else{
-            this.boton_uno.setEnabled(false);
-            this.boton_dos.setEnabled(false);
             this.boton_tres.setEnabled(false);
             this.boton_cuatro.setEnabled(false);
             this.boton_seis.setEnabled(false);
             this.boton_siete.setEnabled(false);
             switch (tipo_empresa) {
                 case "1":
-                    this.boton_uno.setBackground(act.getResources().getDrawable(R.drawable.uno_gris));
-                    this.boton_dos.setBackground(act.getResources().getDrawable(R.drawable.dos_gris));
+
                     this.boton_tres.setBackground(act.getResources().getDrawable(R.drawable.tres_gris));
                     this.boton_cuatro.setBackground(act.getResources().getDrawable(R.drawable.cuatro_gris));
                     this.boton_seis.setBackground(act.getResources().getDrawable(R.drawable.seis_gris));
                     this.boton_siete.setBackground(act.getResources().getDrawable(R.drawable.siete_gris));
                     break;
                 case "2":
-                    this.boton_uno.setBackground(act.getResources().getDrawable(R.drawable.uno_gris_moto));
-                    this.boton_dos.setBackground(act.getResources().getDrawable(R.drawable.dos_gris_moto));
                     this.boton_tres.setBackground(act.getResources().getDrawable(R.drawable.tres_gris_moto));
                     this.boton_cuatro.setBackground(act.getResources().getDrawable(R.drawable.cuatro_gris_moto));
                     this.boton_seis.setBackground(act.getResources().getDrawable(R.drawable.seis_gris_moto));
                     this.boton_siete.setBackground(act.getResources().getDrawable(R.drawable.siete_gris_moto));
                     break;
                 case "3":
-                    this.boton_uno.setBackground(act.getResources().getDrawable(R.drawable.uno_gris));
-                    this.boton_dos.setBackground(act.getResources().getDrawable(R.drawable.dos_gris));
                     this.boton_tres.setBackground(act.getResources().getDrawable(R.drawable.tres_gris));
                     this.boton_cuatro.setBackground(act.getResources().getDrawable(R.drawable.cuatro_gris));
                     this.boton_seis.setBackground(act.getResources().getDrawable(R.drawable.seis_gris));
@@ -514,22 +501,40 @@ public class fragment_principal extends Fragment {
                     break;
             }
         }
-        if(ls_id_turno.equals("0"))
-        {
-            this.boton_automatico.setEnabled(false);
-            switch (tipo_empresa) {
-                case "1":
-                    this.boton_automatico.setBackground(act.getResources().getDrawable(R.drawable.automtico_gris));
-                    break;
-                case "2":
-                    this.boton_automatico.setBackground(act.getResources().getDrawable(R.drawable.automatico_gris_moto));
-                    break;
-                case "3":
-                    this.boton_automatico.setBackground(act.getResources().getDrawable(R.drawable.automtico_gris));
-                    break;
-            }
+        if(l_turno_app.equals("1")) {
+            this.turno.setVisibility(View.VISIBLE);
+            if (ls_id_turno.equals("0")) {
 
+                this.boton_automatico.setEnabled(false);
+                switch (tipo_empresa) {
+                    case "1":
+                        this.boton_automatico.setBackground(act.getResources().getDrawable(R.drawable.automtico_gris));
+                        break;
+                    case "2":
+                        this.boton_automatico.setBackground(act.getResources().getDrawable(R.drawable.automatico_gris_moto));
+                        break;
+                    case "3":
+                        this.boton_automatico.setBackground(act.getResources().getDrawable(R.drawable.automtico_gris));
+                        break;
+                }
+
+            } else {
+                this.boton_automatico.setEnabled(true);
+                switch (tipo_empresa) {
+                    case "1":
+                        this.boton_automatico.setBackground(act.getResources().getDrawable(R.drawable.selector_automatico));
+                        break;
+                    case "2":
+                        this.boton_automatico.setBackground(act.getResources().getDrawable(R.drawable.selector_automatico_moto));
+                        break;
+                    case "3":
+                        this.boton_automatico.setBackground(act.getResources().getDrawable(R.drawable.selector_automatico_taxi));
+                        break;
+                }
+
+            }
         }else{
+            this.turno.setVisibility(View.INVISIBLE);
             this.boton_automatico.setEnabled(true);
             switch (tipo_empresa) {
                 case "1":
@@ -561,6 +566,87 @@ public class fragment_principal extends Fragment {
                     this.boton_impresora.setBackground(act.getResources().getDrawable(R.drawable.selector_impresora_taxi));
                     break;
             }
+        }
+        if(l_turno_app.equals("0")){
+
+            boton_cinco.setEnabled(false);
+            switch (tipo_empresa)
+            {
+                case "1":
+                    boton_cinco.setBackground(act.getResources().getDrawable(R.drawable.cinco_gris));
+                    break;
+                case "2":
+                    boton_cinco.setBackground(act.getResources().getDrawable(R.drawable.cinco_gris_moto));
+                    break;
+                case "3":
+                    boton_cinco.setBackground(act.getResources().getDrawable(R.drawable.cinco_gris));
+                    break;
+            }
+            boton_dos.setEnabled(false);
+            switch (tipo_empresa)
+            {
+                case "1":
+                    boton_dos.setBackground(act.getResources().getDrawable(R.drawable.dos_gris));
+                    break;
+                case "2":
+                    boton_dos.setBackground(act.getResources().getDrawable(R.drawable.dos_gris_moto));
+                    break;
+                case "3":
+                    boton_dos.setBackground(act.getResources().getDrawable(R.drawable.dos_gris));
+                    break;
+            }
+            boton_uno.setEnabled(false);
+            switch (tipo_empresa)
+            {
+                case "1":
+                    boton_uno.setBackground(act.getResources().getDrawable(R.drawable.uno_gris));
+                    break;
+                case "2":
+                    boton_uno.setBackground(act.getResources().getDrawable(R.drawable.uno_gris_moto));
+                    break;
+                case "3":
+                    boton_uno.setBackground(act.getResources().getDrawable(R.drawable.uno_gris));
+                    break;
+            }
+        }else{
+            boton_cinco.setEnabled(true);
+            switch (tipo_empresa) {
+                case "1":
+                    boton_cinco.setBackground(act.getResources().getDrawable(R.drawable.selector_cinco));
+                    break;
+                case "2":
+                    boton_cinco.setBackground(act.getResources().getDrawable(R.drawable.selector_cinco_moto));
+                    break;
+                case "3":
+                    boton_cinco.setBackground(act.getResources().getDrawable(R.drawable.selector_cinco_taxi));
+                    break;
+            }
+            boton_dos.setEnabled(true);
+            switch (tipo_empresa) {
+                case "1":
+                    boton_dos.setBackground(act.getResources().getDrawable(R.drawable.selector_dos));
+                    break;
+                case "2":
+                    boton_dos.setBackground(act.getResources().getDrawable(R.drawable.selector_dos_moto));
+                    break;
+                case "3":
+                    boton_dos.setBackground(act.getResources().getDrawable(R.drawable.selector_dos_taxi));
+                    break;
+            }
+
+            boton_uno.setEnabled(true);
+            switch (tipo_empresa) {
+                case "1":
+                    boton_uno.setBackground(act.getResources().getDrawable(R.drawable.selector_uno));
+                    break;
+                case "2":
+                    boton_uno.setBackground(act.getResources().getDrawable(R.drawable.selector_uno_moto));
+                    break;
+                case "3":
+                    boton_uno.setBackground(act.getResources().getDrawable(R.drawable.selector_uno_taxi));
+                    break;
+            }
+
         }
         MediaPlayer mediaPlayer = MediaPlayer.create(getActivity(), R.raw.everblue);
 
@@ -706,7 +792,12 @@ public class fragment_principal extends Fragment {
             @Override
             public void onClick(View v) {
                 mediaPlayer.start();
-                Intent intent2 = new Intent(context, turnos_activity.class);
+                Intent intent2;
+                if(l_turno_app.equals("0")){
+                    intent2 = new Intent(context, viajes_activity.class);
+                }else {
+                    intent2 = new Intent(context, turnos_activity.class);
+                }
                 context.startActivity(intent2);
             }
         });
@@ -902,6 +993,19 @@ private void procesarRespuestaParametroTurno(JSONObject response, Context contex
                             boton_cinco.setBackground(act.getResources().getDrawable(R.drawable.cinco_gris));
                             break;
                     }
+                    boton_dos.setEnabled(false);
+                    switch (tipo_empresa)
+                    {
+                        case "1":
+                            boton_dos.setBackground(act.getResources().getDrawable(R.drawable.dos_gris));
+                            break;
+                        case "2":
+                            boton_dos.setBackground(act.getResources().getDrawable(R.drawable.dos_gris_moto));
+                            break;
+                        case "3":
+                            boton_dos.setBackground(act.getResources().getDrawable(R.drawable.dos_gris));
+                            break;
+                    }
                 }else{
                     boton_cinco.setEnabled(true);
                     switch (tipo_empresa) {
@@ -913,6 +1017,18 @@ private void procesarRespuestaParametroTurno(JSONObject response, Context contex
                             break;
                         case "3":
                             boton_cinco.setBackground(act.getResources().getDrawable(R.drawable.selector_cinco_taxi));
+                            break;
+                    }
+                    boton_dos.setEnabled(true);
+                    switch (tipo_empresa) {
+                        case "1":
+                            boton_dos.setBackground(act.getResources().getDrawable(R.drawable.selector_dos));
+                            break;
+                        case "2":
+                            boton_dos.setBackground(act.getResources().getDrawable(R.drawable.selector_dos_moto));
+                            break;
+                        case "3":
+                            boton_dos.setBackground(act.getResources().getDrawable(R.drawable.selector_dos_taxi));
                             break;
                     }
 
@@ -1224,41 +1340,111 @@ private void procesarRespuestaParametroTurno(JSONObject response, Context contex
 
                     if(habilitada.equals("1") )
                     {
-                        this.boton_uno.setEnabled(true);
-                        this.boton_dos.setEnabled(true);
+
                         this.boton_tres.setEnabled(true);
                         this.boton_cuatro.setEnabled(true);
                         this.boton_seis.setEnabled(true);
                         this.boton_siete.setEnabled(true);
-                        this.boton_cinco.setEnabled(true);
                         switch (tipo_empresa) {
                             case "1":
-                                this.boton_uno.setBackground(act.getResources().getDrawable(R.drawable.selector_uno));
-                                this.boton_dos.setBackground(act.getResources().getDrawable(R.drawable.selector_dos));
                                 this.boton_tres.setBackground(act.getResources().getDrawable(R.drawable.selector_tres));
                                 this.boton_cuatro.setBackground(act.getResources().getDrawable(R.drawable.selector_cuatro));
                                 this.boton_seis.setBackground(act.getResources().getDrawable(R.drawable.selector_seis));
                                 this.boton_siete.setBackground(act.getResources().getDrawable(R.drawable.selector_siete));
-                                this.boton_cinco.setBackground(act.getResources().getDrawable(R.drawable.selector_cinco));
                                 break;
                             case "2":
-                                this.boton_uno.setBackground(act.getResources().getDrawable(R.drawable.selector_uno_moto));
-                                this.boton_dos.setBackground(act.getResources().getDrawable(R.drawable.selector_dos_moto));
                                 this.boton_tres.setBackground(act.getResources().getDrawable(R.drawable.selector_tres_moto));
                                 this.boton_cuatro.setBackground(act.getResources().getDrawable(R.drawable.selector_cuatro_moto));
                                 this.boton_seis.setBackground(act.getResources().getDrawable(R.drawable.selector_seis_moto));
                                 this.boton_siete.setBackground(act.getResources().getDrawable(R.drawable.selector_siete_moto));
-                                this.boton_cinco.setBackground(act.getResources().getDrawable(R.drawable.selector_cinco_moto));
                                 break;
                             case "3":
-                                this.boton_uno.setBackground(act.getResources().getDrawable(R.drawable.selector_uno_taxi));
-                                this.boton_dos.setBackground(act.getResources().getDrawable(R.drawable.selector_dos_taxi));
                                 this.boton_tres.setBackground(act.getResources().getDrawable(R.drawable.selector_tres_taxi));
                                 this.boton_cuatro.setBackground(act.getResources().getDrawable(R.drawable.selector_cuatro_taxi));
                                 this.boton_seis.setBackground(act.getResources().getDrawable(R.drawable.selector_seis_taxi));
                                 this.boton_siete.setBackground(act.getResources().getDrawable(R.drawable.selector_siete_taxi));
-                                this.boton_cinco.setBackground(act.getResources().getDrawable(R.drawable.selector_cinco_taxi));
                                 break;
+                        }
+
+                        if(l_turno_app.equals("0")){
+
+                            boton_cinco.setEnabled(false);
+                            switch (tipo_empresa)
+                            {
+                                case "1":
+                                    boton_cinco.setBackground(act.getResources().getDrawable(R.drawable.cinco_gris));
+                                    break;
+                                case "2":
+                                    boton_cinco.setBackground(act.getResources().getDrawable(R.drawable.cinco_gris_moto));
+                                    break;
+                                case "3":
+                                    boton_cinco.setBackground(act.getResources().getDrawable(R.drawable.cinco_gris));
+                                    break;
+                            }
+                            boton_dos.setEnabled(false);
+                            switch (tipo_empresa)
+                            {
+                                case "1":
+                                    boton_dos.setBackground(act.getResources().getDrawable(R.drawable.dos_gris));
+                                    break;
+                                case "2":
+                                    boton_dos.setBackground(act.getResources().getDrawable(R.drawable.dos_gris_moto));
+                                    break;
+                                case "3":
+                                    boton_dos.setBackground(act.getResources().getDrawable(R.drawable.dos_gris));
+                                    break;
+                            }
+                            boton_uno.setEnabled(false);
+                            switch (tipo_empresa)
+                            {
+                                case "1":
+                                    boton_uno.setBackground(act.getResources().getDrawable(R.drawable.uno_gris));
+                                    break;
+                                case "2":
+                                    boton_uno.setBackground(act.getResources().getDrawable(R.drawable.uno_gris_moto));
+                                    break;
+                                case "3":
+                                    boton_uno.setBackground(act.getResources().getDrawable(R.drawable.uno_gris));
+                                    break;
+                            }
+                        }else{
+                            boton_cinco.setEnabled(true);
+                            switch (tipo_empresa) {
+                                case "1":
+                                    boton_cinco.setBackground(act.getResources().getDrawable(R.drawable.selector_cinco));
+                                    break;
+                                case "2":
+                                    boton_cinco.setBackground(act.getResources().getDrawable(R.drawable.selector_cinco_moto));
+                                    break;
+                                case "3":
+                                    boton_cinco.setBackground(act.getResources().getDrawable(R.drawable.selector_cinco_taxi));
+                                    break;
+                            }
+                            boton_dos.setEnabled(true);
+                            switch (tipo_empresa) {
+                                case "1":
+                                    boton_dos.setBackground(act.getResources().getDrawable(R.drawable.selector_dos));
+                                    break;
+                                case "2":
+                                    boton_dos.setBackground(act.getResources().getDrawable(R.drawable.selector_dos_moto));
+                                    break;
+                                case "3":
+                                    boton_dos.setBackground(act.getResources().getDrawable(R.drawable.selector_dos_taxi));
+                                    break;
+                            }
+                            boton_uno.setEnabled(true);
+                            switch (tipo_empresa) {
+                                case "1":
+                                    boton_uno.setBackground(act.getResources().getDrawable(R.drawable.selector_uno));
+                                    break;
+                                case "2":
+                                    boton_uno.setBackground(act.getResources().getDrawable(R.drawable.selector_uno_moto));
+                                    break;
+                                case "3":
+                                    boton_uno.setBackground(act.getResources().getDrawable(R.drawable.selector_uno_taxi));
+                                    break;
+                            }
+
                         }
 
                         datos_viajes_turno(context);
@@ -2682,42 +2868,112 @@ private void procesarRespuestaParametroTurno(JSONObject response, Context contex
 
                     if(habilitada.equals("1") )
                     {
-                        this.boton_uno.setEnabled(true);
-                        this.boton_dos.setEnabled(true);
                         this.boton_tres.setEnabled(true);
                         this.boton_cuatro.setEnabled(true);
                         this.boton_seis.setEnabled(true);
                         this.boton_siete.setEnabled(true);
-                        this.boton_cinco.setEnabled(true);
 
                         switch (tipo_empresa) {
                             case "1":
-                                this.boton_uno.setBackground(act.getResources().getDrawable(R.drawable.selector_uno));
-                                this.boton_dos.setBackground(act.getResources().getDrawable(R.drawable.selector_dos));
                                 this.boton_tres.setBackground(act.getResources().getDrawable(R.drawable.selector_tres));
                                 this.boton_cuatro.setBackground(act.getResources().getDrawable(R.drawable.selector_cuatro));
                                 this.boton_seis.setBackground(act.getResources().getDrawable(R.drawable.selector_seis));
                                 this.boton_siete.setBackground(act.getResources().getDrawable(R.drawable.selector_siete));
-                                this.boton_cinco.setBackground(act.getResources().getDrawable(R.drawable.selector_cinco));
                                 break;
                             case "2":
-                                this.boton_uno.setBackground(act.getResources().getDrawable(R.drawable.selector_uno_moto));
-                                this.boton_dos.setBackground(act.getResources().getDrawable(R.drawable.selector_dos_moto));
                                 this.boton_tres.setBackground(act.getResources().getDrawable(R.drawable.selector_tres_moto));
                                 this.boton_cuatro.setBackground(act.getResources().getDrawable(R.drawable.selector_cuatro_moto));
                                 this.boton_seis.setBackground(act.getResources().getDrawable(R.drawable.selector_seis_moto));
                                 this.boton_siete.setBackground(act.getResources().getDrawable(R.drawable.selector_siete_moto));
-                                this.boton_cinco.setBackground(act.getResources().getDrawable(R.drawable.selector_cinco_moto));
                                 break;
                             case "3":
-                                this.boton_uno.setBackground(act.getResources().getDrawable(R.drawable.selector_uno_taxi));
-                                this.boton_dos.setBackground(act.getResources().getDrawable(R.drawable.selector_dos_taxi));
                                 this.boton_tres.setBackground(act.getResources().getDrawable(R.drawable.selector_tres_taxi));
                                 this.boton_cuatro.setBackground(act.getResources().getDrawable(R.drawable.selector_cuatro_taxi));
                                 this.boton_seis.setBackground(act.getResources().getDrawable(R.drawable.selector_seis_taxi));
                                 this.boton_siete.setBackground(act.getResources().getDrawable(R.drawable.selector_siete_taxi));
-                                this.boton_cinco.setBackground(act.getResources().getDrawable(R.drawable.selector_cinco_taxi));
                                 break;
+                        }
+
+                        if(l_turno_app.equals("0")){
+
+                            boton_cinco.setEnabled(false);
+                            switch (tipo_empresa)
+                            {
+                                case "1":
+                                    boton_cinco.setBackground(act.getResources().getDrawable(R.drawable.cinco_gris));
+                                    break;
+                                case "2":
+                                    boton_cinco.setBackground(act.getResources().getDrawable(R.drawable.cinco_gris_moto));
+                                    break;
+                                case "3":
+                                    boton_cinco.setBackground(act.getResources().getDrawable(R.drawable.cinco_gris));
+                                    break;
+                            }
+                            boton_dos.setEnabled(false);
+                            switch (tipo_empresa)
+                            {
+                                case "1":
+                                    boton_dos.setBackground(act.getResources().getDrawable(R.drawable.dos_gris));
+                                    break;
+                                case "2":
+                                    boton_dos.setBackground(act.getResources().getDrawable(R.drawable.dos_gris_moto));
+                                    break;
+                                case "3":
+                                    boton_dos.setBackground(act.getResources().getDrawable(R.drawable.dos_gris));
+                                    break;
+                            }
+                            boton_uno.setEnabled(false);
+                            switch (tipo_empresa)
+                            {
+                                case "1":
+                                    boton_uno.setBackground(act.getResources().getDrawable(R.drawable.uno_gris));
+                                    break;
+                                case "2":
+                                    boton_uno.setBackground(act.getResources().getDrawable(R.drawable.uno_gris_moto));
+                                    break;
+                                case "3":
+                                    boton_uno.setBackground(act.getResources().getDrawable(R.drawable.uno_gris));
+                                    break;
+                            }
+                        }else{
+                            boton_cinco.setEnabled(true);
+                            switch (tipo_empresa) {
+                                case "1":
+                                    boton_cinco.setBackground(act.getResources().getDrawable(R.drawable.selector_cinco));
+                                    break;
+                                case "2":
+                                    boton_cinco.setBackground(act.getResources().getDrawable(R.drawable.selector_cinco_moto));
+                                    break;
+                                case "3":
+                                    boton_cinco.setBackground(act.getResources().getDrawable(R.drawable.selector_cinco_taxi));
+                                    break;
+                            }
+                            boton_dos.setEnabled(true);
+                            switch (tipo_empresa) {
+                                case "1":
+                                    boton_dos.setBackground(act.getResources().getDrawable(R.drawable.selector_dos));
+                                    break;
+                                case "2":
+                                    boton_dos.setBackground(act.getResources().getDrawable(R.drawable.selector_dos_moto));
+                                    break;
+                                case "3":
+                                    boton_dos.setBackground(act.getResources().getDrawable(R.drawable.selector_dos_taxi));
+                                    break;
+                            }
+
+                            boton_uno.setEnabled(true);
+                            switch (tipo_empresa) {
+                                case "1":
+                                    boton_uno.setBackground(act.getResources().getDrawable(R.drawable.selector_uno));
+                                    break;
+                                case "2":
+                                    boton_uno.setBackground(act.getResources().getDrawable(R.drawable.selector_uno_moto));
+                                    break;
+                                case "3":
+                                    boton_uno.setBackground(act.getResources().getDrawable(R.drawable.selector_uno_taxi));
+                                    break;
+                            }
+
                         }
 
 

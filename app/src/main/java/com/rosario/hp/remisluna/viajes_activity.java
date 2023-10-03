@@ -21,6 +21,7 @@ public class viajes_activity extends AppCompatActivity {
 
 
     Context context;
+    private String l_turno_app;
 
 
     @Override
@@ -28,12 +29,16 @@ public class viajes_activity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         // Obtener instancia FirebaseAuth
 
+        context = getApplicationContext();
+        SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(context);
+        l_turno_app = settings.getString("turnos_app","");
+
         setContentView(R.layout.lista_main_inicial);
         Fragment fragment ;
         fragment = new fragment_viajes();
 
 
-        context = getApplicationContext();
+
 
         if (savedInstanceState == null) {
             getSupportFragmentManager().beginTransaction()
@@ -70,7 +75,13 @@ public class viajes_activity extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
-        Intent intent2 = new Intent(context, turnos_activity.class);
+        Intent intent2;
+        if(l_turno_app.equals("0")){
+            intent2 = new Intent(context, MainActivity.class);
+
+        }else{
+            intent2 = new Intent(context, turnos_activity.class);
+        }
         intent2.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         context.startActivity(intent2);
     }
@@ -79,7 +90,13 @@ public class viajes_activity extends AppCompatActivity {
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         // TODO Auto-generated method stub
         if (keyCode == event.KEYCODE_BACK) {
-            Intent intent2 = new Intent(context, turnos_activity.class);
+            Intent intent2;
+            if(l_turno_app.equals("0")){
+                intent2 = new Intent(context, MainActivity.class);
+
+            }else{
+                intent2 = new Intent(context, turnos_activity.class);
+            }
             intent2.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             context.startActivity(intent2);
         }

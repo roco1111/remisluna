@@ -1,6 +1,7 @@
 package com.rosario.hp.remisluna.Fragment;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
@@ -33,7 +34,11 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 public class fragment_viajes extends Fragment {
 
@@ -48,6 +53,10 @@ public class fragment_viajes extends Fragment {
     private ArrayList<viaje> datos;
     private Activity act;
     private viajeAdapter ViajeAdapter;
+	private String ls_id_chofer;
+	private String l_turno_app;
+    private Context context;
+    private String ls_remiseria;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -57,6 +66,7 @@ public class fragment_viajes extends Fragment {
         datos = new ArrayList<>();
 
         act = getActivity();
+        context = getContext();
 
         swipeRefreshLayout = v.findViewById(R.id.swipeRefreshLayout);
 
@@ -75,6 +85,9 @@ public class fragment_viajes extends Fragment {
 
         SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getContext());
         ls_id_turno     = settings.getString("id_turno","");
+		ls_id_chofer     = settings.getString("id","");
+        ls_remiseria     = settings.getString("remiseria","");
+
 
         swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
@@ -82,19 +95,127 @@ public class fragment_viajes extends Fragment {
                 Log.d("swipe","swipe");
 
                 swipeRefreshLayout.setRefreshing(true);
-                cargarDatos();
+
             }
         });
-        cargarDatos();
+        cargarParametroTurno(getContext());
 
 
         return v;
     }
+	
+	public void cargarParametroTurno(final Context context) {
 
-    public void cargarDatos() {
+        HashMap<String, String> map = new HashMap<>();// Mapeo previo
+
+        map.put("parametro", "17");
+        map.put("remiseria", ls_remiseria);
+
+        JSONObject jobject = new JSONObject(map);
+
+
+        // Depurando objeto Json...
+        Log.d(TAG, jobject.toString());
+
+        StringBuilder encodedParams = new StringBuilder();
+        try {
+            for (Map.Entry<String, String> entry : map.entrySet()) {
+                encodedParams.append(URLEncoder.encode(entry.getKey(), "utf-8"));
+                encodedParams.append('=');
+                encodedParams.append(URLEncoder.encode(entry.getValue(), "utf-8"));
+                encodedParams.append('&');
+            }
+        } catch (UnsupportedEncodingException uee) {
+            throw new RuntimeException("Encoding not supported: " + "utf-8", uee);
+        }
+
+        encodedParams.setLength(Math.max(encodedParams.length() - 1, 0));
 
         // Añadir parámetro a la URL del web service
-        String newURL = Constantes.GET_VIAJES_TURNO + "?turno=" + ls_id_turno;
+        String newURL = Constantes.GET_ID_PARAMETRO + "?" + encodedParams;
+        Log.d(TAG,newURL);
+
+        // Realizar petición GET_BY_ID
+        VolleySingleton.getInstance(context).addToRequestQueue(
+                myRequest = new JsonObjectRequest(
+                        Request.Method.POST,
+                        newURL,
+                        null,
+                        new Response.Listener<JSONObject>() {
+
+                            @Override
+                            public void onResponse(JSONObject response) {
+                                // Procesar respuesta Json
+                                procesarRespuestaParametroTurno(response, context);
+                            }
+                        },
+                        new Response.ErrorListener() {
+                            @Override
+                            public void onErrorResponse(VolleyError error) {
+                                Log.d(TAG, "Error Volley parámetro: " + error.getMessage());
+
+                            }
+                        }
+                )
+        );
+        myRequest.setRetryPolicy(new DefaultRetryPolicy(
+                50000,
+                5,//DefaultRetryPolicy.DEFAULT_MAX_RETRIES
+                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+
+    }
+
+    private void procesarRespuestaParametroTurno(JSONObject response, Context context) {
+
+        try {
+            // Obtener atributo "mensaje"
+            String mensaje = response.getString("estado");
+
+            switch (mensaje) {
+                case "1":
+                    JSONArray datos_parametro = response.getJSONArray("parametro");
+
+
+                    for (int i = 0; i < datos_parametro.length(); i++) {
+                        JSONObject object = datos_parametro.getJSONObject(i);
+
+                        l_turno_app = object.getString("valor");
+
+                    }
+
+                    cargarDatos(context);
+
+                    break;
+                case "2":
+                    String mensaje2 = response.getString("mensaje");
+
+                    break;
+
+            }
+
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void cargarDatos(Context context) {
+
+        // Añadir parámetro a la URL del web service
+		
+		String newURL;
+		
+		if(l_turno_app.equals("0")){
+				
+				newURL = Constantes.GET_VIAJES_CHOFER + "?chofer=" + ls_id_chofer;
+                      
+				}else{
+					
+				newURL = Constantes.GET_VIAJES_TURNO + "?turno=" + ls_id_turno;    
+
+				}
+					
+        
         Log.d(TAG,newURL);
 
         // Realizar petición GET_BY_ID

@@ -1,5 +1,6 @@
 package com.rosario.hp.remisluna.Fragment;
 
+import android.Manifest;
 import android.app.Activity;
 import android.app.ActivityManager;
 import android.content.BroadcastReceiver;
@@ -24,6 +25,7 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.Fragment;
 
 import com.android.volley.DefaultRetryPolicy;
@@ -130,8 +132,8 @@ public class fragment_viaje_iniciado extends Fragment {
     @Override
     public void onPause() {
         if(isMyServiceRunning(ServicioGeolocalizacion.class)) {
-            act.unregisterReceiver(onBroadcast);
-        }
+           act.unregisterReceiver(onBroadcast);
+       }
 
         super.onPause();
     }
@@ -150,6 +152,8 @@ public class fragment_viaje_iniciado extends Fragment {
         act = getActivity();
 
         context = getContext();
+
+        act.registerReceiver(onBroadcast, new IntentFilter("key"));
 
         SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(context);
         ls_id_conductor     = settings.getString("id","");

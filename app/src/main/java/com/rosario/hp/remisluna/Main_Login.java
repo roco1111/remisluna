@@ -17,6 +17,8 @@ import com.rosario.hp.remisluna.Fragment.login;
 import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.firebase.auth.FirebaseAuth;
 
+import java.util.Objects;
+
 
 public class Main_Login extends AppCompatActivity implements login.Callback  {
 
@@ -102,34 +104,13 @@ public class Main_Login extends AppCompatActivity implements login.Callback  {
                 .replace(R.id.main_content, fragment)
                 .commit();
 
+        Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(false);
+        Objects.requireNonNull(getSupportActionBar()).setDisplayShowHomeEnabled(false);
+
 
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_principal, menu);
 
-        return true;
-    }
-
-    @Override
-        public boolean onOptionsItemSelected(MenuItem item) {
-        Intent intent2 = new Intent(getApplicationContext(), activity_preferencias.class);
-        intent2.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        getApplicationContext().startActivity(intent2);
-
-
-        return super.onOptionsItemSelected(item);
-    }
-
-    @Override
-    public boolean onKeyDown(int keyCode, KeyEvent event) {
-        // TODO Auto-generated method stub
-        if (keyCode == event.KEYCODE_BACK) {this.finish();
-        }
-        return super.onKeyDown(keyCode, event);
-    }
 
 
     @Override

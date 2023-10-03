@@ -137,6 +137,15 @@ public class ServicioGeolocalizacion extends Service implements Runnable {
         return START_STICKY;
     }
 
+    /**
+     * Metodo para Obtener la se–al del GPS
+     */
+    private void obtenerSenalGPS() {
+
+        thread = new Thread(this);
+        thread.start();
+    }
+
 
     @Override
     public void onDestroy() {
@@ -187,8 +196,6 @@ public class ServicioGeolocalizacion extends Service implements Runnable {
         double distance = Math.sqrt(x * x + y * y) * R;
         return distance / 1000;
     }
-
-
 
 
     public void updateLocation(Location currentLocation) {
@@ -399,14 +406,7 @@ public class ServicioGeolocalizacion extends Service implements Runnable {
     }
 
 
-    /**
-     * Metodo para Obtener la se–al del GPS
-     */
-    private void obtenerSenalGPS() {
 
-        thread = new Thread(this);
-        thread.start();
-    }
 
     /**
      * Metodo para asignar las cordenadas del usuario

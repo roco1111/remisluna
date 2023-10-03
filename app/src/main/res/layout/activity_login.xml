@@ -28,12 +28,13 @@
         android:layout_height="match_parent"
         android:orientation="vertical">
 
+
         <ImageView
             android:id="@+id/imageView2"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:srcCompat="@drawable/inicio" />
 
+            app:srcCompat="@drawable/inicio" />
 
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/login_usuario_container"
@@ -43,7 +44,7 @@
             android:layout_alignParentStart="true"
             android:textColorHint="?attr/colorPrimary"
             app:boxBackgroundColor="@color/background"
-            app:passwordToggleTint="@color/purple_500">
+            app:passwordToggleTint="?attr/colorPrimary">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/editTextUsuario"
@@ -53,12 +54,12 @@
                 android:layout_alignParentStart="true"
                 android:layout_alignParentLeft="true"
                 android:layout_marginTop="15dp"
+                android:background="?attr/android:colorBackground"
                 android:ems="10"
                 android:hint="@string/mail_cliente"
                 android:inputType="textEmailAddress"
                 android:textColor="?android:attr/textColorPrimary"
                 android:textColorHint="@color/purple_500"
-                android:background="?attr/android:colorBackground"
                 tools:focusable="false"
                 tools:ignore="RtlHardcoded" />
 
@@ -85,9 +86,9 @@
                 android:layout_height="wrap_content"
                 android:layout_alignParentStart="true"
                 android:layout_alignParentLeft="true"
+                android:background="?attr/android:colorBackground"
                 android:ems="10"
                 android:hint="@string/clave_cliente"
-                android:background="?attr/android:colorBackground"
                 android:inputType="textPassword"
                 android:textColor="?android:attr/textColorPrimary"
                 android:textColorHint="@color/colorNormalMini"
