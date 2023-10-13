@@ -42,17 +42,21 @@
         <entry key="..\:/Users/hp/AndroidStudioProjects/remisluna/app/src/main/res/drawable/selector_uno.xml" value="0.20833333333333334" />
         <entry key="..\:/Users/hp/AndroidStudioProjects/remisluna/app/src/main/res/font/digital.xml" value="0.8791666666666667" />
         <entry key="..\:/Users/hp/AndroidStudioProjects/remisluna/app/src/main/res/layout-sw600dp/activity_login.xml" value="0.1" />
+        <entry key="..\:/Users/hp/AndroidStudioProjects/remisluna/app/src/main/res/layout-sw600dp/gps.xml" value="0.155622060709705" />
         <entry key="..\:/Users/hp/AndroidStudioProjects/remisluna/app/src/main/res/layout/acerca.xml" value="0.75" />
-        <entry key="..\:/Users/hp/AndroidStudioProjects/remisluna/app/src/main/res/layout/activity_configuracion_usuario.xml" value="0.8425925925925926" />
+        <entry key="..\:/Users/hp/AndroidStudioProjects/remisluna/app/src/main/res/layout/activity_configuracion_usuario.xml" value="0.3621013133208255" />
         <entry key="..\:/Users/hp/AndroidStudioProjects/remisluna/app/src/main/res/layout/activity_datos_viaje.xml" value="0.9" />
         <entry key="..\:/Users/hp/AndroidStudioProjects/remisluna/app/src/main/res/layout/activity_login.xml" value="0.12578125" />
         <entry key="..\:/Users/hp/AndroidStudioProjects/remisluna/app/src/main/res/layout/activity_main_basica.xml" value="0.1" />
         <entry key="..\:/Users/hp/AndroidStudioProjects/remisluna/app/src/main/res/layout/activity_principal.xml" value="0.67" />
         <entry key="..\:/Users/hp/AndroidStudioProjects/remisluna/app/src/main/res/layout/activity_principal_previa.xml" value="0.13722826086956522" />
+        <entry key="..\:/Users/hp/AndroidStudioProjects/remisluna/app/src/main/res/layout/activity_turno.xml" value="0.1" />
         <entry key="..\:/Users/hp/AndroidStudioProjects/remisluna/app/src/main/res/layout/activity_viaje.xml" value="0.9" />
-        <entry key="..\:/Users/hp/AndroidStudioProjects/remisluna/app/src/main/res/layout/activity_viaje_iniciado.xml" value="0.75" />
+        <entry key="..\:/Users/hp/AndroidStudioProjects/remisluna/app/src/main/res/layout/activity_viaje_iniciado.xml" value="0.33" />
+        <entry key="..\:/Users/hp/AndroidStudioProjects/remisluna/app/src/main/res/layout/gps.xml" value="0.1" />
         <entry key="..\:/Users/hp/AndroidStudioProjects/remisluna/app/src/main/res/layout/item_turno.xml" value="0.8425925925925926" />
         <entry key="..\:/Users/hp/AndroidStudioProjects/remisluna/app/src/main/res/layout/item_viaje.xml" value="0.7583333333333333" />
+        <entry key="..\:/Users/hp/AndroidStudioProjects/remisluna/app/src/main/res/layout/layout_list.xml" value="0.1" />
         <entry key="..\:/Users/hp/AndroidStudioProjects/remisluna/app/src/main/res/layout/lista_main_inicial.xml" value="0.8425925925925926" />
         <entry key="..\:/Users/hp/AndroidStudioProjects/remisluna/app/src/main/res/layout/main_content.xml" value="0.8425925925925926" />
         <entry key="..\:/Users/hp/AndroidStudioProjects/remisluna/app/src/main/res/layout/main_content_basica.xml" value="0.1" />
@@ -60,7 +64,7 @@
         <entry key="..\:/Users/hp/AndroidStudioProjects/remisluna/app/src/main/res/layout/nav_header_main.xml" value="0.8425925925925926" />
         <entry key="..\:/Users/hp/AndroidStudioProjects/remisluna/app/src/main/res/layout/network_security_config.xml" value="0.44675925925925924" />
         <entry key="..\:/Users/hp/AndroidStudioProjects/remisluna/app/src/main/res/layout/preferencias.xml" value="0.8425925925925926" />
-        <entry key="..\:/Users/hp/AndroidStudioProjects/remisluna/app/src/main/res/layout/splash.xml" value="0.12635869565217392" />
+        <entry key="..\:/Users/hp/AndroidStudioProjects/remisluna/app/src/main/res/layout/splash.xml" value="0.155622060709705" />
         <entry key="..\:/Users/hp/AndroidStudioProjects/remisluna/app/src/main/res/menu/menu_inicio.xml" value="0.8425925925925926" />
         <entry key="..\:/Users/hp/AndroidStudioProjects/remisluna/app/src/main/res/menu/menu_principal.xml" value="0.8425925925925926" />
         <entry key="..\:/Users/hp/AndroidStudioProjects/remisluna/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml" value="0.1625" />

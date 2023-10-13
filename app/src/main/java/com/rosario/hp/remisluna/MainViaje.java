@@ -280,6 +280,8 @@ public class MainViaje extends AppCompatActivity {
 
                         editor.putString("impresion",object.getString("valor"));
 
+                        editor.apply();
+
                         cargarDatos(context);
 
                     }
@@ -340,17 +342,56 @@ public class MainViaje extends AppCompatActivity {
             Fragment fragment = null;
             switch (mensaje) {
                 case "1":
-                    fragment = new fragment_viaje_iniciado();
+
                     JSONArray mensaje1 = response.getJSONArray("viaje");
                     JSONObject object = mensaje1.getJSONObject(0);
                     id_trayecto = 0;
                     ls_viaje = object.getString("id");
 
+                    SharedPreferences settings1 = PreferenceManager.getDefaultSharedPreferences(context);
+
+                    SharedPreferences.Editor editor = settings1.edit();
+
+                    editor.putString("id_viaje",object.getString("id"));
+                    editor.putString("solicitante",object.getString("solicitante"));
+                    editor.putString("salida",object.getString("salida"));
+                    editor.putString("destino",object.getString("destino"));
+                    editor.putString("id_movil",object.getString("id_movil"));
+                    editor.putString("porc_titular",object.getString("porc_titular"));
+                    editor.putString("importe_ficha",object.getString("importe_ficha"));
+                    editor.putString("importe_ficha_nocturno",object.getString("importe_ficha_nocturno"));
+
+                    editor.putString("importe_espera",object.getString("importe_espera"));
+                    editor.putString("importe_espera_nocturno",object.getString("importe_espera_nocturno"));
+
+                    editor.putString("importe_bajada",object.getString("importe_bajada"));
+                    editor.putString("bajada",object.getString("bajada"));
+                    editor.putString("importe_bajada_nocturno",object.getString("importe_bajada_nocturno"));
+
+                    editor.putString("movil",object.getString("movil"));
+                    editor.putString("total",object.getString("total"));
+                    editor.putString("tiempo",object.getString("tiempo"));
+                    editor.putString("fichas",object.getString("fichas"));
+                    editor.putString("importe_espera_viaje",object.getString("importe_espera_viaje"));
+                    editor.putString("fichas_espera",object.getString("fichas_espera"));
+                    editor.putString("trayectoria",object.getString("trayectoria"));
+                    editor.putString("tipo_espera",object.getString("tipo_espera"));
+                    editor.putString("importe_fichas",object.getString("importe_fichas"));
+                    editor.putString("importe_espera_viaje",object.getString("importe_espera_viaje"));
+                    editor.putString("salida_coordenadas",object.getString("salida_coordenadas"));
+                    editor.putString("tiempo_tolerancia",object.getString("tiempo_tolerancia"));
+                    editor.putString("tiempo_acumulado",object.getString("tiempo_acumulado"));
+                    editor.putString("tiempo_acumulado",object.getString("tiempo_acumulado"));
+
+
+                    editor.apply();
+                    fragment = new fragment_viaje_iniciado();
+
                     fragmentManager.beginTransaction()
                             .replace(R.id.main_content, fragment)
                             .commit();
 
-                    permiso_back();
+                    //permiso_back();
                     break;
 
                 case "2":

@@ -214,7 +214,7 @@ public class ServicioGeolocalizacion extends Service implements Runnable {
                 l_inicio = System.currentTimeMillis();
                 return;
             }
-
+            //distancia que me distingue si mido tiempo o ficha
             if(distance > 2) {//probar con 2.5
                 l_tipo = 1;
             }else{
@@ -390,7 +390,7 @@ public class ServicioGeolocalizacion extends Service implements Runnable {
             }
 
             mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000, MIN_CAMBIO_DISTANCIA_PARA_UPDATES, mLocationListener);
-            Log.d("geolicalizacion","LocationManager");
+            Log.d("geolocalizacion","LocationManager");
             Looper.loop();
             //Looper.myLooper().quit();
         } else {

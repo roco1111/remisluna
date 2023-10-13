@@ -17,7 +17,7 @@
         android:maxSdkVersion="21" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 	<uses-permission android:name="com.google.android.gms.permission.AD_ID"/>
-    <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
+    <!---<uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />-->
     <queries>
 
         <package android:name="com.whatsapp" />
@@ -98,6 +98,12 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".MainActivity" />
         </activity>
+        <activity android:name=".gps"
+            android:screenOrientation="portrait">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".SplashScreenActivity" />
+        </activity>
         <activity android:name=".ListaBluetoohtActivity"
             android:screenOrientation="portrait">
             <meta-data
@@ -164,6 +170,8 @@
         </service>
         <service android:name=".ServicioGeolocalizacion"
                  android:foregroundServiceType="location"/>
+        <service android:name=".ServicioGeolocalizacionFused"
+            android:foregroundServiceType="location"/>
     </application>
 
 </manifest>

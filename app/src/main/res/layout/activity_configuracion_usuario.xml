@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -30,14 +31,13 @@
             android:id="@+id/imageViewfoto"
             android:layout_width="@dimen/perfil_image_size"
             android:layout_height="@dimen/perfil_image_size"
-            app:civ_border_width="2dp"
-            app:civ_border_color="?attr/colorPrimary"
             android:layout_alignParentTop="true"
             android:layout_marginTop="24dp"
             android:scaleType="centerCrop"
             android:src="@drawable/ic_account_circle"
             android:visibility="visible"
-             />
+            app:civ_border_color="?attr/colorPrimary"
+            app:civ_border_width="2dp" />
 
         <EditText
             android:id="@+id/editTextNombre"

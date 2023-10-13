@@ -122,6 +122,9 @@
     <string name="nocturno">Tar. Nocturna</string>
     <string name="turno_finalizado">SIN TURNO ACTIVO</string>
     <string name="viaje_anulado">Viaje Anulado</string>
+    <string name="texto_ubicacion">La app Callisto recopila datos de ubicación para poder brindar con exactitud los recorridos de los viajes con el fin de poder tarifar adecuadamente los mismos
+ y para que los conductores puedan aceptar los pedidos de viajes mas cercanos.
+ Dicho seguimiento lo hacemos incluso cuando la aplicación está cerrada o no está en uso (segundo plano).</string>
 
 
 </resources>

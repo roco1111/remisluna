@@ -2198,7 +2198,7 @@ public class fragment_viaje extends Fragment {
 
                     String l_fecha = object.getString("fecha");
                     String l_hora_inicio = object.getString("hora_inicio");
-                    String l_nro_turno = object.getString("nro_turno");
+
                     habilitada = object.getString("habilitada");
 
                     turno.setText("TURNO INICIADO - " + l_fecha + " - " + l_hora_inicio);

@@ -38,6 +38,7 @@ import com.rosario.hp.remisluna.MainActivity;
 import com.rosario.hp.remisluna.MainViaje;
 import com.rosario.hp.remisluna.R;
 import com.rosario.hp.remisluna.ServicioGeolocalizacion;
+import com.rosario.hp.remisluna.ServicioGeolocalizacionFused;
 import com.rosario.hp.remisluna.include.Constantes;
 import com.rosario.hp.remisluna.include.VolleySingleton;
 
@@ -131,10 +132,15 @@ public class fragment_viaje_iniciado extends Fragment {
 
     @Override
     public void onPause() {
+        /*/
         if(isMyServiceRunning(ServicioGeolocalizacion.class)) {
            act.unregisterReceiver(onBroadcast);
        }
 
+        */
+        if(isMyServiceRunning(ServicioGeolocalizacionFused.class)) {
+            act.unregisterReceiver(onBroadcast);
+        }
         super.onPause();
     }
 
@@ -252,9 +258,17 @@ public class fragment_viaje_iniciado extends Fragment {
                 lb_ticket = false;
                 lb_viaje_terminado = true;
                 mediaPlayer.start();
+                /*
                 if(isMyServiceRunning(ServicioGeolocalizacion.class)) {
                     act.unregisterReceiver(onBroadcast);
                     act.stopService(new Intent(act, ServicioGeolocalizacion.class));
+                    //act.stopService(new Intent(act, ServicioGeolocalizacion_metros.class));
+                    Log.d("Servicio","Servicio detenido");
+                }*/
+
+                if(isMyServiceRunning(ServicioGeolocalizacionFused.class)) {
+                    act.unregisterReceiver(onBroadcast);
+                    act.stopService(new Intent(act, ServicioGeolocalizacionFused.class));
                     //act.stopService(new Intent(act, ServicioGeolocalizacion_metros.class));
                     Log.d("Servicio","Servicio detenido");
                 }
@@ -686,10 +700,19 @@ public class fragment_viaje_iniciado extends Fragment {
                 case "1":
                     if(lb_viaje_terminado) {
 
-
+                        /*
                         if (isMyServiceRunning(ServicioGeolocalizacion.class)) {
                             act.unregisterReceiver(onBroadcast);
                             act.stopService(new Intent(act, ServicioGeolocalizacion.class));
+
+                            //act.stopService(new Intent(act, ServicioGeolocalizacion_metros.class));
+                            Log.d("Servicio", "Servicio detenido 2");
+
+                        }*/
+
+                        if (isMyServiceRunning(ServicioGeolocalizacionFused.class)) {
+                            act.unregisterReceiver(onBroadcast);
+                            act.stopService(new Intent(act, ServicioGeolocalizacionFused.class));
 
                             //act.stopService(new Intent(act, ServicioGeolocalizacion_metros.class));
                             Log.d("Servicio", "Servicio detenido 2");
@@ -826,169 +849,106 @@ public class fragment_viaje_iniciado extends Fragment {
 
     public void cargarDatos(final Context context) {
 
-        // Añadir parámetro a la URL del web service
-        String newURL = Constantes.GET_VIAJE_EN_CURSO + "?conductor=" + ls_id_conductor;
-        Log.d(TAG,newURL);
+        SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(context);
 
-        // Realizar petición GET_BY_ID
-        VolleySingleton.getInstance(context).addToRequestQueue(
-                myRequest = new JsonObjectRequest(
-                        Request.Method.POST,
-                        newURL,
-                        null,
-                        new Response.Listener<JSONObject>() {
+        id_viaje.setText(settings.getString("id_viaje",""));
+        solicitante.setText(settings.getString("solicitante",""));
+        dato_salida.setText(settings.getString("salida",""));
+        destino.setText(settings.getString("destino",""));
+        id_vehiculo = settings.getString("id_movil","");
+        ldb_porcentaje_titular = Double.parseDouble(settings.getString("porc_titular",""));
 
-                            @Override
-                            public void onResponse(JSONObject response) {
-                                // Procesar respuesta Json
-                                procesarRespuesta(response, context);
-                            }
-                        },
-                        new Response.ErrorListener() {
-                            @Override
-                            public void onErrorResponse(VolleyError error) {
-                                Log.d(TAG, "Error Volley viaje: " + error.getMessage());
+        String l_nocturno;
+        l_nocturno     = settings.getString("nocturno","");
+        if(l_nocturno.equals("0")) {
+            if(settings.getString("bajada","").equals("null") || settings.getString("bajada","").equals("0.000")) {
+                importe_bajada = settings.getString("importe_bajada","");
+            }else{
+                importe_bajada =settings.getString("bajada","");
+            }
+            importe_ficha = settings.getString("importe_ficha","");
+            importe_espera = settings.getString("importe_espera","");
+            texto_tarifa.setText(R.string.diurno);
+        }else{
+            if(settings.getString("bajada","").equals("null")|| settings.getString("bajada","").equals("0.000")) {
+                importe_bajada = settings.getString("importe_bajada_nocturno","");
+            }else{
+                importe_bajada =settings.getString("bajada","");
+            }
+            importe_ficha = settings.getString("importe_ficha_nocturno","");
+            importe_espera = settings.getString("importe_espera_nocturno","");
+            texto_tarifa.setText(R.string.nocturno);
+        }
+        movil = settings.getString("movil","");
+        ls_bajada = importe_bajada;
+        precio_bajada = Double.parseDouble(importe_bajada);
+        if(settings.getString("bajada","").equals("null") || settings.getString("bajada","").equals("0.000")) {
+            precio_total = Double.parseDouble(importe_bajada);
+            id_trayecto = 0;
 
-                            }
-                        }
-                )
-        );
-        myRequest.setRetryPolicy(new DefaultRetryPolicy(
-                50000,
-                5,//DefaultRetryPolicy.DEFAULT_MAX_RETRIES
-                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
-
-    }
-
-    private void procesarRespuesta(JSONObject response, Context context) {
-
-        try {
-            // Obtener atributo "mensaje"
-            String mensaje = response.getString("estado");
-
-            switch (mensaje) {
-                case "1":
-                    // Obtener objeto "cliente"
-                    JSONArray mensaje1 = response.getJSONArray("viaje");
-
-                    JSONObject object = mensaje1.getJSONObject(0);
-                    //Parsear objeto
-
-                    id_viaje.setText(object.getString("id"));
-                    solicitante.setText(object.getString("solicitante"));
-                    dato_salida.setText(object.getString("salida"));
-                    destino.setText(object.getString("destino"));
-                    id_vehiculo = object.getString("id_movil");
-                    ldb_porcentaje_titular = Double.parseDouble(object.getString("porc_titular"));
-                    SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(context);
-                    String l_nocturno;
-                    l_nocturno     = settings.getString("nocturno","");
-                    if(l_nocturno.equals("0")) {
-                        if(object.getString("bajada").equals("null") || object.getString("bajada").equals("0.000")) {
-                            importe_bajada = object.getString("importe_bajada");
-                        }else{
-                            importe_bajada =object.getString("bajada");
-                        }
-                        importe_ficha = object.getString("importe_ficha");
-                        importe_espera = object.getString("importe_espera");
-                        texto_tarifa.setText(R.string.diurno);
-                    }else{
-                        if(object.getString("bajada").equals("null")|| object.getString("bajada").equals("0.000")) {
-                            importe_bajada = object.getString("importe_bajada_nocturno");
-                        }else{
-                            importe_bajada =object.getString("bajada");
-                        }
-                        importe_ficha = object.getString("importe_ficha_nocturno");
-                        importe_espera = object.getString("importe_espera_nocturno");
-                        texto_tarifa.setText(R.string.nocturno);
-                    }
-                    movil = object.getString("movil");
-                    ls_bajada = importe_bajada;
-                    precio_bajada = Double.parseDouble(importe_bajada);
-                    if(object.getString("bajada").equals("null") || object.getString("bajada").equals("0.000")) {
-                        precio_total = Double.parseDouble(importe_bajada);
-                        id_trayecto = 0;
-
-                    }else{
-                        precio_total = Double.parseDouble(object.getString("total"));
-                        tiempo_viaje.setText(object.getString("tiempo"));
-                        kms.setText(object.getString("fichas"));
-                        ficha = Long.parseLong(object.getString("fichas"));
-                        ficha_espera.setText(object.getString("importe_espera_viaje"));
-                        espera = Long.parseLong(object.getString("fichas_espera"));
-                        id_trayecto = Integer.parseInt(object.getString("trayectoria"));
-                        tipo_espera = Integer.parseInt(object.getString("tipo_espera"));
-                        precio_ficha = Double.parseDouble(object.getString("importe_fichas"));
-                        precio_espera = Double.parseDouble(object.getString("importe_espera_viaje"));
-                        if(tipo_espera == 0){
-                            tiempo_viaje.setTextColor(act.getResources().getColor(R.color.suspender));
-                        }else{
-                            tiempo_viaje.setTextColor(act.getResources().getColor(R.color.colorPrimary));
-                        }
-
-                    }
-                    importe.setText(String.valueOf(precio_total));
-                    ls_precio = String.format(Locale.GERMANY,"%.2f",precio_total);
-                    cronometroActivo = true;
-
-                    salida_coordenada = object.getString("salida_coordenadas");
-
-                    if(!object.getString("tiempo_tolerancia").equals("null")) {
-
-                        tiempo_tolerancia = Long.parseLong(object.getString("tiempo_tolerancia"));
-
-                    }
-
-                    if(!object.getString("tiempo_acumulado").equals("null")) {
-
-                        tiempo_acumulado = Long.parseLong(object.getString("tiempo_acumulado"));
-
-                    }
-
-                    if(object.getString("tipo_espera").equals("0")){
-                        lb_torerancia = true;
-                    }else{
-                        lb_torerancia = false;
-                    }
-
-                    SharedPreferences.Editor editor = settings.edit();
-                    editor.putBoolean("boolean_tolerancia",lb_torerancia);
-                    editor.putLong("tiempo_acumulado",tiempo_acumulado);
-                    editor.putLong("tiempo_tolerancia",tiempo_tolerancia);
-                    editor.putString("salida_coordenada",salida_coordenada);
-
-                    editor.apply();
-
-                    Log.d("inicio carga", "listo");
-
-                    Iniciar_servicio_tiempo = new Iniciar_servicio_tiempo();
-                    Iniciar_servicio_tiempo.execute();
-
-
-                    break;
-
-                case "2":
-                    String mensaje2 = response.getString("mensaje");
-                    Toast.makeText(
-                            context,
-                            mensaje2,
-                            Toast.LENGTH_LONG).show();
-
-                    break;
-
+        }else{
+            precio_total = Double.parseDouble(settings.getString("total",""));
+            tiempo_viaje.setText(settings.getString("tiempo",""));
+            kms.setText(settings.getString("fichas",""));
+            ficha = Long.parseLong(settings.getString("fichas",""));
+            ficha_espera.setText(settings.getString("importe_espera_viaje",""));
+            espera = Long.parseLong(settings.getString("fichas_espera",""));
+            id_trayecto = Integer.parseInt(settings.getString("trayectoria",""));
+            tipo_espera = Integer.parseInt(settings.getString("tipo_espera",""));
+            precio_ficha = Double.parseDouble(settings.getString("importe_fichas",""));
+            precio_espera = Double.parseDouble(settings.getString("importe_espera_viaje",""));
+            if(tipo_espera == 0){
+                tiempo_viaje.setTextColor(act.getResources().getColor(R.color.suspender));
+            }else{
+                tiempo_viaje.setTextColor(act.getResources().getColor(R.color.colorPrimary));
             }
 
-
-        } catch (JSONException e) {
-            e.printStackTrace();
         }
+        importe.setText(String.valueOf(precio_total));
+        ls_precio = String.format(Locale.GERMANY,"%.2f",precio_total);
+        cronometroActivo = true;
+
+        salida_coordenada = settings.getString("salida_coordenadas","");
+
+        if(!settings.getString("tiempo_tolerancia","").equals("null")) {
+
+            tiempo_tolerancia = Long.parseLong(settings.getString("tiempo_tolerancia",""));
+
+        }
+
+        if(!settings.getString("tiempo_acumulado","").equals("null")) {
+
+            tiempo_acumulado = Long.parseLong(settings.getString("tiempo_acumulado",""));
+
+        }
+
+        if(settings.getString("tipo_espera","").equals("0")){
+            lb_torerancia = true;
+        }else{
+            lb_torerancia = false;
+        }
+
+        SharedPreferences.Editor editor = settings.edit();
+        editor.putBoolean("boolean_tolerancia",lb_torerancia);
+        editor.putLong("tiempo_acumulado",tiempo_acumulado);
+        editor.putLong("tiempo_tolerancia",tiempo_tolerancia);
+        editor.putString("salida_coordenada",salida_coordenada);
+
+        editor.apply();
+
+        Log.d("inicio carga", "listo");
+
+        Iniciar_servicio_tiempo = new Iniciar_servicio_tiempo();
+        Iniciar_servicio_tiempo.execute();
+
 
     }
 
     private class Iniciar_servicio_tiempo extends AsyncTask<Void, Integer, Integer> {
         protected Integer doInBackground(Void... params ) {
 
-            act.startService(new Intent(act,ServicioGeolocalizacion.class));
+            //act.startService(new Intent(act,ServicioGeolocalizacion.class));
+            act.startService(new Intent(act,ServicioGeolocalizacionFused.class));
             //Iniciar_servicio_metros = new Iniciar_servicio_metros();
             //Iniciar_servicio_metros.execute();
             return 0;
