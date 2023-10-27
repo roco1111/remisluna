@@ -132,15 +132,15 @@ public class fragment_viaje_iniciado extends Fragment {
 
     @Override
     public void onPause() {
-        /*/
+
         if(isMyServiceRunning(ServicioGeolocalizacion.class)) {
            act.unregisterReceiver(onBroadcast);
        }
 
-        */
+        /*
         if(isMyServiceRunning(ServicioGeolocalizacionFused.class)) {
             act.unregisterReceiver(onBroadcast);
-        }
+        }*/
         super.onPause();
     }
 
@@ -258,21 +258,21 @@ public class fragment_viaje_iniciado extends Fragment {
                 lb_ticket = false;
                 lb_viaje_terminado = true;
                 mediaPlayer.start();
-                /*
+
                 if(isMyServiceRunning(ServicioGeolocalizacion.class)) {
                     act.unregisterReceiver(onBroadcast);
                     act.stopService(new Intent(act, ServicioGeolocalizacion.class));
                     //act.stopService(new Intent(act, ServicioGeolocalizacion_metros.class));
                     Log.d("Servicio","Servicio detenido");
-                }*/
-
+                }
+                /*
                 if(isMyServiceRunning(ServicioGeolocalizacionFused.class)) {
                     act.unregisterReceiver(onBroadcast);
                     act.stopService(new Intent(act, ServicioGeolocalizacionFused.class));
                     //act.stopService(new Intent(act, ServicioGeolocalizacion_metros.class));
                     Log.d("Servicio","Servicio detenido");
                 }
-
+                */
                 cargarDatosVehiculo(context); }
 
         });
@@ -700,7 +700,7 @@ public class fragment_viaje_iniciado extends Fragment {
                 case "1":
                     if(lb_viaje_terminado) {
 
-                        /*
+
                         if (isMyServiceRunning(ServicioGeolocalizacion.class)) {
                             act.unregisterReceiver(onBroadcast);
                             act.stopService(new Intent(act, ServicioGeolocalizacion.class));
@@ -708,8 +708,8 @@ public class fragment_viaje_iniciado extends Fragment {
                             //act.stopService(new Intent(act, ServicioGeolocalizacion_metros.class));
                             Log.d("Servicio", "Servicio detenido 2");
 
-                        }*/
-
+                        }
+                        /*
                         if (isMyServiceRunning(ServicioGeolocalizacionFused.class)) {
                             act.unregisterReceiver(onBroadcast);
                             act.stopService(new Intent(act, ServicioGeolocalizacionFused.class));
@@ -718,6 +718,7 @@ public class fragment_viaje_iniciado extends Fragment {
                             Log.d("Servicio", "Servicio detenido 2");
 
                         }
+                        */
                         cargarDatosVehiculo(context);
                     }else {
                         actualizar_viaje(latitud, longitud, context);
@@ -947,8 +948,8 @@ public class fragment_viaje_iniciado extends Fragment {
     private class Iniciar_servicio_tiempo extends AsyncTask<Void, Integer, Integer> {
         protected Integer doInBackground(Void... params ) {
 
-            //act.startService(new Intent(act,ServicioGeolocalizacion.class));
-            act.startService(new Intent(act,ServicioGeolocalizacionFused.class));
+            act.startService(new Intent(act,ServicioGeolocalizacion.class));
+            //act.startService(new Intent(act,ServicioGeolocalizacionFused.class));
             //Iniciar_servicio_metros = new Iniciar_servicio_metros();
             //Iniciar_servicio_metros.execute();
             return 0;

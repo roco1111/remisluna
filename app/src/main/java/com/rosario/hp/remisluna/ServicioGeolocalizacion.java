@@ -38,6 +38,7 @@ import java.io.IOException;
 
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.Objects;
 
 
 /**
@@ -54,7 +55,10 @@ public class ServicioGeolocalizacion extends Service implements Runnable {
     private MyLocationListener mLocationListener;
     private double latitud_inicial = 0;
     private double longitud_inicial = 0;
+    private double latitud_anterior = 0;
+    private double longitud_anterior = 0;
     private double distancia_acumulada = 0;
+    private double ficha_acumulada = 0;
     private double l_tiempo_limpieza = 0;
     private Location currentLocation = null;
     private Thread thread;
@@ -79,6 +83,8 @@ public class ServicioGeolocalizacion extends Service implements Runnable {
     private boolean lb_tolerancia = true;
     private Integer l_gps = 0;
     private static final float MIN_CAMBIO_DISTANCIA_PARA_UPDATES = 0;
+    private Integer l_ficha = 0;
+    private boolean l_espera;
 
 
     @Override
@@ -101,8 +107,12 @@ public class ServicioGeolocalizacion extends Service implements Runnable {
         tiempo_tolerancia = settings.getLong("tiempo_tolerancia",0);
         tiempo_acumulado = settings.getLong("tiempo_acumulado",0);
         lb_tolerancia = settings.getBoolean("boolean_tolerancia",true);
+        longitud_anterior = Double.parseDouble(settings.getString("longitud_salida",""));
+        latitud_anterior = Double.parseDouble(settings.getString("latitud_salida",""));
+        l_inicio = System.currentTimeMillis();
         mLocationListener = new MyLocationListener();
         mLocationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+
         actualizar_coordenadas();
 
     }
@@ -119,6 +129,12 @@ public class ServicioGeolocalizacion extends Service implements Runnable {
                     Log.d("geolicalizacion","coordenadas");
                     longitud_inicial = add.getLongitude();
                     latitud_inicial = add.getLatitude();
+                    if(Objects.isNull(longitud_inicial)){
+                        longitud_inicial = longitud_anterior;
+                    }
+                    if(Objects.isNull(latitud_inicial)){
+                        latitud_inicial = latitud_anterior;
+                    }
                     l_inicio = System.currentTimeMillis();
 
                 } } }
@@ -126,6 +142,8 @@ public class ServicioGeolocalizacion extends Service implements Runnable {
         {
             e.printStackTrace();
         }
+
+
 
     }
 
@@ -169,7 +187,7 @@ public class ServicioGeolocalizacion extends Service implements Runnable {
     private Handler handler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
-
+            Log.d("gps","medicion");
             updateLocation(currentLocation);
         }
     };
@@ -210,25 +228,38 @@ public class ServicioGeolocalizacion extends Service implements Runnable {
             latitud_inicial = latitud;
             longitud_inicial = longitud;
 
+
+
             if(distance > 28){
                 l_inicio = System.currentTimeMillis();
                 return;
             }
             //distancia que me distingue si mido tiempo o ficha
-            if(distance > 2) {//probar con 2.5
+            if(distance > 1) {//probar con 2.5
                 l_tipo = 1;
             }else{
                 l_tipo = 2;
-
             }
 
             Log.d("DISTANCIA recorrida",String.valueOf(distance));
-
 
             if(l_tipo == 1) {//fichas
                 Log.d("Tipo","FICHA");
                 l_inicio = System.currentTimeMillis();
                 distancia_acumulada += distance;
+                if(l_ficha > 1)
+                {
+                    l_espera = false;
+                    l_ficha = 0;
+                    ficha_acumulada = 0.00;
+                }else{
+
+                    l_ficha++;
+                    ficha_acumulada = ficha_acumulada + distance;
+
+                }
+
+
                 l_tiempo_limpieza = 0.00;
                 distancia_acumulada = getValor(getTwoDecimals(distancia_acumulada));
                 if (distancia_acumulada >= l_metros_ficha) {
@@ -275,10 +306,21 @@ public class ServicioGeolocalizacion extends Service implements Runnable {
                 }
                 l_tiempo_limpieza += l_diferencia;
 
+                if(l_espera) {
+                    if(l_ficha > 0){
+                        l_ficha = 0;
+                        distancia_acumulada = distancia_acumulada - ficha_acumulada;
+                        ficha_acumulada = 0.00;}
+                }else{
+
+                    l_espera = true;
+
+                }
+                /*
                 if(l_tiempo_limpieza >= 15000){
                     distancia_acumulada = 0L;
                     l_tiempo_limpieza = 0.00;
-                }
+                }*/
                 l_inicio = l_final;
                 if(lb_torerancia){
                     tiempo_tolerancia += l_diferencia;
@@ -390,6 +432,9 @@ public class ServicioGeolocalizacion extends Service implements Runnable {
             }
 
             mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000, MIN_CAMBIO_DISTANCIA_PARA_UPDATES, mLocationListener);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                mLocationManager.requestFlush(LocationManager.GPS_PROVIDER, mLocationListener, 1);
+            }
             Log.d("geolocalizacion","LocationManager");
             Looper.loop();
             //Looper.myLooper().quit();
@@ -421,7 +466,8 @@ public class ServicioGeolocalizacion extends Service implements Runnable {
     private class MyLocationListener implements LocationListener {
 
         public void onLocationChanged(Location loc) {
-            Log.d("Cambio",loc.getAccuracy()+"");
+            loc.setAccuracy(150);
+            Log.d("accuracy",loc.getAccuracy()+"");
             if (loc != null) {
                 setCurrentLocation(loc);
                 handler.sendEmptyMessage(0);

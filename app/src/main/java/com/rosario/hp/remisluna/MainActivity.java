@@ -114,6 +114,14 @@ public class MainActivity extends AppCompatActivity {
         Objects.requireNonNull(getSupportActionBar()).setTitle(getResources().getString(R.string.app_name));
         ls_remiseria = settings.getString("remiseria","");
 
+         fragmentManager = getSupportFragmentManager();
+         Fragment fragment = new fragment_vacia();
+
+
+         fragmentManager.beginTransaction()
+                 .replace(R.id.main_content, fragment)
+                 .commit();
+
 
          cargarParametroTurno(getApplicationContext());
     }

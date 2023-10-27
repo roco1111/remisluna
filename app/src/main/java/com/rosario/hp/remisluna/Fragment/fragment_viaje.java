@@ -501,7 +501,7 @@ public class fragment_viaje extends Fragment {
         }
 
         if(l_turno_app.equals("0")){
-
+            this.turno.setVisibility(View.INVISIBLE);
             boton_dos.setEnabled(false);
             switch (tipo_empresa)
             {
@@ -529,7 +529,7 @@ public class fragment_viaje extends Fragment {
                     break;
             }
         }else{
-
+            this.turno.setVisibility(View.VISIBLE);
             boton_dos.setEnabled(true);
             switch (tipo_empresa) {
                 case "1":
@@ -1079,8 +1079,8 @@ public class fragment_viaje extends Fragment {
                         Toast.LENGTH_LONG).show();
 
             } else {
+                actualizar_coordenadas(context);
 
-                iniciar_viaje(context);
 
             }
         } else {
@@ -2203,7 +2203,6 @@ public class fragment_viaje extends Fragment {
 
                     turno.setText("TURNO INICIADO - " + l_fecha + " - " + l_hora_inicio);
                     progress1.dismiss();
-                    actualizar_coordenadas(context);
 
                     break;
                 case "2":
@@ -2854,7 +2853,6 @@ public class fragment_viaje extends Fragment {
 
     }
 
-
     private void actualizar_coordenadas(Context context){
 
         Geocoder coder = new Geocoder(context);
@@ -2904,12 +2902,21 @@ public class fragment_viaje extends Fragment {
             e.printStackTrace();
         }
 
+        iniciar_viaje(context);
+
     }
 
     private void iniciar_viaje(final Context context){
 
         latitud_salida = String.valueOf(getValor(latitud_salida));
         longitud_salida = String.valueOf(getValor(longitud_salida));
+        SharedPreferences settings1 = PreferenceManager.getDefaultSharedPreferences(context);
+
+        SharedPreferences.Editor editor = settings1.edit();
+        editor.putString("latitud_salida",latitud_salida);
+        editor.putString("longitud_salida",longitud_salida);
+        editor.apply();
+
         latitud_destino = String.valueOf(getValor(latitud_destino));
         longitud_destino = String.valueOf(getValor(longitud_destino));
         Location location_salida = new Location("salida");

@@ -1,5 +1,7 @@
 package com.rosario.hp.remisluna;
 
+import static com.google.android.gms.location.Priority.PRIORITY_BALANCED_POWER_ACCURACY;
+
 import android.Manifest;
 import android.app.Service;
 import android.content.Context;
@@ -215,7 +217,7 @@ public class ServicioGeolocalizacionFused extends Service implements Runnable {
                 return;
             }
             //distancia que me distingue si mido tiempo o ficha
-            if(distance > 0.5) {//probar con 2.5
+            if(distance > 1) {//probar con 2.5
                 l_tipo = 1;
             }else{
                 l_tipo = 2;
@@ -385,7 +387,7 @@ public class ServicioGeolocalizacionFused extends Service implements Runnable {
             }
             Looper.prepare();
 
-            mLocationManager.requestLocationUpdates(LocationManager.FUSED_PROVIDER, 1000, MIN_CAMBIO_DISTANCIA_PARA_UPDATES, mLocationListener);
+            mLocationManager.requestLocationUpdates(LocationManager.FUSED_PROVIDER, 0, MIN_CAMBIO_DISTANCIA_PARA_UPDATES, mLocationListener);
 
             Log.d("geolocalizacion","LocationManager");
             Looper.loop();
@@ -418,6 +420,7 @@ public class ServicioGeolocalizacionFused extends Service implements Runnable {
     private class MyLocationListener implements LocationListener {
 
         public void onLocationChanged(Location loc) {
+            loc.setAccuracy(600);
             Log.d("Cambio",loc.getAccuracy()+"");
             if (loc != null) {
                 setCurrentLocation(loc);
