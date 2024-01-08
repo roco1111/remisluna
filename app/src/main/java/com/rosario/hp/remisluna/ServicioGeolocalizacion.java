@@ -316,11 +316,7 @@ public class ServicioGeolocalizacion extends Service implements Runnable {
                     l_espera = true;
 
                 }
-                /*
-                if(l_tiempo_limpieza >= 15000){
-                    distancia_acumulada = 0L;
-                    l_tiempo_limpieza = 0.00;
-                }*/
+
                 l_inicio = l_final;
                 if(lb_torerancia){
                     tiempo_tolerancia += l_diferencia;

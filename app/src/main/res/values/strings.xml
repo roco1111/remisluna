@@ -24,6 +24,7 @@
     <string name="sin_viaje">No hay Viajes Asignados</string>
     <string name="nav_header_subtitle">info@remisluna.com.ar</string>
     <string name="home">Principal</string>
+    <string name="volver_menu">Volver al Menú</string>
     <string name="notificaciones">Notificaciones</string>
     <string name="configuracion">Preferencias</string>
     <string name="menu_acerca">Acerca de Remisluna</string>
@@ -50,6 +51,7 @@
     <string name="nombre_usuario">Nombre y Apellido</string>
     <string name="nombre">Nombre</string>
     <string name="apellido">Apellido</string>
+    <string name="nuevo_viaje">Nuevo Viaje </string>
 
     <string name="confirmar_cliente">Confirmar Contraseña</string>
     <string name="foto">Foto Perfil</string>
@@ -71,6 +73,7 @@
     <string name="suspender">Suspender</string>
     <string name="terminar">Terminar</string>
     <string name="iniciar">Iniciar Viaje</string>
+    <string name="terminar_viaje">Terminar Viaje</string>
     <string name="motivo">Motivo</string>
     <string name="observaciones">Observaciones</string>
 
@@ -102,17 +105,21 @@
     <string name="menu_ayuda_app_impresa">Ayuda App Impresa</string>
     <string name="menu_reportes">Ayuda Para Chofer</string>
 
+    <string name="reportes">Reportes</string>
+
     <string name="reporte_ayuda">0: Ayuda</string>
-    <string name="reporte_parcial">1: Parcial</string>
-    <string name="reporte_turno">2: Último Final Turno</string>
-    <string name="reporte_ultimos">3: Últimos 10 Finales de Turno</string>
-    <string name="reporte_resumen">4: Viaje x Viaje</string>
+    <string name="reporte_parcial">Parcial Turno</string>
+    <string name="reporte_turno">Último Final Turno</string>
+    <string name="reporte_ultimos">Ult. 10 Finales de Turno</string>
+    <string name="reporte_resumen">Viaje x Viaje</string>
     <string name="reporte_impresora">I: Habilitar Ticket</string>
-    <string name="reporte_ticket">6: Repetir Ticket</string>
+    <string name="reporte_ticket">Ticket</string>
     <string name="reporte_fin_turno">7: Paradas</string>
-    <string name="reporte_viajes">8: Historial Turnos</string>
+    <string name="reporte_viajes">Historial Viajes</string>
     <string name="reporte_viaje">9:Refresco Pantalla</string>
-    <string name="paradas">P:Paradas</string>
+    <string name="refresco">Refresco Pantalla</string>
+    <string name="paradas">Paradas</string>
+    <string name="boton_impresora">Habilitar Impr</string>
     <string name="fin_turno">5: Inicio y Fin Turnos</string>
     <string name="automatico">A:Viaje de Prueba </string>
     <string name="whatsapps">W:Whatsapps </string>

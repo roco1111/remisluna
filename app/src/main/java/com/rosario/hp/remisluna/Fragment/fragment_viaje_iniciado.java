@@ -10,8 +10,13 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.location.Address;
+import android.location.Geocoder;
+import android.location.Location;
 import android.location.LocationManager;
 import android.media.MediaPlayer;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
@@ -22,6 +27,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageButton;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -45,10 +51,13 @@ import com.rosario.hp.remisluna.include.VolleySingleton;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Locale;
@@ -85,9 +94,9 @@ public class fragment_viaje_iniciado extends Fragment {
     private String id_turno;
     private String movil;
     private Button sin_ticket;
-
-    private Button suspender;
+    private Button buttonmenu;
     private Button alarma;
+    private Button boton_viaje;
     private String importe_bajada;
     private String importe_ficha;
     private String importe_espera;
@@ -129,24 +138,36 @@ public class fragment_viaje_iniciado extends Fragment {
 
     private Button boton_whatsapp;
     private String telefono_base;
+    private Boolean lb_servicio = false;
+    private Button inicio;
+    private LocationManager mLocationManager;
+    private String latitud_salida;
+    private String longitud_salida;
+    private String latitud_destino;
+    private String longitud_destino;
+    private String destino_coordenada;
+    private String l_id_viaje;
+    private RelativeLayout id_botones_en_curso;
+    private RelativeLayout id_botones_asignado;
+    private RelativeLayout id_botones_terminar;
+    private String l_estado_viaje;
 
     @Override
     public void onPause() {
+        if (lb_servicio){
+            if (isMyServiceRunning(ServicioGeolocalizacion.class)) {
+                act.unregisterReceiver(onBroadcast);
+            }
+        }
 
-        if(isMyServiceRunning(ServicioGeolocalizacion.class)) {
-           act.unregisterReceiver(onBroadcast);
-       }
-
-        /*
-        if(isMyServiceRunning(ServicioGeolocalizacionFused.class)) {
-            act.unregisterReceiver(onBroadcast);
-        }*/
         super.onPause();
     }
 
     @Override
     public void onResume() {
-        act.registerReceiver(onBroadcast, new IntentFilter("key"));
+        if(lb_servicio) {
+            act.registerReceiver(onBroadcast, new IntentFilter("key"));
+        }
         super.onResume();
     }
 
@@ -158,9 +179,114 @@ public class fragment_viaje_iniciado extends Fragment {
         act = getActivity();
 
         context = getContext();
+        mLocationManager = (LocationManager) act.getSystemService(Context.LOCATION_SERVICE);
 
-        act.registerReceiver(onBroadcast, new IntentFilter("key"));
+        //((MainActivity) getActivity()).locationEnd();
 
+        id_botones_en_curso = v.findViewById(R.id.id_botones_en_curso);
+        id_botones_terminar = v.findViewById(R.id.id_botones_terminar);
+        id_botones_asignado = v.findViewById(R.id.id_botones_asignado);
+
+        id_viaje = v.findViewById(R.id.dato_viaje);
+        solicitante = v.findViewById(R.id.dato_solicitante);
+        texto_solicitante = v.findViewById(R.id.solicitante);
+        dato_salida = v.findViewById(R.id.dato_salida);
+        destino = v.findViewById(R.id.dato_destino);
+        texto_destino = v.findViewById(R.id.destino);
+        sin_ticket = v.findViewById(R.id.buttonSinTicket);
+        boton_whatsapp = v.findViewById(R.id.imageWa);
+        inicio = v.findViewById(R.id.buttonInicio);
+        buttonmenu = v.findViewById(R.id.buttonmenu);
+        boton_viaje = v.findViewById(R.id.buttonviaje);
+
+        alarma = v.findViewById(R.id.buttonAlarma);
+        kms = v.findViewById(R.id.kms);
+        importe = v.findViewById(R.id.precio);
+        texto_tarifa = v.findViewById(R.id.tarifa);
+        tiempo_viaje = v.findViewById(R.id.tiempo);
+        ficha_espera = v.findViewById(R.id.ficha_espera);
+        salida = v.findViewById(R.id.salida);
+        gps = v.findViewById(R.id.gps);
+
+
+        MediaPlayer mediaPlayer = MediaPlayer.create(act, R.raw.doorbell);
+
+        this.sin_ticket.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                lb_ticket = false;
+                lb_viaje_terminado = true;
+                mediaPlayer.start();
+
+                if(isMyServiceRunning(ServicioGeolocalizacion.class)) {
+                    act.unregisterReceiver(onBroadcast);
+                    act.stopService(new Intent(act, ServicioGeolocalizacion.class));
+                    //act.stopService(new Intent(act, ServicioGeolocalizacion_metros.class));
+                    Log.d("Servicio","Servicio detenido");
+                }
+
+                cargarDatosVehiculo(context); }
+
+        });
+
+        this.inicio.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mediaPlayer.start();
+
+                cargarRemiseria(context);
+
+            }
+        });
+
+        this.alarma.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mediaPlayer.start();
+                alarma_viaje(context);
+            }
+        });
+
+        this.buttonmenu.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mediaPlayer.start();
+                l_estado_viaje = "asignado";
+                SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(context);
+                SharedPreferences.Editor editor = settings.edit();
+                editor.putString("estado_viaje","asignado");
+                editor.apply();
+                Intent intent2 = new Intent(context, MainActivity.class);
+                context.startActivity(intent2);
+                act.finish();
+            }
+        });
+
+        this.boton_viaje.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                mediaPlayer.start();
+                viaje_automatico(context);
+
+            }
+        });
+
+        this.boton_whatsapp.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                mediaPlayer.start();
+                cargarDatosRemiseria(context, v);
+
+            }
+        });
+        reiniciar();
+
+        return v;
+    }
+
+    private void reiniciar(){
         SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(context);
         ls_id_conductor     = settings.getString("id","");
         id_turno            = settings.getString("id_turno_chofer","");
@@ -171,28 +297,30 @@ public class fragment_viaje_iniciado extends Fragment {
         ls_es_feriado = settings.getString("feriado","");
         l_tolerancia_tope = settings.getLong("tolerancia_tope",0L);
         tipo_empresa = settings.getString("tipo_empresa","");
-        //((MainActivity) getActivity()).locationEnd();
+        l_estado_viaje = settings.getString("estado_viaje","");
+        l_id_viaje = settings.getString("id_viaje","");
 
-        id_viaje = v.findViewById(R.id.dato_viaje);
-        solicitante = v.findViewById(R.id.dato_solicitante);
-        texto_solicitante = v.findViewById(R.id.solicitante);
-        dato_salida = v.findViewById(R.id.dato_salida);
-        destino = v.findViewById(R.id.dato_destino);
-        texto_destino = v.findViewById(R.id.destino);
-        sin_ticket = v.findViewById(R.id.buttonSinTicket);
-        boton_whatsapp = v.findViewById(R.id.imageWa);
-
-        suspender = v.findViewById(R.id.buttonSuspender);
-        alarma = v.findViewById(R.id.buttonAlarma);
-        kms = v.findViewById(R.id.kms);
-        importe = v.findViewById(R.id.precio);
-        texto_tarifa = v.findViewById(R.id.tarifa);
-        tiempo_viaje = v.findViewById(R.id.tiempo);
-        ficha_espera = v.findViewById(R.id.ficha_espera);
-        salida = v.findViewById(R.id.salida);
-        gps = v.findViewById(R.id.gps);
         sdf = new SimpleDateFormat("MM/dd/yyyy HH:mm");
         lb_viaje_terminado = false;
+
+        switch (l_estado_viaje){
+            case "asignado":
+                id_botones_asignado.setVisibility(View.VISIBLE);
+                id_botones_terminar.setVisibility(View.GONE);
+                id_botones_en_curso.setVisibility(View.GONE);
+                break;
+            case "en curso":
+                id_botones_asignado.setVisibility(View.GONE);
+                id_botones_terminar.setVisibility(View.GONE);
+                id_botones_en_curso.setVisibility(View.VISIBLE);
+                act.registerReceiver(onBroadcast, new IntentFilter("key"));
+                break;
+            case "terminado":
+                id_botones_asignado.setVisibility(View.GONE);
+                id_botones_terminar.setVisibility(View.VISIBLE);
+                id_botones_en_curso.setVisibility(View.GONE);
+                break;
+        }
 
         switch (tipo_empresa) {
             case "1":
@@ -250,61 +378,11 @@ public class fragment_viaje_iniciado extends Fragment {
         getMyTime_desde = l_hoy + ' ' + l_hora_desde;
         getMyTime_hasta = l_hoy + ' ' + l_hora_hasta;
 
-        MediaPlayer mediaPlayer = MediaPlayer.create(act, R.raw.doorbell);
-
-        this.sin_ticket.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                lb_ticket = false;
-                lb_viaje_terminado = true;
-                mediaPlayer.start();
-
-                if(isMyServiceRunning(ServicioGeolocalizacion.class)) {
-                    act.unregisterReceiver(onBroadcast);
-                    act.stopService(new Intent(act, ServicioGeolocalizacion.class));
-                    //act.stopService(new Intent(act, ServicioGeolocalizacion_metros.class));
-                    Log.d("Servicio","Servicio detenido");
-                }
-                /*
-                if(isMyServiceRunning(ServicioGeolocalizacionFused.class)) {
-                    act.unregisterReceiver(onBroadcast);
-                    act.stopService(new Intent(act, ServicioGeolocalizacionFused.class));
-                    //act.stopService(new Intent(act, ServicioGeolocalizacion_metros.class));
-                    Log.d("Servicio","Servicio detenido");
-                }
-                */
-                cargarDatosVehiculo(context); }
-
-        });
-
-        this.suspender.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mediaPlayer.start();
-                suspender_viaje(context);
-            }
-        });
-
-        this.alarma.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mediaPlayer.start();
-                alarma_viaje(context);
-            }
-        });
-
-        this.boton_whatsapp.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-
-                mediaPlayer.start();
-                cargarDatosRemiseria(context, v);
-
-            }
-        });
-        cargarDatos(context);
-
-        return v;
+        if(l_estado_viaje.equals("en curso")) {
+            cargarDatos(context);
+        }else if(l_estado_viaje.equals("asignado")){
+            cargarTarifaInicial(context);
+        }
     }
 
 
@@ -316,6 +394,128 @@ public class fragment_viaje_iniciado extends Fragment {
             }
         }
         return false;
+    }
+
+    public void cargarTarifaInicial(final Context context) {
+
+        // Añadir parámetro a la URL del web service
+        String newURL = Constantes.GET_TARIFAS + "?id_remiseria=" + ls_remiseria;
+        Log.d(TAG,newURL);
+
+        // Realizar petición GET_BY_ID
+        VolleySingleton.getInstance(context).addToRequestQueue(
+                myRequest = new JsonObjectRequest(
+                        Request.Method.POST,
+                        newURL,
+                        null,
+                        new Response.Listener<JSONObject>() {
+
+                            @Override
+                            public void onResponse(JSONObject response) {
+                                // Procesar respuesta Json
+                                if(!lb_viaje_terminado) {
+                                    procesarRespuestaTarifaInicial(response, context);
+                                }
+                            }
+                        },
+                        new Response.ErrorListener() {
+                            @Override
+                            public void onErrorResponse(VolleyError error) {
+                                Log.d(TAG, "Error Volley viaje: " + error.getMessage());
+
+                            }
+                        }
+                )
+        );
+        myRequest.setRetryPolicy(new DefaultRetryPolicy(
+                50000,
+                5,//DefaultRetryPolicy.DEFAULT_MAX_RETRIES
+                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+
+    }
+
+    private void procesarRespuestaTarifaInicial(JSONObject response, Context context) {
+
+        try {
+            // Obtener atributo "mensaje"
+            String mensaje = response.getString("estado");
+
+            switch (mensaje) {
+                case "1":
+                    JSONArray mensaje1 = response.getJSONArray("tarifa");
+
+                    JSONObject object = mensaje1.getJSONObject(0);
+                    //Parsear objeto
+
+                    String l_nocturno;
+
+                    String getCurrentDateTime = sdf.format(c.getTime());
+
+                    if (getCurrentDateTime.compareTo(getMyTime_desde) > 0)
+                    { l_nocturno = "1"; } else
+                    {
+                        if (getCurrentDateTime.compareTo(getMyTime_hasta) < 0)
+                        {
+                            l_nocturno = "1";
+                        }else{
+                            int dia_semana;
+                            dia_semana=c.get(Calendar.DAY_OF_WEEK);
+
+                            if(dia_semana == Calendar.SUNDAY){
+                                l_nocturno = "1";
+                            }else{
+                                if(ls_es_feriado.equals("si")){
+                                    l_nocturno = "1";
+                                }else{
+                                    l_nocturno = "0";
+                                }
+
+                            }
+                        }
+                    }
+
+                    if(l_nocturno.equals("0")){
+                        texto_tarifa.setText(R.string.diurno);
+                    }else{
+                        texto_tarifa.setText(R.string.nocturno);
+                    }
+
+                    SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(context);
+                    SharedPreferences.Editor editor = settings.edit();
+                    editor.putString("nocturno",l_nocturno);
+
+                    if(l_nocturno.equals("0")) {
+                        importe_bajada = object.getString("importe_bajada");
+
+                        texto_tarifa.setText(R.string.diurno);
+                    }else{
+                        importe_bajada = object.getString("importe_bajada_nocturno");
+                        texto_tarifa.setText(R.string.nocturno);
+                    }
+
+                    importe.setText(importe_bajada);
+
+                    id_viaje.setText(settings.getString("id_viaje",""));
+                    solicitante.setText(settings.getString("solicitante",""));
+                    dato_salida.setText(settings.getString("salida",""));
+                    destino.setText(settings.getString("destino",""));
+                    salida_coordenada = settings.getString("salida_coordenadas","");
+                    destino_coordenada = settings.getString("destino_coordenadas","");
+                    id_vehiculo = settings.getString("id_movil","");
+
+
+                    editor.apply();
+
+                    break;
+
+            }
+
+
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
     }
 
     private BroadcastReceiver onBroadcast = new BroadcastReceiver() {
@@ -709,16 +909,7 @@ public class fragment_viaje_iniciado extends Fragment {
                             Log.d("Servicio", "Servicio detenido 2");
 
                         }
-                        /*
-                        if (isMyServiceRunning(ServicioGeolocalizacionFused.class)) {
-                            act.unregisterReceiver(onBroadcast);
-                            act.stopService(new Intent(act, ServicioGeolocalizacionFused.class));
 
-                            //act.stopService(new Intent(act, ServicioGeolocalizacion_metros.class));
-                            Log.d("Servicio", "Servicio detenido 2");
-
-                        }
-                        */
                         cargarDatosVehiculo(context);
                     }else {
                         actualizar_viaje(latitud, longitud, context);
@@ -911,15 +1102,15 @@ public class fragment_viaje_iniciado extends Fragment {
 
         salida_coordenada = settings.getString("salida_coordenadas","");
 
-        if(!settings.getString("tiempo_tolerancia","").equals("null")) {
+        if(settings.getLong("tiempo_tolerancia",0L) != 0L) {
 
-            tiempo_tolerancia = Long.parseLong(settings.getString("tiempo_tolerancia",""));
+            tiempo_tolerancia = settings.getLong("tiempo_tolerancia",0L);
 
         }
 
-        if(!settings.getString("tiempo_acumulado","").equals("null")) {
+        if(settings.getLong("tiempo_acumulado",0L) != 0L) {
 
-            tiempo_acumulado = Long.parseLong(settings.getString("tiempo_acumulado",""));
+            tiempo_acumulado = settings.getLong("tiempo_acumulado",0L);
 
         }
 
@@ -1025,6 +1216,12 @@ public class fragment_viaje_iniciado extends Fragment {
                     fecha = object.getString("fecha");
                     chofer = object.getString("chofer");
 
+                    SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(context);
+                    SharedPreferences.Editor editor = settings.edit();
+                    editor.putLong("tiempo_acumulado",0L);
+                    editor.putBoolean("boolean_tolerancia",true);
+                    editor.apply();
+
                     cargarViaje_solicitado(context);
 
                     break;
@@ -1089,39 +1286,36 @@ public class fragment_viaje_iniciado extends Fragment {
             // Obtener atributo "mensaje"
             String mensaje = response.getString("estado");
             Fragment fragment = null;
+            SharedPreferences settings1 = PreferenceManager.getDefaultSharedPreferences(context);
+
+            SharedPreferences.Editor editor = settings1.edit();
             switch (mensaje) {
                 case "1":
                     JSONArray mensaje1 = response.getJSONArray("viaje");
                     JSONObject object = mensaje1.getJSONObject(0);
 
 
-                    SharedPreferences settings1 = PreferenceManager.getDefaultSharedPreferences(context);
-
-                    SharedPreferences.Editor editor = settings1.edit();
-
                     String ls_viaje;
 
                     ls_viaje = object.getString("id");
 
                     editor.putString("id_viaje",ls_viaje);
-                    editor.apply();
+                    l_estado_viaje = "asignado";
+                    editor.putString("estado_viaje","asignado");
 
-                    editor.apply();
-                    Intent intent2 = new Intent(context, MainViaje.class);
-                    intent2.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK );
-                    context.startActivity(intent2);
+
 
                     break;
 
                 case "2":
+                    l_estado_viaje = "terminado";
+                    editor.putString("estado_viaje","terminado");
 
-                    Intent intent3 = new Intent(context, MainActivity.class);
-                    intent3.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK );
-                    context.startActivity(intent3);
-                    act.finish();
                     break;
 
             }
+            editor.apply();
+            reiniciar();
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -1389,7 +1583,7 @@ public class fragment_viaje_iniciado extends Fragment {
 
             switch (estado) {
                 case "1":
-                    terminar_viaje( context);
+                    terminar_viaje(context);
                     break;
                 case "2":
                     // Mostrar mensaje
@@ -1487,7 +1681,7 @@ public class fragment_viaje_iniciado extends Fragment {
                         new Response.Listener<JSONObject>() {
                             @Override
                             public void onResponse(JSONObject response) {
-                                procesarRespuestaActualizar(response, context);
+                                procesarRespuestaTerminar_viaje(response, context);
                             }
                         },
                         new Response.ErrorListener() {
@@ -1513,7 +1707,7 @@ public class fragment_viaje_iniciado extends Fragment {
                 }
         );
     }
-    private void procesarRespuestaActualizar(JSONObject response, Context context) {
+    private void procesarRespuestaTerminar_viaje(JSONObject response, Context context) {
 
         try {
             // Obtener estado
@@ -1616,7 +1810,7 @@ public class fragment_viaje_iniciado extends Fragment {
 
             switch (estado) {
                 case "1":
-                    cargarDatosFinal( context);
+                    cargarDatosFinal(context);
                     break;
                 case "2":
                     // Mostrar mensaje
@@ -1632,73 +1826,6 @@ public class fragment_viaje_iniciado extends Fragment {
         }
     }
 
-    private void suspender_viaje(final Context context){
-
-        String ls_viaje = id_viaje.getText().toString();
-
-        String newURL = Constantes.SUSPENDER_VIAJE + "?id=" + ls_viaje;
-
-        // Actualizar datos en el servidor
-        VolleySingleton.getInstance(context).addToRequestQueue(
-                new JsonObjectRequest(
-                        Request.Method.GET,
-                        newURL,
-                        null,
-                        new Response.Listener<JSONObject>() {
-                            @Override
-                            public void onResponse(JSONObject response) {
-                                procesarRespuestaActualizarSuspender(response, context);
-                            }
-                        },
-                        new Response.ErrorListener() {
-                            @Override
-                            public void onErrorResponse(VolleyError error) {
-                                Log.d(TAG, "Error inicio: " + error.getMessage());
-
-                            }
-                        }
-
-                ) {
-                    @Override
-                    public Map<String, String> getHeaders() {
-                        Map<String, String> headers = new HashMap<>();
-                        headers.put("Content-Type", "application/json; charset=utf-8");
-                        return headers;
-                    }
-
-                    @Override
-                    public String getBodyContentType() {
-                        return "application/json; charset=utf-8" + getParamsEncoding();
-                    }
-                }
-        );
-    }
-    private void procesarRespuestaActualizarSuspender(JSONObject response, Context context) {
-
-        try {
-            // Obtener estado
-            String estado = response.getString("estado");
-            // Obtener mensaje
-            String mensaje = response.getString("mensaje");
-
-            switch (estado) {
-                case "1":
-                    Intent intent2 = new Intent(getContext(), MainViaje.class);
-                    context.startActivity(intent2);
-                    break;
-                case "2":
-                    // Mostrar mensaje
-                    Toast.makeText(
-                            context,
-                            mensaje,
-                            Toast.LENGTH_LONG).show();
-                    // Enviar código de falla
-                    break;
-            }
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-    }
 
     private void alarma_viaje(final Context context){
 
@@ -1868,6 +1995,935 @@ public class fragment_viaje_iniciado extends Fragment {
             }
         }
         return Double.parseDouble(texto.trim());
+    }
+
+    public void cargarRemiseria(final Context context) {
+
+        // Añadir parámetro a la URL del web service
+        String newURL = Constantes.GET_REMISERIA + "?remiseria=" + ls_remiseria;
+        Log.d(TAG,newURL);
+
+        // Realizar petición GET_BY_ID
+        VolleySingleton.getInstance(context).addToRequestQueue(
+                myRequest = new JsonObjectRequest(
+                        Request.Method.POST,
+                        newURL,
+                        null,
+                        new Response.Listener<JSONObject>() {
+
+                            @Override
+                            public void onResponse(JSONObject response) {
+                                // Procesar respuesta Json
+                                procesarRespuesta_remiserias(response, context);
+                            }
+                        },
+                        new Response.ErrorListener() {
+                            @Override
+                            public void onErrorResponse(VolleyError error) {
+                                Log.d(TAG, "Error Volley viaje: " + error.getMessage());
+
+                            }
+                        }
+                )
+        );
+        myRequest.setRetryPolicy(new DefaultRetryPolicy(
+                50000,
+                5,//DefaultRetryPolicy.DEFAULT_MAX_RETRIES
+                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+
+    }
+
+    private void procesarRespuesta_remiserias(JSONObject response, Context context) {
+
+        try {
+            // Obtener atributo "mensaje"
+            String mensaje = response.getString("estado");
+
+            switch (mensaje) {
+                case "1":
+                    // Obtener objeto "cliente"
+                    JSONArray mensaje1 = response.getJSONArray("remiseria");
+
+                    JSONObject object = mensaje1.getJSONObject(0);
+                    //Parsear objeto
+
+                    String habilitada = object.getString("HABILITADA");
+
+                    if(habilitada.equals("1"))
+                    {
+                        cargarDatos_solicitados(context);
+                    }else{
+                        Toast.makeText(
+                                context,
+                                R.string.inhabilitada,
+                                Toast.LENGTH_LONG).show();
+                    }
+                    break;
+
+                case "2":
+
+                    break;
+
+            }
+
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    public void cargarDatos_solicitados(final Context context) {
+
+        // Añadir parámetro a la URL del web service
+        String newURL = Constantes.GET_VIAJE_SOLICITADOS + "?conductor=" + ls_id_conductor;
+        Log.d(TAG,newURL);
+
+        // Realizar petición GET_BY_ID
+        VolleySingleton.getInstance(context).addToRequestQueue(
+                myRequest = new JsonObjectRequest(
+                        Request.Method.POST,
+                        newURL,
+                        null,
+                        new Response.Listener<JSONObject>() {
+
+                            @Override
+                            public void onResponse(JSONObject response) {
+                                // Procesar respuesta Json
+                                procesarRespuesta_Datos_solicitados(response, context);
+                            }
+                        },
+                        new Response.ErrorListener() {
+                            @Override
+                            public void onErrorResponse(VolleyError error) {
+                                Log.d(TAG, "Error Volley viaje: " + error.getMessage());
+
+                            }
+                        }
+                )
+        );
+        myRequest.setRetryPolicy(new DefaultRetryPolicy(
+                50000,
+                5,//DefaultRetryPolicy.DEFAULT_MAX_RETRIES
+                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+
+    }
+
+    private void procesarRespuesta_Datos_solicitados(JSONObject response, Context context) {
+
+        try {
+            // Obtener atributo "mensaje"
+            String mensaje = response.getString("estado");
+            Fragment fragment = null;
+            switch (mensaje) {
+                case "1":
+                    JSONArray mensaje1 = response.getJSONArray("viaje");
+                    JSONObject object = mensaje1.getJSONObject(0);
+
+                    id_vehiculo = object.getString("id_movil");
+
+                    SharedPreferences settings1 = PreferenceManager.getDefaultSharedPreferences(context);
+
+                    SharedPreferences.Editor editor = settings1.edit();
+
+                    String ls_viaje, ls_remiseria, ls_telefono_queja, ls_telefono;
+
+
+                    ls_viaje = object.getString("id");
+
+                    editor.putString("id_viaje",ls_viaje);
+
+                    ls_remiseria = object.getString("remiseria");
+
+                    editor.putString("nombre_remiseria",ls_remiseria);
+
+                    ls_telefono_queja = object.getString("telefono_queja");
+
+                    editor.putString("telefono_queja",ls_telefono_queja);
+
+                    ls_telefono = object.getString("telefono");
+
+                    editor.putString("telefono_remiseria",ls_telefono);
+                    editor.putString("estado_viaje","asignado");
+                    editor.putString("salida_coordenadas",object.getString("salida_coordenadas"));
+                    editor.putString("destino_coordenadas",object.getString("destino_coordenadas"));
+                    editor.putString("id_movil",object.getString("id_movil"));
+                    l_estado_viaje = "en curso";
+
+
+                    editor.putString("estado_viaje","en curso");
+
+                    editor.apply();
+                    iniciar_viaje();
+
+                    break;
+
+                case "2":
+                    Toast.makeText(
+                            context,
+                            "No hay viajes asignados",
+                            Toast.LENGTH_LONG).show();
+
+                    break;
+
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+
+    public void iniciar_viaje(){
+        if (verificar_internet()) {
+            if (!mLocationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+                Toast.makeText(
+                        context,
+                        R.string.no_gps,
+                        Toast.LENGTH_LONG).show();
+
+            } else {
+                actualizar_coordenadas(context);
+
+
+            }
+        } else {
+            Toast.makeText(
+                    context,
+                    R.string.no_internet,
+                    Toast.LENGTH_LONG).show();
+        }
+    }
+
+    private void actualizar_coordenadas(Context context){
+
+        Geocoder coder = new Geocoder(context);
+        try {
+            ArrayList<Address> adresses = (ArrayList<Address>) coder.getFromLocationName(salida_coordenada, 50);
+            for(Address add : adresses){
+                if (!adresses.isEmpty()) {
+
+                    longitud_salida = String.valueOf(add.getLongitude());
+                    latitud_salida = String.valueOf(add.getLatitude());
+                    if(longitud_salida == null){
+                        longitud_salida = "0";
+                    }
+                    if(latitud_salida == null){
+                        latitud_salida = "0";
+                    }
+                }else{
+                    longitud_salida = "0";
+                    latitud_salida = "0";
+                }
+            } }
+        catch (IOException e)
+        {
+            e.printStackTrace();
+        }
+
+        try {
+            ArrayList<Address> adresses = (ArrayList<Address>) coder.getFromLocationName(destino_coordenada, 50);
+            for(Address add : adresses){
+                if (!adresses.isEmpty()) {
+
+                    longitud_destino = String.valueOf(add.getLongitude());
+                    latitud_destino = String.valueOf(add.getLatitude());
+                    if(longitud_destino == null){
+                        longitud_destino = "0";
+                    }
+                    if(latitud_destino == null){
+                        latitud_destino = "0";
+                    }
+                }else{
+                    longitud_destino = "0";
+                    latitud_destino = "0";
+                }
+            } }
+        catch (IOException e)
+        {
+            e.printStackTrace();
+        }
+
+        iniciar_viaje(context);
+
+    }
+
+    private void iniciar_viaje(final Context context){
+
+        latitud_salida = String.valueOf(getValor(latitud_salida));
+        longitud_salida = String.valueOf(getValor(longitud_salida));
+        SharedPreferences settings1 = PreferenceManager.getDefaultSharedPreferences(context);
+
+        SharedPreferences.Editor editor = settings1.edit();
+        editor.putString("latitud_salida",latitud_salida);
+        editor.putString("longitud_salida",longitud_salida);
+        editor.apply();
+
+        latitud_destino = String.valueOf(getValor(latitud_destino));
+        longitud_destino = String.valueOf(getValor(longitud_destino));
+        Location location_salida = new Location("salida");
+        location_salida.setLatitude(Double.parseDouble(latitud_salida));  //latitud
+        location_salida.setLongitude(Double.parseDouble(longitud_salida)); //longitud
+        Location location_destino = new Location("destino");
+        location_destino.setLatitude(Double.parseDouble(latitud_destino));  //latitud
+        location_destino.setLongitude(Double.parseDouble(longitud_destino)); //longitud
+
+        double distance = location_salida.distanceTo(location_destino) / 100;
+        try {
+            distancia = String.valueOf(distance);
+        } catch (Exception e) {
+            distancia = "0";
+            e.printStackTrace();
+        }
+
+        HashMap<String, String> map = new HashMap<>();// Mapeo previo
+
+        map.put("id", l_id_viaje);
+        map.put("distancia", distancia);
+        map.put("latitud_salida", latitud_salida);
+        map.put("longitud_salida", longitud_salida);
+        map.put("latitud_destino", latitud_destino);
+        map.put("longitud_destino", longitud_destino);
+
+        JSONObject jobject = new JSONObject(map);
+
+        // Depurando objeto Json...
+        Log.d(TAG, jobject.toString());
+
+        StringBuilder encodedParams = new StringBuilder();
+        try {
+            for (Map.Entry<String, String> entry : map.entrySet()) {
+                encodedParams.append(URLEncoder.encode(entry.getKey(), "utf-8"));
+                encodedParams.append('=');
+                encodedParams.append(URLEncoder.encode(entry.getValue(), "utf-8")).toString();
+                encodedParams.append('&');
+            }
+        } catch (UnsupportedEncodingException uee) {
+            throw new RuntimeException("Encoding not supported: " + "utf-8", uee);
+        }
+
+        encodedParams.setLength(Math.max(encodedParams.length() - 1, 0));
+
+
+        String newURL = Constantes.INICIAR_VIAJE + "?" + encodedParams;
+
+        Log.d(TAG,newURL);
+
+        // Actualizar datos en el servidor
+        VolleySingleton.getInstance(context).addToRequestQueue(
+                new JsonObjectRequest(
+                        Request.Method.GET,
+                        newURL,
+                        null,
+                        new Response.Listener<JSONObject>() {
+                            @Override
+                            public void onResponse(JSONObject response) {
+                                procesarRespuestaActualizar(response, context);
+                            }
+                        },
+                        new Response.ErrorListener() {
+                            @Override
+                            public void onErrorResponse(VolleyError error) {
+                                Log.d(TAG, "Error inicio: " + error.getMessage());
+
+                            }
+                        }
+
+                ) {
+                    @Override
+                    public Map<String, String> getHeaders() {
+                        Map<String, String> headers = new HashMap<>();
+                        headers.put("Content-Type", "application/json; charset=utf-8");
+                        return headers;
+                    }
+
+                    @Override
+                    public String getBodyContentType() {
+                        return "application/json; charset=utf-8" + getParamsEncoding();
+                    }
+                }
+        );
+    }
+    private void procesarRespuestaActualizar(JSONObject response, Context context) {
+
+        try {
+            // Obtener estado
+            String estado = response.getString("estado");
+            // Obtener mensaje
+            String mensaje = response.getString("mensaje");
+
+            switch (estado) {
+                case "1":
+                    cargarParametroTolerancia(context);
+
+                    break;
+                case "2":
+                    // Mostrar mensaje
+                    Toast.makeText(
+                            context,
+                            mensaje,
+                            Toast.LENGTH_LONG).show();
+                    // Enviar código de falla
+                    break;
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void cargarParametroTolerancia(final Context context) {
+
+        HashMap<String, String> map = new HashMap<>();// Mapeo previo
+
+        map.put("remiseria", ls_remiseria);
+
+        JSONObject jobject = new JSONObject(map);
+
+
+        // Depurando objeto Json...
+        Log.d(TAG, jobject.toString());
+
+        StringBuilder encodedParams = new StringBuilder();
+        try {
+            for (Map.Entry<String, String> entry : map.entrySet()) {
+                encodedParams.append(URLEncoder.encode(entry.getKey(), "utf-8"));
+                encodedParams.append('=');
+                encodedParams.append(URLEncoder.encode(entry.getValue(), "utf-8"));
+                encodedParams.append('&');
+            }
+        } catch (UnsupportedEncodingException uee) {
+            throw new RuntimeException("Encoding not supported: " + "utf-8", uee);
+        }
+
+        encodedParams.setLength(Math.max(encodedParams.length() - 1, 0));
+
+        // Añadir parámetro a la URL del web service
+        String newURL = Constantes.GET_TOLERANCIA + "?" + encodedParams;
+        Log.d(TAG,newURL);
+
+        // Realizar petición GET_BY_ID
+        VolleySingleton.getInstance(context).addToRequestQueue(
+                myRequest = new JsonObjectRequest(
+                        Request.Method.POST,
+                        newURL,
+                        null,
+                        new Response.Listener<JSONObject>() {
+
+                            @Override
+                            public void onResponse(JSONObject response) {
+                                // Procesar respuesta Json
+                                procesarRespuestaParametroTolerancia(response, context);
+                            }
+                        },
+                        new Response.ErrorListener() {
+                            @Override
+                            public void onErrorResponse(VolleyError error) {
+                                Log.d(TAG, "Error Volley viaje: " + error.getMessage());
+
+                            }
+                        }
+                )
+        );
+        myRequest.setRetryPolicy(new DefaultRetryPolicy(
+                50000,
+                5,//DefaultRetryPolicy.DEFAULT_MAX_RETRIES
+                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+
+    }
+
+    private void procesarRespuestaParametroTolerancia(JSONObject response, Context context) {
+
+        try {
+            // Obtener atributo "mensaje"
+            String mensaje = response.getString("estado");
+
+            switch (mensaje) {
+                case "1":
+                    JSONArray datos_parametro = response.getJSONArray("remiseria");
+                    Long l_tolerancia_tope = 0L;
+                    for(int i = 0; i < datos_parametro.length(); i++)
+                    {JSONObject object = datos_parametro.getJSONObject(i);
+
+                        l_tolerancia_tope = Long.parseLong(object.getString("tiempo_tolerancia")) * 60000;
+
+                    }
+
+                    SharedPreferences settings1 = PreferenceManager.getDefaultSharedPreferences(context);
+
+                    SharedPreferences.Editor editor = settings1.edit();
+
+                    editor.putLong("tolerancia_tope",l_tolerancia_tope);
+
+                    editor.apply();
+                    cargarParametroEspera(context);
+
+                    break;
+
+            }
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    public void cargarParametroEspera(final Context context) {
+
+        HashMap<String, String> map = new HashMap<>();// Mapeo previo
+
+        map.put("parametro", "12");
+        map.put("remiseria", ls_remiseria);
+
+        JSONObject jobject = new JSONObject(map);
+
+
+        // Depurando objeto Json...
+        Log.d(TAG, jobject.toString());
+
+        StringBuilder encodedParams = new StringBuilder();
+        try {
+            for (Map.Entry<String, String> entry : map.entrySet()) {
+                encodedParams.append(URLEncoder.encode(entry.getKey(), "utf-8"));
+                encodedParams.append('=');
+                encodedParams.append(URLEncoder.encode(entry.getValue(), "utf-8"));
+                encodedParams.append('&');
+            }
+        } catch (UnsupportedEncodingException uee) {
+            throw new RuntimeException("Encoding not supported: " + "utf-8", uee);
+        }
+
+        encodedParams.setLength(Math.max(encodedParams.length() - 1, 0));
+
+        // Añadir parámetro a la URL del web service
+        String newURL = Constantes.GET_ID_PARAMETRO + "?" + encodedParams;
+        Log.d(TAG,newURL);
+
+        // Realizar petición GET_BY_ID
+        VolleySingleton.getInstance(context).addToRequestQueue(
+                myRequest = new JsonObjectRequest(
+                        Request.Method.POST,
+                        newURL,
+                        null,
+                        new Response.Listener<JSONObject>() {
+
+                            @Override
+                            public void onResponse(JSONObject response) {
+                                // Procesar respuesta Json
+                                procesarRespuestaParametroEspera(response, context);
+                            }
+                        },
+                        new Response.ErrorListener() {
+                            @Override
+                            public void onErrorResponse(VolleyError error) {
+                                Log.d(TAG, "Error Volley viaje: " + error.getMessage());
+
+                            }
+                        }
+                )
+        );
+        myRequest.setRetryPolicy(new DefaultRetryPolicy(
+                50000,
+                5,//DefaultRetryPolicy.DEFAULT_MAX_RETRIES
+                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+
+    }
+
+    private void procesarRespuestaParametroEspera(JSONObject response, Context context) {
+
+        try {
+            // Obtener atributo "mensaje"
+            String mensaje = response.getString("estado");
+
+            switch (mensaje) {
+                case "1":
+                    JSONArray datos_parametro = response.getJSONArray("parametro");
+                    Long l_tiempo_espera = 0L;
+                    for(int i = 0; i < datos_parametro.length(); i++)
+                    {JSONObject object = datos_parametro.getJSONObject(i);
+
+                        l_tiempo_espera = Long.parseLong(object.getString("valor")) * 1000;
+
+                    }
+
+                    SharedPreferences settings1 = PreferenceManager.getDefaultSharedPreferences(context);
+
+                    SharedPreferences.Editor editor = settings1.edit();
+
+                    editor.putLong("tiempo_espera",l_tiempo_espera);
+
+                    editor.apply();
+                    cargarParametroMetrosFicha(context);
+
+                    break;
+
+
+            }
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void cargarParametroMetrosFicha(final Context context) {
+
+        HashMap<String, String> map = new HashMap<>();// Mapeo previo
+
+        map.put("parametro", "13");
+        map.put("remiseria", ls_remiseria);
+
+        JSONObject jobject = new JSONObject(map);
+
+
+        // Depurando objeto Json...
+        Log.d(TAG, jobject.toString());
+
+        StringBuilder encodedParams = new StringBuilder();
+        try {
+            for (Map.Entry<String, String> entry : map.entrySet()) {
+                encodedParams.append(URLEncoder.encode(entry.getKey(), "utf-8"));
+                encodedParams.append('=');
+                encodedParams.append(URLEncoder.encode(entry.getValue(), "utf-8"));
+                encodedParams.append('&');
+            }
+        } catch (UnsupportedEncodingException uee) {
+            throw new RuntimeException("Encoding not supported: " + "utf-8", uee);
+        }
+
+        encodedParams.setLength(Math.max(encodedParams.length() - 1, 0));
+
+        // Añadir parámetro a la URL del web service
+        String newURL = Constantes.GET_ID_PARAMETRO + "?" + encodedParams;
+        Log.d(TAG,newURL);
+
+        // Realizar petición GET_BY_ID
+        VolleySingleton.getInstance(context).addToRequestQueue(
+                myRequest = new JsonObjectRequest(
+                        Request.Method.POST,
+                        newURL,
+                        null,
+                        new Response.Listener<JSONObject>() {
+
+                            @Override
+                            public void onResponse(JSONObject response) {
+                                // Procesar respuesta Json
+                                procesarRespuestaParametroMetrosFicha(response, context);
+                            }
+                        },
+                        new Response.ErrorListener() {
+                            @Override
+                            public void onErrorResponse(VolleyError error) {
+                                Log.d(TAG, "Error Volley viaje: " + error.getMessage());
+
+                            }
+                        }
+                )
+        );
+        myRequest.setRetryPolicy(new DefaultRetryPolicy(
+                50000,
+                5,//DefaultRetryPolicy.DEFAULT_MAX_RETRIES
+                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+
+    }
+
+    private void procesarRespuestaParametroMetrosFicha(JSONObject response, Context context) {
+
+        try {
+            // Obtener atributo "mensaje"
+            String mensaje = response.getString("estado");
+
+            switch (mensaje) {
+                case "1":
+                    JSONArray datos_parametro = response.getJSONArray("parametro");
+                    Integer l_metros_ficha = 0;
+                    for(int i = 0; i < datos_parametro.length(); i++)
+                    {JSONObject object = datos_parametro.getJSONObject(i);
+
+                        l_metros_ficha = Integer.parseInt(object.getString("valor")) ;
+
+                    }
+
+                    SharedPreferences settings1 = PreferenceManager.getDefaultSharedPreferences(context);
+
+                    SharedPreferences.Editor editor = settings1.edit();
+
+                    editor.putInt("metros_ficha",l_metros_ficha);
+
+                    editor.apply();
+
+                    reiniciar();
+
+                    break;
+
+
+            }
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    private Boolean verificar_internet(){
+        ConnectivityManager connectivityManager = (ConnectivityManager) act.getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
+
+        if (networkInfo != null && networkInfo.isConnected()) {
+            // Si hay conexión a Internet en este momento
+            return true;
+        } else {
+            // No hay conexión a Internet en este momento
+            return false;
+        }
+    }
+
+    private void viaje_automatico(final Context context) {
+        String newURL = Constantes.VIAJE_AUTOMATICO + "?conductor=" + ls_id_conductor;
+
+        Log.d("viaje",newURL);
+
+        // Actualizar datos en el servidor
+        VolleySingleton.getInstance(context).addToRequestQueue(
+                new JsonObjectRequest(
+                        Request.Method.POST,
+                        newURL,
+                        null,
+                        new Response.Listener<JSONObject>() {
+                            @Override
+                            public void onResponse(JSONObject response) {
+                                procesarAgregarViajeAut(response, context);
+                            }
+                        },
+                        new Response.ErrorListener() {
+                            @Override
+                            public void onErrorResponse(VolleyError error) {
+                                Log.d(TAG, "Error inicio: " + error.getMessage());
+
+                            }
+                        }
+
+                ) {
+                    @Override
+                    public Map<String, String> getHeaders() {
+                        Map<String, String> headers = new HashMap<>();
+                        headers.put("Content-Type", "application/json; charset=utf-8");
+                        return headers;
+                    }
+
+                    @Override
+                    public String getBodyContentType() {
+                        return "application/json; charset=utf-8" + getParamsEncoding();
+                    }
+                }
+        );
+    }
+
+    private void procesarAgregarViajeAut(JSONObject response, Context context) {
+
+        try {
+            // Obtener estado
+            String estado = response.getString("estado");
+            // Obtener mensaje
+            String mensaje = response.getString("mensaje");
+
+            switch (estado) {
+                case "1":
+
+                    cargarIdVehiculoParada(context);
+
+                    break;
+                case "2":
+                    // Mostrar mensaje
+                    Toast.makeText(
+                            context,
+                            mensaje,
+                            Toast.LENGTH_LONG).show();
+                    // Enviar código de falla
+                    break;
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void cargarIdVehiculoParada(final Context context) {
+
+        // Añadir parámetro a la URL del web service
+        String newURL = Constantes.GET_ID_VEHICULO + "?id=" + ls_id_conductor;
+        Log.d(TAG,newURL);
+
+        // Realizar petición GET_BY_ID
+        VolleySingleton.getInstance(context).addToRequestQueue(
+                myRequest = new JsonObjectRequest(
+                        Request.Method.POST,
+                        newURL,
+                        null,
+                        new Response.Listener<JSONObject>() {
+
+                            @Override
+                            public void onResponse(JSONObject response) {
+                                // Procesar respuesta Json
+                                procesarRespuesta_ID_Parada(response, context);
+                            }
+                        },
+                        new Response.ErrorListener() {
+                            @Override
+                            public void onErrorResponse(VolleyError error) {
+                                Log.d(TAG, "Error Volley viaje: " + error.getMessage());
+
+                            }
+                        }
+                )
+        );
+        myRequest.setRetryPolicy(new DefaultRetryPolicy(
+                50000,
+                5,//DefaultRetryPolicy.DEFAULT_MAX_RETRIES
+                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+
+    }
+
+    private void procesarRespuesta_ID_Parada(JSONObject response, Context context) {
+
+        try {
+            // Obtener atributo "mensaje"
+            String mensaje = response.getString("estado");
+
+            switch (mensaje) {
+                case "1":
+                    // Obtener objeto "cliente"
+                    JSONArray mensaje1 = response.getJSONArray("vehiculo");
+
+                    JSONObject object = mensaje1.getJSONObject(0);
+                    //Parsear objeto
+
+                    id_vehiculo = object.getString("id");
+                    borrar_parada(context);
+                    break;
+
+                case "2":
+
+                    break;
+
+            }
+
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    private void borrar_parada(final Context context){
+
+        HashMap<String, String> map = new HashMap<>();// Mapeo previo
+        String l_parada = "0";
+
+        map.put("parada", l_parada);
+        map.put("id", id_vehiculo);
+
+
+        // Crear nuevo objeto Json basado en el mapa
+        JSONObject jobject = new JSONObject(map);
+
+
+        // Depurando objeto Json...
+        Log.d(TAG, jobject.toString());
+
+        StringBuilder encodedParams = new StringBuilder();
+        try {
+            for (Map.Entry<String, String> entry : map.entrySet()) {
+                encodedParams.append(URLEncoder.encode(entry.getKey(), "utf-8"));
+                encodedParams.append('=');
+                encodedParams.append(URLEncoder.encode(entry.getValue(), "utf-8"));
+                encodedParams.append('&');
+            }
+        } catch (UnsupportedEncodingException uee) {
+            throw new RuntimeException("Encoding not supported: " + "utf-8", uee);
+        }
+
+        encodedParams.setLength(Math.max(encodedParams.length() - 1, 0));
+
+        String newURL = Constantes.UPDATE_PARADAS + "?" + encodedParams;
+        Log.d(TAG,newURL);
+
+        // Actualizar datos en el servidor
+        VolleySingleton.getInstance(context).addToRequestQueue(
+                new JsonObjectRequest(
+                        Request.Method.POST,
+                        newURL,
+                        null,
+                        new Response.Listener<JSONObject>() {
+                            @Override
+                            public void onResponse(JSONObject response) {
+                                procesarRespuestaBorrarParada(response, context);
+                            }
+                        },
+                        new Response.ErrorListener() {
+                            @Override
+                            public void onErrorResponse(VolleyError error) {
+                                Log.d(TAG, "Error inicio: " + error.getMessage());
+
+                            }
+                        }
+
+                ) {
+                    @Override
+                    public Map<String, String> getHeaders() {
+                        Map<String, String> headers = new HashMap<>();
+                        headers.put("Content-Type", "application/json; charset=utf-8");
+                        return headers;
+                    }
+
+                    @Override
+                    public String getBodyContentType() {
+                        return "application/json; charset=utf-8" + getParamsEncoding();
+                    }
+                }
+        );
+    }
+    private void procesarRespuestaBorrarParada(JSONObject response, Context context) {
+
+        try {
+            // Obtener estado
+            String estado = response.getString("estado");
+            // Obtener mensaje
+            String mensaje = response.getString("mensaje");
+
+            switch (estado) {
+                case "1":
+
+                    SharedPreferences settings1 = PreferenceManager.getDefaultSharedPreferences(context);
+
+                    SharedPreferences.Editor editor = settings1.edit();
+
+                    l_estado_viaje = "asignado";
+
+
+                    editor.putString("estado_viaje","asignado");
+
+                    editor.putLong("tiempo_acumulado",0L);
+                    editor.putBoolean("boolean_tolerancia",true);
+                    tiempo_viaje.setText("00:00");
+                    ficha_espera.setText("0");
+                    kms.setText("0");
+
+                    editor.apply();
+
+                    reiniciar();
+
+
+                    break;
+                case "2":
+                    // Mostrar mensaje
+                    Toast.makeText(
+                            context,
+                            mensaje,
+                            Toast.LENGTH_LONG).show();
+                    // Enviar código de falla
+                    break;
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
     }
 
 

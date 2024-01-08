@@ -68,6 +68,7 @@ public class MainActivity extends AppCompatActivity {
     private String l_turno_app;
     private static FragmentManager fragmentManager;
     private String ls_remiseria;
+    private Context context;
 
     @Override
     public void onStart() {
@@ -104,6 +105,7 @@ public class MainActivity extends AppCompatActivity {
      @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        context = getApplicationContext();
         setContentView(R.layout.activity_main_basica);
         getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         ayudas = new ArrayList<>();
@@ -123,7 +125,7 @@ public class MainActivity extends AppCompatActivity {
                  .commit();
 
 
-         cargarParametroTurno(getApplicationContext());
+         cargarParametroTurno(context);
     }
 
     @Override
@@ -319,6 +321,105 @@ public class MainActivity extends AppCompatActivity {
 
 
                         editor.putString("impresion",object.getString("valor"));
+                        editor.apply();
+
+                        cargarParametroParadas(context);
+
+                    }
+
+                    break;
+                case "2":
+                    break;
+
+            }
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    public void cargarParametroParadas(final Context context) {
+
+
+        HashMap<String, String> map = new HashMap<>();// Mapeo previo
+
+        map.put("parametro", "20");
+        map.put("remiseria", ls_remiseria);
+
+        JSONObject jobject = new JSONObject(map);
+
+
+        // Depurando objeto Json...
+        Log.d(TAG, jobject.toString());
+
+        StringBuilder encodedParams = new StringBuilder();
+        try {
+            for (Map.Entry<String, String> entry : map.entrySet()) {
+                encodedParams.append(URLEncoder.encode(entry.getKey(), "utf-8"));
+                encodedParams.append('=');
+                encodedParams.append(URLEncoder.encode(entry.getValue(), "utf-8"));
+                encodedParams.append('&');
+            }
+        } catch (UnsupportedEncodingException uee) {
+            throw new RuntimeException("Encoding not supported: " + "utf-8", uee);
+        }
+
+        encodedParams.setLength(Math.max(encodedParams.length() - 1, 0));
+
+        // Añadir parámetro a la URL del web service
+        String newURL = Constantes.GET_ID_PARAMETRO + "?" + encodedParams;
+        Log.d(TAG,newURL);
+
+        // Realizar petición GET_BY_ID
+        VolleySingleton.getInstance(context).addToRequestQueue(
+                myRequest = new JsonObjectRequest(
+                        Request.Method.POST,
+                        newURL,
+                        null,
+                        new Response.Listener<JSONObject>() {
+
+                            @Override
+                            public void onResponse(JSONObject response) {
+                                // Procesar respuesta Json
+                                procesarRespuestaParametroparadas(response, context);
+                            }
+                        },
+                        new Response.ErrorListener() {
+                            @Override
+                            public void onErrorResponse(VolleyError error) {
+                                Log.d(TAG, "Error Volley tarifa desde: " + error.getMessage());
+
+                            }
+                        }
+                )
+        );
+        myRequest.setRetryPolicy(new DefaultRetryPolicy(
+                50000,
+                5,//DefaultRetryPolicy.DEFAULT_MAX_RETRIES
+                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+
+    }
+
+    private void procesarRespuestaParametroparadas(JSONObject response, Context context) {
+
+        try {
+            // Obtener atributo "mensaje"
+            String mensaje = response.getString("estado");
+
+            switch (mensaje) {
+                case "1":
+                    JSONArray datos_parametro = response.getJSONArray("parametro");
+
+                    for(int i = 0; i < datos_parametro.length(); i++)
+                    {JSONObject object = datos_parametro.getJSONObject(i);
+
+                        SharedPreferences settings1 = PreferenceManager.getDefaultSharedPreferences(context);
+
+                        SharedPreferences.Editor editor = settings1.edit();
+
+
+                        editor.putString("paradas",object.getString("valor"));
                         editor.apply();
 
                         cargarDatos(context);
@@ -770,10 +871,10 @@ public class MainActivity extends AppCompatActivity {
                 String l_mensaje;
                 if (fineLocationGranted != null && fineLocationGranted) {
                             locationStart();
-                            l_mensaje = "Permiso Localización precisa";
+                            l_mensaje = "Permiso Localización precisa activado";
                         } else if (coarseLocationGranted != null && coarseLocationGranted) {
                             locationStart();
-                    l_mensaje = "Permiso Localización no precisa";
+                    l_mensaje = "Permiso Localización no precisa activado";
                         } else {
                     l_mensaje = "Sin Permiso Localización";
                         }

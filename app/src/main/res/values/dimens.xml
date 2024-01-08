@@ -18,6 +18,10 @@
     <dimen name="margin_top_texto">4dp</dimen>
     <dimen name="margin_start">8dp</dimen>
     <dimen name="ancho_boton">54dp</dimen>
+    <dimen name="alto_icono">45dp</dimen>
+    <dimen name="ancho_icono">36dp</dimen>
+    <dimen name="ancho_texto">60dp</dimen>
+    <dimen name="ancho_reporte">105dp</dimen>
     <dimen name="perfil_image_grande">130dp</dimen>
     <dimen name="fab_margin">16dp</dimen>
     <dimen name="nav_header_vertical_spacing">8dp</dimen>

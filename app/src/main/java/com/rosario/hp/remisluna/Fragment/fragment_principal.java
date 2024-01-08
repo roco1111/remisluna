@@ -113,21 +113,18 @@ public class fragment_principal extends Fragment {
     private static final String TAG = fragment_principal.class.getSimpleName();
     private JsonObjectRequest myRequest;
     private final static int REQUEST_ENABLE_BT = 1;
-    private ImageButton boton_cero;
     private ImageButton boton_uno;
     private ImageButton boton_dos;
     private ImageButton boton_tres;
     private ImageButton boton_cuatro;
-    private ImageButton boton_cinco;
-    private ImageButton boton_seis;
-    private ImageButton boton_siete;
     private ImageButton boton_ocho;
-    private ImageButton boton_nueve;
-    private ImageButton boton_automatico;
 
-    private ImageButton boton_fin_turno;
     private ImageButton boton_whatsapp;
-    private ImageButton boton_impresora;
+    private Button boton_impresora;
+    private Button boton_turno;
+    private Button boton_viaje;
+    private Button buttonParadas;
+    private Button repetirTicket;
 
     private String l_hora_desde;
     private String l_hora_hasta;
@@ -165,9 +162,13 @@ public class fragment_principal extends Fragment {
     private TextView red;
     private TextView txt_parada;
     private TextView turno;
-    private TextView precio;
-    private TextView texto_kms;
-    private TextView texto_tiempo;
+    private TextView text_parcial_turno;
+    private TextView text_final_turno;
+    private TextView text_ultimos_finales;
+    private TextView text_reportes;
+    private TextView text_viaje_x_viaje;
+    private TextView text_historial;
+
     private Impresion impresion;
     private ArrayList<turno> datos;
     boolean mBound = false;
@@ -204,6 +205,7 @@ public class fragment_principal extends Fragment {
     private boolean lb_bluetooth;
     ProgressDialog progress1;
     private String l_impresion;
+    private String l_paradas;
     private String tipo_empresa;
 
     @Override
@@ -325,43 +327,47 @@ public class fragment_principal extends Fragment {
         context = getContext();
         act = getActivity();
         SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(context);
-        ls_id_conductor     = settings.getString("id","");
-        ls_id_turno     = settings.getString("id_turno_chofer","");
-        ls_remiseria     = settings.getString("remiseria","");
-        viajes_automaticos = settings.getString("viajes_automaticos","");
-        movil_habilitado = settings.getString("estado_vehiculo","");
-        chofer_habilitado = settings.getString("estado_conductor","");
-        nombre_remiseria = settings.getString("nombre_remiseria","");
-        telefono_queja = settings.getString("telefono_queja","");
-        telefono_remiseria = settings.getString("telefono_remiseria","");
-        tipo_empresa = settings.getString("tipo_empresa","");
-        l_impresion = settings.getString("impresion","");
-        l_turno_app = settings.getString("turnos_app","");
-        this.boton_cero = v.findViewById(R.id.imageButtonCero);
+        ls_id_conductor = settings.getString("id", "");
+        ls_id_turno = settings.getString("id_turno_chofer", "");
+        ls_remiseria = settings.getString("remiseria", "");
+        viajes_automaticos = settings.getString("viajes_automaticos", "");
+        movil_habilitado = settings.getString("estado_vehiculo", "");
+        chofer_habilitado = settings.getString("estado_conductor", "");
+        nombre_remiseria = settings.getString("nombre_remiseria", "");
+        telefono_queja = settings.getString("telefono_queja", "");
+        telefono_remiseria = settings.getString("telefono_remiseria", "");
+        tipo_empresa = settings.getString("tipo_empresa", "");
+        l_impresion = settings.getString("impresion", "");
+        l_turno_app = settings.getString("turnos_app", "");
+        l_paradas = settings.getString("paradas", "");
+
         this.boton_uno = v.findViewById(R.id.imageButtonUno);
         this.boton_dos = v.findViewById(R.id.imageButtonDos);
         this.boton_tres = v.findViewById(R.id.imageButtonTres);
         this.boton_cuatro = v.findViewById(R.id.imageButtonCuatro);
-        this.boton_cinco = v.findViewById(R.id.imageButtonCinco);
-        this.boton_seis = v.findViewById(R.id.imageButtonSeis);
-        this.boton_siete = v.findViewById(R.id.imageButtonSiete);
         this.boton_ocho = v.findViewById(R.id.imageButtonOcho);
-        this.boton_nueve = v.findViewById(R.id.imageButtonNueve);
         this.impresora = v.findViewById(R.id.impresora);
         this.boton_whatsapp = v.findViewById(R.id.imageWa);
-        this.boton_automatico = v.findViewById(R.id.imageautomatico);
+
+        this.boton_turno = v.findViewById(R.id.buttonTurno);
+        this.boton_viaje = v.findViewById(R.id.buttonViaje);
+        this.buttonParadas = v.findViewById(R.id.buttonParadas);
+        this.repetirTicket = v.findViewById(R.id.buttonTicket);
         this.txt_parada = v.findViewById(R.id.parada);
+        this.text_parcial_turno = v.findViewById(R.id.text_parcial_turno);
+        this.text_final_turno = v.findViewById(R.id.text_final_turno);
+        text_ultimos_finales = v.findViewById(R.id.text_ultimos_finales);
+        text_reportes = v.findViewById(R.id.text_reportes);
+        text_viaje_x_viaje = v.findViewById(R.id.text_viaje_x_viaje);
+        text_historial = v.findViewById(R.id.text_historial);
         this.gps = v.findViewById(R.id.gps);
         this.red = v.findViewById(R.id.red);
         this.turno = v.findViewById(R.id.turno);
         texto_tarifa = v.findViewById(R.id.tarifa);
-        this.boton_impresora = v.findViewById(R.id.imageImpresora);
-        this.precio = v.findViewById(R.id.precio);
-        this.texto_kms = v.findViewById(R.id.kms);
-        this.texto_tiempo = v.findViewById(R.id.tiempo);
+        this.boton_impresora = v.findViewById(R.id.buttonImpresora);
         paradas = new ArrayList<>();
 
-        if(gps_habilitado()){
+        if (gps_habilitado()) {
             switch (tipo_empresa) {
                 case "1":
                     gps.setTextColor(act.getResources().getColor(R.color.colorPrimary));
@@ -373,11 +379,11 @@ public class fragment_principal extends Fragment {
                     gps.setTextColor(act.getResources().getColor(R.color.colorTaxi));
                     break;
             }
-        }else{
+        } else {
             gps.setTextColor(act.getResources().getColor(R.color.alarma));
         }
 
-        if(red_habilitada()){
+        if (red_habilitada()) {
             switch (tipo_empresa) {
                 case "1":
                     red.setTextColor(act.getResources().getColor(R.color.colorPrimary));
@@ -389,268 +395,182 @@ public class fragment_principal extends Fragment {
                     red.setTextColor(act.getResources().getColor(R.color.colorTaxi));
                     break;
             }
-        }else{
+        } else {
             red.setTextColor(act.getResources().getColor(R.color.alarma));
         }
 
         BluetoothAdapter bt = BluetoothAdapter.getDefaultAdapter();
-        if (bt == null)
-        { //Does not support Bluetooth
+        if (bt == null) { //Does not support Bluetooth
             lb_bluetooth = false;
-        }else{
+        } else {
             //Magic starts. Let's check if it's enabled
-            if (!bt.isEnabled())
-            { lb_bluetooth = false; }
-            else{
+            if (!bt.isEnabled()) {
+                lb_bluetooth = false;
+            } else {
                 lb_bluetooth = true;
             }
         }
 
         datos = new ArrayList<>();
         impresion = new Impresion();
+        this.boton_turno.setText(act.getResources().getString(R.string.nuevo_turno));
 
-        if(viajes_automaticos.equals("0")){
-            this.boton_automatico.setVisibility(View.GONE);
-        }else{
-            this.boton_automatico.setVisibility(View.VISIBLE);
+        if (viajes_automaticos.equals("0")) {
+            this.boton_viaje.setVisibility(View.GONE);
+        } else {
+            this.boton_viaje.setVisibility(View.VISIBLE);
         }
 
-        if(movil_habilitado.equals("1") && chofer_habilitado.equals("1"))
-        {
-            this.boton_tres.setEnabled(true);
+        if (movil_habilitado.equals("1") && chofer_habilitado.equals("1")) {
             this.boton_cuatro.setEnabled(true);
-            this.boton_seis.setEnabled(true);
-            this.boton_siete.setEnabled(true);
+            this.boton_ocho.setEnabled(true);
+            this.boton_viaje.setEnabled(true);
+            this.buttonParadas.setEnabled(true);
 
             switch (tipo_empresa) {
                 case "1":
                     this.turno.setTextColor(act.getResources().getColor(R.color.colorPrimary));
-                    this.precio.setTextColor(act.getResources().getColor(R.color.colorPrimary));
+
                     this.txt_parada.setTextColor(act.getResources().getColor(R.color.colorPrimary));
                     this.texto_tarifa.setTextColor(act.getResources().getColor(R.color.colorPrimary));
-                    this.texto_kms.setTextColor(act.getResources().getColor(R.color.colorPrimary));
-                    this.texto_tiempo.setTextColor(act.getResources().getColor(R.color.colorPrimary));
                     this.red.setTextColor(act.getResources().getColor(R.color.colorPrimary));
-                    this.boton_tres.setBackground(act.getResources().getDrawable(R.drawable.selector_tres));
+                    text_reportes.setTextColor(act.getResources().getColor(R.color.colorPrimary));
+                    text_viaje_x_viaje.setTextColor(act.getResources().getColor(R.color.colorPrimary));
+                    text_historial.setTextColor(act.getResources().getColor(R.color.colorPrimary));
                     this.boton_cuatro.setBackground(act.getResources().getDrawable(R.drawable.selector_cuatro));
-                    this.boton_seis.setBackground(act.getResources().getDrawable(R.drawable.selector_seis));
-                    this.boton_siete.setBackground(act.getResources().getDrawable(R.drawable.selector_siete));
                     this.boton_ocho.setBackground(act.getResources().getDrawable(R.drawable.selector_ocho));
-                    this.boton_nueve.setBackground(act.getResources().getDrawable(R.drawable.selector_nueve));
-                    this.boton_cero.setBackground(act.getResources().getDrawable(R.drawable.selector_cero));
                     break;
                 case "2":
                     this.turno.setTextColor(act.getResources().getColor(R.color.colorMoto));
-                    this.precio.setTextColor(act.getResources().getColor(R.color.colorMoto));
+
                     this.txt_parada.setTextColor(act.getResources().getColor(R.color.colorMoto));
                     this.texto_tarifa.setTextColor(act.getResources().getColor(R.color.colorMoto));
-                    this.texto_kms.setTextColor(act.getResources().getColor(R.color.colorMoto));
-                    this.texto_tiempo.setTextColor(act.getResources().getColor(R.color.colorMoto));
                     this.red.setTextColor(act.getResources().getColor(R.color.colorMoto));
-                    this.boton_tres.setBackground(act.getResources().getDrawable(R.drawable.selector_tres_moto));
+                    text_reportes.setTextColor(act.getResources().getColor(R.color.colorMoto));
+                    text_viaje_x_viaje.setTextColor(act.getResources().getColor(R.color.colorMoto));
+                    text_historial.setTextColor(act.getResources().getColor(R.color.colorMoto));
                     this.boton_cuatro.setBackground(act.getResources().getDrawable(R.drawable.selector_cuatro_moto));
-                    this.boton_seis.setBackground(act.getResources().getDrawable(R.drawable.selector_seis_moto));
-                    this.boton_siete.setBackground(act.getResources().getDrawable(R.drawable.selector_siete_moto));
-                    this.boton_cero.setBackground(act.getResources().getDrawable(R.drawable.selector_cero_moto));
-                    this.boton_nueve.setBackground(act.getResources().getDrawable(R.drawable.selector_nueve_moto));
                     this.boton_ocho.setBackground(act.getResources().getDrawable(R.drawable.selector_ocho_moto));
                     break;
                 case "3":
                     this.turno.setTextColor(act.getResources().getColor(R.color.colorTaxi));
-                    this.precio.setTextColor(act.getResources().getColor(R.color.colorTaxi));
+
                     this.txt_parada.setTextColor(act.getResources().getColor(R.color.colorTaxi));
                     this.texto_tarifa.setTextColor(act.getResources().getColor(R.color.colorTaxi));
-                    this.texto_kms.setTextColor(act.getResources().getColor(R.color.colorTaxi));
-                    this.texto_tiempo.setTextColor(act.getResources().getColor(R.color.colorTaxi));
                     this.red.setTextColor(act.getResources().getColor(R.color.colorTaxi));
-                    this.boton_tres.setBackground(act.getResources().getDrawable(R.drawable.selector_tres_taxi));
+                    text_reportes.setTextColor(act.getResources().getColor(R.color.colorTaxi));
+                    text_viaje_x_viaje.setTextColor(act.getResources().getColor(R.color.colorTaxi));
+                    text_historial.setTextColor(act.getResources().getColor(R.color.colorTaxi));
                     this.boton_cuatro.setBackground(act.getResources().getDrawable(R.drawable.selector_cuatro_taxi));
-                    this.boton_seis.setBackground(act.getResources().getDrawable(R.drawable.selector_seis_taxi));
-                    this.boton_siete.setBackground(act.getResources().getDrawable(R.drawable.selector_siete_taxi));
-                    this.boton_cero.setBackground(act.getResources().getDrawable(R.drawable.selector_cero_taxi));
-                    this.boton_nueve.setBackground(act.getResources().getDrawable(R.drawable.selector_nueve_taxi));
                     this.boton_ocho.setBackground(act.getResources().getDrawable(R.drawable.selector_ocho_taxi));
                     break;
             }
 
 
-        }else{
-            this.boton_tres.setEnabled(false);
+        } else {
             this.boton_cuatro.setEnabled(false);
-            this.boton_seis.setEnabled(false);
-            this.boton_siete.setEnabled(false);
-            switch (tipo_empresa) {
-                case "1":
+            this.boton_ocho.setEnabled(false);
+            this.boton_viaje.setEnabled(false);
+            this.buttonParadas.setEnabled(false);
+            this.boton_cuatro.setBackground(act.getResources().getDrawable(R.drawable.cuatro_gris));
+            this.boton_ocho.setBackground(act.getResources().getDrawable(R.drawable.ocho_gris));
+            text_viaje_x_viaje.setTextColor(act.getResources().getColor(R.color.colorGris));
+            text_historial.setTextColor(act.getResources().getColor(R.color.colorGris));
+            text_reportes.setTextColor(act.getResources().getColor(R.color.colorGris));
 
-                    this.boton_tres.setBackground(act.getResources().getDrawable(R.drawable.tres_gris));
-                    this.boton_cuatro.setBackground(act.getResources().getDrawable(R.drawable.cuatro_gris));
-                    this.boton_seis.setBackground(act.getResources().getDrawable(R.drawable.seis_gris));
-                    this.boton_siete.setBackground(act.getResources().getDrawable(R.drawable.siete_gris));
-                    break;
-                case "2":
-                    this.boton_tres.setBackground(act.getResources().getDrawable(R.drawable.tres_gris_moto));
-                    this.boton_cuatro.setBackground(act.getResources().getDrawable(R.drawable.cuatro_gris_moto));
-                    this.boton_seis.setBackground(act.getResources().getDrawable(R.drawable.seis_gris_moto));
-                    this.boton_siete.setBackground(act.getResources().getDrawable(R.drawable.siete_gris_moto));
-                    break;
-                case "3":
-                    this.boton_tres.setBackground(act.getResources().getDrawable(R.drawable.tres_gris));
-                    this.boton_cuatro.setBackground(act.getResources().getDrawable(R.drawable.cuatro_gris));
-                    this.boton_seis.setBackground(act.getResources().getDrawable(R.drawable.seis_gris));
-                    this.boton_siete.setBackground(act.getResources().getDrawable(R.drawable.siete_gris));
-                    break;
-            }
         }
-        if(l_turno_app.equals("1")) {
+
+        if (l_turno_app.equals("1")) {
             this.turno.setVisibility(View.VISIBLE);
             if (ls_id_turno.equals("0")) {
 
-                this.boton_automatico.setEnabled(false);
-                switch (tipo_empresa) {
-                    case "1":
-                        this.boton_automatico.setBackground(act.getResources().getDrawable(R.drawable.automtico_gris));
-                        break;
-                    case "2":
-                        this.boton_automatico.setBackground(act.getResources().getDrawable(R.drawable.automatico_gris_moto));
-                        break;
-                    case "3":
-                        this.boton_automatico.setBackground(act.getResources().getDrawable(R.drawable.automtico_gris));
-                        break;
-                }
+                this.boton_viaje.setEnabled(false);
+
 
             } else {
-                this.boton_automatico.setEnabled(true);
-                switch (tipo_empresa) {
-                    case "1":
-                        this.boton_automatico.setBackground(act.getResources().getDrawable(R.drawable.selector_automatico));
-                        break;
-                    case "2":
-                        this.boton_automatico.setBackground(act.getResources().getDrawable(R.drawable.selector_automatico_moto));
-                        break;
-                    case "3":
-                        this.boton_automatico.setBackground(act.getResources().getDrawable(R.drawable.selector_automatico_taxi));
-                        break;
-                }
+                this.boton_viaje.setEnabled(true);
+
 
             }
-        }else{
+        } else {
             this.turno.setVisibility(View.INVISIBLE);
-            this.boton_automatico.setEnabled(true);
-            switch (tipo_empresa) {
-                case "1":
-                    this.boton_automatico.setBackground(act.getResources().getDrawable(R.drawable.selector_automatico));
-                    break;
-                case "2":
-                    this.boton_automatico.setBackground(act.getResources().getDrawable(R.drawable.selector_automatico_moto));
-                    break;
-                case "3":
-                    this.boton_automatico.setBackground(act.getResources().getDrawable(R.drawable.selector_automatico_taxi));
-                    break;
-            }
+            this.boton_viaje.setEnabled(true);
+
 
         }
 
-        if(l_impresion.equals("0")) {
+        if (l_impresion.equals("0")) {
 
             boton_impresora.setVisibility(View.GONE);
-        }else{
+            this.impresora.setVisibility(View.GONE);
+        } else {
             boton_impresora.setVisibility(View.VISIBLE);
-            switch (tipo_empresa) {
-                case "1":
-                    this.boton_impresora.setBackground(act.getResources().getDrawable(R.drawable.selector_impresora));
-                    break;
-                case "2":
-                    this.boton_impresora.setBackground(act.getResources().getDrawable(R.drawable.selector_impresora_moto));
-                    break;
-                case "3":
-                    this.boton_impresora.setBackground(act.getResources().getDrawable(R.drawable.selector_impresora_taxi));
-                    break;
-            }
+            this.impresora.setVisibility(View.VISIBLE);
         }
-        if(l_turno_app.equals("0")){
 
-            boton_cinco.setEnabled(false);
-            switch (tipo_empresa)
-            {
-                case "1":
-                    boton_cinco.setBackground(act.getResources().getDrawable(R.drawable.cinco_gris));
-                    break;
-                case "2":
-                    boton_cinco.setBackground(act.getResources().getDrawable(R.drawable.cinco_gris_moto));
-                    break;
-                case "3":
-                    boton_cinco.setBackground(act.getResources().getDrawable(R.drawable.cinco_gris));
-                    break;
-            }
+        if (l_paradas.equals("0")) {
+            txt_parada.setVisibility(View.GONE);
+            buttonParadas.setVisibility(View.GONE);
+
+        } else {
+            txt_parada.setVisibility(View.VISIBLE);
+            buttonParadas.setVisibility(View.VISIBLE);
+        }
+        if (l_turno_app.equals("0")) {
+
+            boton_turno.setVisibility(View.GONE);
+
+            repetirTicket.setBackground(act.getResources().getDrawable(R.drawable.boton));
             boton_dos.setEnabled(false);
-            switch (tipo_empresa)
-            {
-                case "1":
-                    boton_dos.setBackground(act.getResources().getDrawable(R.drawable.dos_gris));
-                    break;
-                case "2":
-                    boton_dos.setBackground(act.getResources().getDrawable(R.drawable.dos_gris_moto));
-                    break;
-                case "3":
-                    boton_dos.setBackground(act.getResources().getDrawable(R.drawable.dos_gris));
-                    break;
-            }
+            boton_dos.setBackground(act.getResources().getDrawable(R.drawable.dos_gris));
+            boton_tres.setEnabled(false);
+            boton_tres.setBackground(act.getResources().getDrawable(R.drawable.tres_gris));
             boton_uno.setEnabled(false);
-            switch (tipo_empresa)
-            {
-                case "1":
-                    boton_uno.setBackground(act.getResources().getDrawable(R.drawable.uno_gris));
-                    break;
-                case "2":
-                    boton_uno.setBackground(act.getResources().getDrawable(R.drawable.uno_gris_moto));
-                    break;
-                case "3":
-                    boton_uno.setBackground(act.getResources().getDrawable(R.drawable.uno_gris));
-                    break;
-            }
-        }else{
-            boton_cinco.setEnabled(true);
-            switch (tipo_empresa) {
-                case "1":
-                    boton_cinco.setBackground(act.getResources().getDrawable(R.drawable.selector_cinco));
-                    break;
-                case "2":
-                    boton_cinco.setBackground(act.getResources().getDrawable(R.drawable.selector_cinco_moto));
-                    break;
-                case "3":
-                    boton_cinco.setBackground(act.getResources().getDrawable(R.drawable.selector_cinco_taxi));
-                    break;
-            }
-            boton_dos.setEnabled(true);
-            switch (tipo_empresa) {
-                case "1":
-                    boton_dos.setBackground(act.getResources().getDrawable(R.drawable.selector_dos));
-                    break;
-                case "2":
-                    boton_dos.setBackground(act.getResources().getDrawable(R.drawable.selector_dos_moto));
-                    break;
-                case "3":
-                    boton_dos.setBackground(act.getResources().getDrawable(R.drawable.selector_dos_taxi));
-                    break;
-            }
+            boton_uno.setBackground(act.getResources().getDrawable(R.drawable.uno_gris));
+            text_parcial_turno.setTextColor(act.getResources().getColor(R.color.colorGris));
+            text_final_turno.setTextColor(act.getResources().getColor(R.color.colorGris));
+            text_ultimos_finales.setTextColor(act.getResources().getColor(R.color.colorGris));
 
+        } else {
+
+            boton_turno.setVisibility(View.VISIBLE);
+
+            repetirTicket.setBackground(act.getResources().getDrawable(R.drawable.boton_chico));
+            boton_dos.setEnabled(true);
             boton_uno.setEnabled(true);
             switch (tipo_empresa) {
                 case "1":
+                    boton_dos.setBackground(act.getResources().getDrawable(R.drawable.selector_dos));
                     boton_uno.setBackground(act.getResources().getDrawable(R.drawable.selector_uno));
+                    boton_tres.setBackground(act.getResources().getDrawable(R.drawable.selector_tres));
+                    text_final_turno.setTextColor(act.getResources().getColor(R.color.colorPrimary));
+                    text_parcial_turno.setTextColor(act.getResources().getColor(R.color.colorPrimary));
+                    text_ultimos_finales.setTextColor(act.getResources().getColor(R.color.colorPrimary));
                     break;
                 case "2":
+                    boton_dos.setBackground(act.getResources().getDrawable(R.drawable.selector_dos_moto));
                     boton_uno.setBackground(act.getResources().getDrawable(R.drawable.selector_uno_moto));
+                    boton_tres.setBackground(act.getResources().getDrawable(R.drawable.selector_tres_moto));
+                    text_final_turno.setTextColor(act.getResources().getColor(R.color.colorMoto));
+                    text_parcial_turno.setTextColor(act.getResources().getColor(R.color.colorMoto));
+                    text_ultimos_finales.setTextColor(act.getResources().getColor(R.color.colorMoto));
                     break;
                 case "3":
+                    boton_dos.setBackground(act.getResources().getDrawable(R.drawable.selector_dos_taxi));
                     boton_uno.setBackground(act.getResources().getDrawable(R.drawable.selector_uno_taxi));
+                    boton_tres.setBackground(act.getResources().getDrawable(R.drawable.selector_tres_taxi));
+                    text_final_turno.setTextColor(act.getResources().getColor(R.color.colorTaxi));
+                    text_parcial_turno.setTextColor(act.getResources().getColor(R.color.colorTaxi));
+                    text_ultimos_finales.setTextColor(act.getResources().getColor(R.color.colorTaxi));
                     break;
             }
-
         }
+
+
+
         MediaPlayer mediaPlayer = MediaPlayer.create(getActivity(), R.raw.everblue);
 
-        this.boton_automatico.setOnClickListener(new View.OnClickListener() {
+        this.boton_viaje.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
 
@@ -680,18 +600,7 @@ public class fragment_principal extends Fragment {
             }
         });
 
-        this.boton_cero.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mediaPlayer.start();
-                if(mBound) {
-                    impresion_cero();
-                }else{
-                    crear_pfd_cero();
-                }
 
-            }
-        });
 
         this.boton_uno.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -714,7 +623,7 @@ public class fragment_principal extends Fragment {
             }
         });
 
-        this.boton_cinco.setOnClickListener(new View.OnClickListener() {
+        this.boton_turno.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 mediaPlayer.start();
@@ -769,7 +678,7 @@ public class fragment_principal extends Fragment {
         });
 
 
-        this.boton_seis.setOnClickListener(new View.OnClickListener() {
+        this.repetirTicket.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 mediaPlayer.start();
@@ -779,7 +688,7 @@ public class fragment_principal extends Fragment {
             }
         });
 
-        this.boton_siete.setOnClickListener(new View.OnClickListener() {
+        this.buttonParadas.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 mediaPlayer.start();
@@ -802,18 +711,8 @@ public class fragment_principal extends Fragment {
             }
         });
 
-        this.boton_nueve.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mediaPlayer.start();
-
-                Intent intent2 = new Intent(context, MainViaje.class);
-                context.startActivity(intent2);
-                act.finish();
-            }
-        });
-
         feriado(context);
+
 
         return v;
     }
@@ -980,55 +879,45 @@ private void procesarRespuestaParametroTurno(JSONObject response, Context contex
                 }
                 if(l_turno_app.equals("0")){
 
-                    boton_cinco.setEnabled(false);
-                    switch (tipo_empresa)
-                    {
-                        case "1":
-                        boton_cinco.setBackground(act.getResources().getDrawable(R.drawable.cinco_gris));
-                            break;
-                        case "2":
-                            boton_cinco.setBackground(act.getResources().getDrawable(R.drawable.cinco_gris_moto));
-                            break;
-                        case "3":
-                            boton_cinco.setBackground(act.getResources().getDrawable(R.drawable.cinco_gris));
-                            break;
-                    }
+                    boton_turno.setEnabled(false);
+
                     boton_dos.setEnabled(false);
-                    switch (tipo_empresa)
-                    {
-                        case "1":
-                            boton_dos.setBackground(act.getResources().getDrawable(R.drawable.dos_gris));
-                            break;
-                        case "2":
-                            boton_dos.setBackground(act.getResources().getDrawable(R.drawable.dos_gris_moto));
-                            break;
-                        case "3":
-                            boton_dos.setBackground(act.getResources().getDrawable(R.drawable.dos_gris));
-                            break;
-                    }
+                    boton_tres.setEnabled(false);
+                    boton_dos.setBackground(act.getResources().getDrawable(R.drawable.dos_gris));
+                    boton_uno.setBackground(act.getResources().getDrawable(R.drawable.uno_gris));
+                    boton_tres.setBackground(act.getResources().getDrawable(R.drawable.tres_gris));
+                    text_parcial_turno.setTextColor(act.getResources().getColor(R.color.colorGris));
+                    text_final_turno.setTextColor(act.getResources().getColor(R.color.colorGris));
+                    text_ultimos_finales.setTextColor(act.getResources().getColor(R.color.colorGris));
+
                 }else{
-                    boton_cinco.setEnabled(true);
-                    switch (tipo_empresa) {
-                        case "1":
-                            boton_cinco.setBackground(act.getResources().getDrawable(R.drawable.selector_cinco));
-                            break;
-                        case "2":
-                            boton_cinco.setBackground(act.getResources().getDrawable(R.drawable.selector_cinco_moto));
-                            break;
-                        case "3":
-                            boton_cinco.setBackground(act.getResources().getDrawable(R.drawable.selector_cinco_taxi));
-                            break;
-                    }
+                    boton_turno.setEnabled(true);
+
                     boton_dos.setEnabled(true);
                     switch (tipo_empresa) {
                         case "1":
                             boton_dos.setBackground(act.getResources().getDrawable(R.drawable.selector_dos));
+                            boton_uno.setBackground(act.getResources().getDrawable(R.drawable.selector_uno));
+                            boton_tres.setBackground(act.getResources().getDrawable(R.drawable.selector_tres));
+                            text_final_turno.setTextColor(act.getResources().getColor(R.color.colorPrimary));
+                            text_ultimos_finales.setTextColor(act.getResources().getColor(R.color.colorPrimary));
+                            text_parcial_turno.setTextColor(act.getResources().getColor(R.color.colorPrimary));
                             break;
                         case "2":
                             boton_dos.setBackground(act.getResources().getDrawable(R.drawable.selector_dos_moto));
+                            boton_uno.setBackground(act.getResources().getDrawable(R.drawable.selector_uno_moto));
+                            boton_tres.setBackground(act.getResources().getDrawable(R.drawable.selector_tres_moto));
+                            text_final_turno.setTextColor(act.getResources().getColor(R.color.colorMoto));
+                            text_ultimos_finales.setTextColor(act.getResources().getColor(R.color.colorMoto));
+                            text_parcial_turno.setTextColor(act.getResources().getColor(R.color.colorMoto));
                             break;
                         case "3":
                             boton_dos.setBackground(act.getResources().getDrawable(R.drawable.selector_dos_taxi));
+                            boton_uno.setBackground(act.getResources().getDrawable(R.drawable.selector_uno_taxi));
+                            boton_tres.setBackground(act.getResources().getDrawable(R.drawable.selector_tres_taxi));
+                            text_final_turno.setTextColor(act.getResources().getColor(R.color.colorTaxi));
+                            text_ultimos_finales.setTextColor(act.getResources().getColor(R.color.colorTaxi));
+                            text_parcial_turno.setTextColor(act.getResources().getColor(R.color.colorTaxi));
                             break;
                     }
 
@@ -1338,110 +1227,77 @@ private void procesarRespuestaParametroTurno(JSONObject response, Context contex
                     l_nro_turno = object.getString("nro_turno");
                     String habilitada = object.getString("habilitada");
 
-                    if(habilitada.equals("1") )
+                    if(habilitada.equals("1") && movil_habilitado.equals("1") && chofer_habilitado.equals("1") )
                     {
 
-                        this.boton_tres.setEnabled(true);
+                        this.boton_ocho.setEnabled(true);
                         this.boton_cuatro.setEnabled(true);
-                        this.boton_seis.setEnabled(true);
-                        this.boton_siete.setEnabled(true);
+                        this.boton_viaje.setEnabled(true);
+                        this.buttonParadas.setEnabled(true);
                         switch (tipo_empresa) {
                             case "1":
-                                this.boton_tres.setBackground(act.getResources().getDrawable(R.drawable.selector_tres));
+                                this.boton_ocho.setBackground(act.getResources().getDrawable(R.drawable.selector_ocho));
                                 this.boton_cuatro.setBackground(act.getResources().getDrawable(R.drawable.selector_cuatro));
-                                this.boton_seis.setBackground(act.getResources().getDrawable(R.drawable.selector_seis));
-                                this.boton_siete.setBackground(act.getResources().getDrawable(R.drawable.selector_siete));
+                                this.text_viaje_x_viaje.setTextColor(act.getResources().getColor(R.color.colorPrimary));
+                                this.text_historial.setTextColor(act.getResources().getColor(R.color.colorPrimary));
                                 break;
                             case "2":
-                                this.boton_tres.setBackground(act.getResources().getDrawable(R.drawable.selector_tres_moto));
+                                this.boton_ocho.setBackground(act.getResources().getDrawable(R.drawable.selector_ocho_moto));
                                 this.boton_cuatro.setBackground(act.getResources().getDrawable(R.drawable.selector_cuatro_moto));
-                                this.boton_seis.setBackground(act.getResources().getDrawable(R.drawable.selector_seis_moto));
-                                this.boton_siete.setBackground(act.getResources().getDrawable(R.drawable.selector_siete_moto));
+                                this.text_viaje_x_viaje.setTextColor(act.getResources().getColor(R.color.colorMoto));
+                                this.text_historial.setTextColor(act.getResources().getColor(R.color.colorMoto));
                                 break;
                             case "3":
-                                this.boton_tres.setBackground(act.getResources().getDrawable(R.drawable.selector_tres_taxi));
+                                this.boton_ocho.setBackground(act.getResources().getDrawable(R.drawable.selector_ocho_taxi));
                                 this.boton_cuatro.setBackground(act.getResources().getDrawable(R.drawable.selector_cuatro_taxi));
-                                this.boton_seis.setBackground(act.getResources().getDrawable(R.drawable.selector_seis_taxi));
-                                this.boton_siete.setBackground(act.getResources().getDrawable(R.drawable.selector_siete_taxi));
+                                this.text_viaje_x_viaje.setTextColor(act.getResources().getColor(R.color.colorTaxi));
+                                this.text_historial.setTextColor(act.getResources().getColor(R.color.colorTaxi));
                                 break;
                         }
 
                         if(l_turno_app.equals("0")){
 
-                            boton_cinco.setEnabled(false);
-                            switch (tipo_empresa)
-                            {
-                                case "1":
-                                    boton_cinco.setBackground(act.getResources().getDrawable(R.drawable.cinco_gris));
-                                    break;
-                                case "2":
-                                    boton_cinco.setBackground(act.getResources().getDrawable(R.drawable.cinco_gris_moto));
-                                    break;
-                                case "3":
-                                    boton_cinco.setBackground(act.getResources().getDrawable(R.drawable.cinco_gris));
-                                    break;
-                            }
+                            boton_turno.setEnabled(false);
+                            //boton_turno.setBackgroundColor(act.getResources().getColor(R.color.colorGris));
                             boton_dos.setEnabled(false);
-                            switch (tipo_empresa)
-                            {
-                                case "1":
-                                    boton_dos.setBackground(act.getResources().getDrawable(R.drawable.dos_gris));
-                                    break;
-                                case "2":
-                                    boton_dos.setBackground(act.getResources().getDrawable(R.drawable.dos_gris_moto));
-                                    break;
-                                case "3":
-                                    boton_dos.setBackground(act.getResources().getDrawable(R.drawable.dos_gris));
-                                    break;
-                            }
+                            boton_dos.setBackground(act.getResources().getDrawable(R.drawable.dos_gris));
+                            text_final_turno.setTextColor(act.getResources().getColor(R.color.colorGris));
                             boton_uno.setEnabled(false);
-                            switch (tipo_empresa)
-                            {
-                                case "1":
-                                    boton_uno.setBackground(act.getResources().getDrawable(R.drawable.uno_gris));
-                                    break;
-                                case "2":
-                                    boton_uno.setBackground(act.getResources().getDrawable(R.drawable.uno_gris_moto));
-                                    break;
-                                case "3":
-                                    boton_uno.setBackground(act.getResources().getDrawable(R.drawable.uno_gris));
-                                    break;
-                            }
+                            text_parcial_turno.setTextColor(act.getResources().getColor(R.color.colorGris));
+                            boton_uno.setBackground(act.getResources().getDrawable(R.drawable.uno_gris));
+                            boton_tres.setEnabled(false);
+                            boton_tres.setBackground(act.getResources().getDrawable(R.drawable.tres_gris));
+                            text_ultimos_finales.setTextColor(act.getResources().getColor(R.color.colorGris));
+
                         }else{
-                            boton_cinco.setEnabled(true);
-                            switch (tipo_empresa) {
-                                case "1":
-                                    boton_cinco.setBackground(act.getResources().getDrawable(R.drawable.selector_cinco));
-                                    break;
-                                case "2":
-                                    boton_cinco.setBackground(act.getResources().getDrawable(R.drawable.selector_cinco_moto));
-                                    break;
-                                case "3":
-                                    boton_cinco.setBackground(act.getResources().getDrawable(R.drawable.selector_cinco_taxi));
-                                    break;
-                            }
+                            boton_turno.setEnabled(false);
                             boton_dos.setEnabled(true);
+                            boton_uno.setEnabled(true);
+                            boton_tres.setEnabled(true);
                             switch (tipo_empresa) {
                                 case "1":
                                     boton_dos.setBackground(act.getResources().getDrawable(R.drawable.selector_dos));
+                                    boton_uno.setBackground(act.getResources().getDrawable(R.drawable.selector_uno));
+                                    boton_tres.setBackground(act.getResources().getDrawable(R.drawable.selector_tres));
+                                    text_final_turno.setTextColor(act.getResources().getColor(R.color.colorPrimary));
+                                    text_ultimos_finales.setTextColor(act.getResources().getColor(R.color.colorPrimary));
+                                    text_parcial_turno.setTextColor(act.getResources().getColor(R.color.colorPrimary));
                                     break;
                                 case "2":
                                     boton_dos.setBackground(act.getResources().getDrawable(R.drawable.selector_dos_moto));
+                                    boton_uno.setBackground(act.getResources().getDrawable(R.drawable.selector_uno_moto));
+                                    boton_tres.setBackground(act.getResources().getDrawable(R.drawable.selector_tres_moto));
+                                    text_final_turno.setTextColor(act.getResources().getColor(R.color.colorMoto));
+                                    text_ultimos_finales.setTextColor(act.getResources().getColor(R.color.colorMoto));
+                                    text_parcial_turno.setTextColor(act.getResources().getColor(R.color.colorMoto));
                                     break;
                                 case "3":
                                     boton_dos.setBackground(act.getResources().getDrawable(R.drawable.selector_dos_taxi));
-                                    break;
-                            }
-                            boton_uno.setEnabled(true);
-                            switch (tipo_empresa) {
-                                case "1":
-                                    boton_uno.setBackground(act.getResources().getDrawable(R.drawable.selector_uno));
-                                    break;
-                                case "2":
-                                    boton_uno.setBackground(act.getResources().getDrawable(R.drawable.selector_uno_moto));
-                                    break;
-                                case "3":
                                     boton_uno.setBackground(act.getResources().getDrawable(R.drawable.selector_uno_taxi));
+                                    boton_tres.setBackground(act.getResources().getDrawable(R.drawable.selector_tres_taxi));
+                                    text_final_turno.setTextColor(act.getResources().getColor(R.color.colorTaxi));
+                                    text_ultimos_finales.setTextColor(act.getResources().getColor(R.color.colorTaxi));
+                                    text_parcial_turno.setTextColor(act.getResources().getColor(R.color.colorTaxi));
                                     break;
                             }
 
@@ -1454,38 +1310,21 @@ private void procesarRespuestaParametroTurno(JSONObject response, Context contex
                         this.boton_dos.setEnabled(false);
                         this.boton_tres.setEnabled(false);
                         this.boton_cuatro.setEnabled(false);
-                        this.boton_seis.setEnabled(false);
-                        this.boton_siete.setEnabled(false);
-                        this.boton_fin_turno.setEnabled(false);
-                        switch (tipo_empresa) {
-                            case "1":
-                                this.boton_uno.setBackground(act.getResources().getDrawable(R.drawable.uno_gris));
-                                this.boton_dos.setBackground(act.getResources().getDrawable(R.drawable.dos_gris));
-                                this.boton_tres.setBackground(act.getResources().getDrawable(R.drawable.tres_gris));
-                                this.boton_cuatro.setBackground(act.getResources().getDrawable(R.drawable.cuatro_gris));
-                                this.boton_seis.setBackground(act.getResources().getDrawable(R.drawable.seis_gris));
-                                this.boton_siete.setBackground(act.getResources().getDrawable(R.drawable.siete_gris));
-                                this.boton_fin_turno.setBackground(act.getResources().getDrawable(R.drawable.fin_turno_gris));
-                                break;
-                            case "2":
-                                this.boton_uno.setBackground(act.getResources().getDrawable(R.drawable.uno_gris_moto));
-                                this.boton_dos.setBackground(act.getResources().getDrawable(R.drawable.dos_gris_moto));
-                                this.boton_tres.setBackground(act.getResources().getDrawable(R.drawable.tres_gris_moto));
-                                this.boton_cuatro.setBackground(act.getResources().getDrawable(R.drawable.cuatro_gris_moto));
-                                this.boton_seis.setBackground(act.getResources().getDrawable(R.drawable.seis_gris_moto));
-                                this.boton_siete.setBackground(act.getResources().getDrawable(R.drawable.siete_gris_moto));
-                                this.boton_fin_turno.setBackground(act.getResources().getDrawable(R.drawable.fin_turno_gris_moto));
-                                break;
-                            case "3":
-                                this.boton_uno.setBackground(act.getResources().getDrawable(R.drawable.uno_gris));
-                                this.boton_dos.setBackground(act.getResources().getDrawable(R.drawable.dos_gris));
-                                this.boton_tres.setBackground(act.getResources().getDrawable(R.drawable.tres_gris));
-                                this.boton_cuatro.setBackground(act.getResources().getDrawable(R.drawable.cuatro_gris));
-                                this.boton_seis.setBackground(act.getResources().getDrawable(R.drawable.seis_gris));
-                                this.boton_siete.setBackground(act.getResources().getDrawable(R.drawable.siete_gris));
-                                this.boton_fin_turno.setBackground(act.getResources().getDrawable(R.drawable.fin_turno_gris));
-                                break;
-                        }
+                        this.boton_ocho.setEnabled(false);
+                        this.boton_viaje.setEnabled(false);
+                        this.buttonParadas.setEnabled(false);
+                        this.boton_uno.setBackground(act.getResources().getDrawable(R.drawable.uno_gris));
+                        this.boton_dos.setBackground(act.getResources().getDrawable(R.drawable.dos_gris));
+                        this.boton_tres.setBackground(act.getResources().getDrawable(R.drawable.tres_gris));
+                        this.boton_cuatro.setBackground(act.getResources().getDrawable(R.drawable.cuatro_gris));
+                        this.boton_ocho.setBackground(act.getResources().getDrawable(R.drawable.ocho_gris));
+                        text_parcial_turno.setTextColor(act.getResources().getColor(R.color.colorGris));
+                        text_final_turno.setTextColor(act.getResources().getColor(R.color.colorGris));
+                        this.text_ultimos_finales.setTextColor(act.getResources().getColor(R.color.colorGris));
+                        text_viaje_x_viaje.setTextColor(act.getResources().getColor(R.color.colorGris));
+                        text_historial.setTextColor(act.getResources().getColor(R.color.colorGris));
+
+
                     }
 
 
@@ -1873,32 +1712,16 @@ private void procesarRespuestaParametroTurno(JSONObject response, Context contex
                     "Turno Finalizado",
                     Toast.LENGTH_LONG).show();
                     turno.setText(act.getResources().getString(R.string.turno_finalizado) );
+                    this.boton_turno.setText(act.getResources().getString(R.string.nuevo_turno));
                     ls_id_turno = "0";
 
-                    this.boton_automatico.setEnabled(false);
-                    switch (tipo_empresa) {
-                        case "1":
-                            this.boton_automatico.setBackground(act.getResources().getDrawable(R.drawable.automtico_gris));
-                            break;
-                        case "2":
-                            this.boton_automatico.setBackground(act.getResources().getDrawable(R.drawable.automatico_gris_moto));
-                            break;
-                        case "3":
-                            this.boton_automatico.setBackground(act.getResources().getDrawable(R.drawable.automtico_gris));
-                            break;
-                    }
+                    this.boton_viaje.setEnabled(false);
+
                     this.boton_uno.setEnabled(false);
-                    switch (tipo_empresa) {
-                        case "1":
-                            this.boton_uno.setBackground(act.getResources().getDrawable(R.drawable.uno_gris));
-                            break;
-                        case "2":
-                            this.boton_uno.setBackground(act.getResources().getDrawable(R.drawable.uno_gris_moto));
-                            break;
-                        case "3":
-                            this.boton_uno.setBackground(act.getResources().getDrawable(R.drawable.uno_gris));
-                            break;
-                    }
+                    text_parcial_turno.setTextColor(act.getResources().getColor(R.color.colorGris));
+                    this.boton_uno.setBackground(act.getResources().getDrawable(R.drawable.uno_gris));
+
+
                     SharedPreferences settings1 = PreferenceManager.getDefaultSharedPreferences(context);
 
                     SharedPreferences.Editor editor = settings1.edit();
@@ -2443,29 +2266,25 @@ private void procesarRespuestaParametroTurno(JSONObject response, Context contex
                     String l_hora_inicio = object.getString("hora_inicio");
 
                     turno.setText("TURNO INICIADO - " + l_fecha + " - " + l_hora_inicio);
-                    this.boton_automatico.setEnabled(true);
-                    switch (tipo_empresa) {
-                        case "1":
-                            this.boton_automatico.setBackground(act.getResources().getDrawable(R.drawable.selector_automatico));
-                            break;
-                        case "2":
-                            this.boton_automatico.setBackground(act.getResources().getDrawable(R.drawable.selector_automatico_moto));
-                            break;
-                        case "3":
-                            this.boton_automatico.setBackground(act.getResources().getDrawable(R.drawable.selector_automatico_taxi));
-                            break;
-                    }
+                    this.boton_turno.setText(act.getResources().getString(R.string.cerrar_turno));
+                    this.boton_turno.setText(act.getResources().getString(R.string.cerrar_turno));
+                    this.boton_viaje.setEnabled(true);
+
 
                     this.boton_uno.setEnabled(true);
+
                     switch (tipo_empresa) {
                         case "1":
                             this.boton_uno.setBackground(act.getResources().getDrawable(R.drawable.selector_uno));
+                            text_parcial_turno.setTextColor(act.getResources().getColor(R.color.colorPrimary));
                             break;
                         case "2":
                             this.boton_uno.setBackground(act.getResources().getDrawable(R.drawable.selector_uno_moto));
+                            text_parcial_turno.setTextColor(act.getResources().getColor(R.color.colorMoto));
                             break;
                         case "3":
                             this.boton_uno.setBackground(act.getResources().getDrawable(R.drawable.selector_uno_taxi));
+                            text_parcial_turno.setTextColor(act.getResources().getColor(R.color.colorTaxi));
                             break;
                     }
 
@@ -2866,111 +2685,78 @@ private void procesarRespuestaParametroTurno(JSONObject response, Context contex
 
                     String habilitada = object.getString("habilitada");
 
-                    if(habilitada.equals("1") )
+                    if(habilitada.equals("1") && movil_habilitado.equals("1") && chofer_habilitado.equals("1") )
                     {
-                        this.boton_tres.setEnabled(true);
+                        this.boton_ocho.setEnabled(true);
                         this.boton_cuatro.setEnabled(true);
-                        this.boton_seis.setEnabled(true);
-                        this.boton_siete.setEnabled(true);
+                        this.boton_viaje.setVisibility(View.VISIBLE);
+                        this.buttonParadas.setEnabled(true);
+                        this.boton_uno.setEnabled(true);
+                        this.repetirTicket.setVisibility(View.VISIBLE);
 
                         switch (tipo_empresa) {
                             case "1":
-                                this.boton_tres.setBackground(act.getResources().getDrawable(R.drawable.selector_tres));
+                                this.boton_ocho.setBackground(act.getResources().getDrawable(R.drawable.selector_ocho));
                                 this.boton_cuatro.setBackground(act.getResources().getDrawable(R.drawable.selector_cuatro));
-                                this.boton_seis.setBackground(act.getResources().getDrawable(R.drawable.selector_seis));
-                                this.boton_siete.setBackground(act.getResources().getDrawable(R.drawable.selector_siete));
+                                this.text_historial.setTextColor(act.getResources().getColor(R.color.colorPrimary));
+                                text_viaje_x_viaje.setTextColor(act.getResources().getColor(R.color.colorPrimary));
                                 break;
                             case "2":
-                                this.boton_tres.setBackground(act.getResources().getDrawable(R.drawable.selector_tres_moto));
+                                this.boton_ocho.setBackground(act.getResources().getDrawable(R.drawable.selector_ocho_moto));
                                 this.boton_cuatro.setBackground(act.getResources().getDrawable(R.drawable.selector_cuatro_moto));
-                                this.boton_seis.setBackground(act.getResources().getDrawable(R.drawable.selector_seis_moto));
-                                this.boton_siete.setBackground(act.getResources().getDrawable(R.drawable.selector_siete_moto));
+                                this.text_historial.setTextColor(act.getResources().getColor(R.color.colorMoto));
+                                text_viaje_x_viaje.setTextColor(act.getResources().getColor(R.color.colorMoto));
                                 break;
                             case "3":
-                                this.boton_tres.setBackground(act.getResources().getDrawable(R.drawable.selector_tres_taxi));
+                                this.boton_ocho.setBackground(act.getResources().getDrawable(R.drawable.selector_ocho_taxi));
                                 this.boton_cuatro.setBackground(act.getResources().getDrawable(R.drawable.selector_cuatro_taxi));
-                                this.boton_seis.setBackground(act.getResources().getDrawable(R.drawable.selector_seis_taxi));
-                                this.boton_siete.setBackground(act.getResources().getDrawable(R.drawable.selector_siete_taxi));
+                                this.text_historial.setTextColor(act.getResources().getColor(R.color.colorTaxi));
+                                text_viaje_x_viaje.setTextColor(act.getResources().getColor(R.color.colorTaxi));
                                 break;
                         }
 
                         if(l_turno_app.equals("0")){
 
-                            boton_cinco.setEnabled(false);
-                            switch (tipo_empresa)
-                            {
-                                case "1":
-                                    boton_cinco.setBackground(act.getResources().getDrawable(R.drawable.cinco_gris));
-                                    break;
-                                case "2":
-                                    boton_cinco.setBackground(act.getResources().getDrawable(R.drawable.cinco_gris_moto));
-                                    break;
-                                case "3":
-                                    boton_cinco.setBackground(act.getResources().getDrawable(R.drawable.cinco_gris));
-                                    break;
-                            }
+                            boton_turno.setEnabled(false);
                             boton_dos.setEnabled(false);
-                            switch (tipo_empresa)
-                            {
-                                case "1":
-                                    boton_dos.setBackground(act.getResources().getDrawable(R.drawable.dos_gris));
-                                    break;
-                                case "2":
-                                    boton_dos.setBackground(act.getResources().getDrawable(R.drawable.dos_gris_moto));
-                                    break;
-                                case "3":
-                                    boton_dos.setBackground(act.getResources().getDrawable(R.drawable.dos_gris));
-                                    break;
-                            }
+                            text_final_turno.setTextColor(act.getResources().getColor(R.color.colorGris));
+                            boton_dos.setBackground(act.getResources().getDrawable(R.drawable.dos_gris));
+
                             boton_uno.setEnabled(false);
-                            switch (tipo_empresa)
-                            {
-                                case "1":
-                                    boton_uno.setBackground(act.getResources().getDrawable(R.drawable.uno_gris));
-                                    break;
-                                case "2":
-                                    boton_uno.setBackground(act.getResources().getDrawable(R.drawable.uno_gris_moto));
-                                    break;
-                                case "3":
-                                    boton_uno.setBackground(act.getResources().getDrawable(R.drawable.uno_gris));
-                                    break;
-                            }
+                            boton_tres.setEnabled(false);
+                            text_parcial_turno.setTextColor(act.getResources().getColor(R.color.colorGris));
+                            boton_uno.setBackground(act.getResources().getDrawable(R.drawable.uno_gris));
+                            text_ultimos_finales.setTextColor(act.getResources().getColor(R.color.colorGris));
+
                         }else{
-                            boton_cinco.setEnabled(true);
-                            switch (tipo_empresa) {
-                                case "1":
-                                    boton_cinco.setBackground(act.getResources().getDrawable(R.drawable.selector_cinco));
-                                    break;
-                                case "2":
-                                    boton_cinco.setBackground(act.getResources().getDrawable(R.drawable.selector_cinco_moto));
-                                    break;
-                                case "3":
-                                    boton_cinco.setBackground(act.getResources().getDrawable(R.drawable.selector_cinco_taxi));
-                                    break;
-                            }
+                            boton_turno.setEnabled(true);
                             boton_dos.setEnabled(true);
+                            boton_uno.setEnabled(true);
+                            boton_tres.setEnabled(true);
                             switch (tipo_empresa) {
                                 case "1":
                                     boton_dos.setBackground(act.getResources().getDrawable(R.drawable.selector_dos));
+                                    text_final_turno.setTextColor(act.getResources().getColor(R.color.colorPrimary));
+                                    boton_uno.setBackground(act.getResources().getDrawable(R.drawable.selector_uno));
+                                    text_parcial_turno.setTextColor(act.getResources().getColor(R.color.colorPrimary));
+                                    text_ultimos_finales.setTextColor(act.getResources().getColor(R.color.colorPrimary));
+                                    boton_tres.setBackground(act.getResources().getDrawable(R.drawable.selector_tres));
                                     break;
                                 case "2":
                                     boton_dos.setBackground(act.getResources().getDrawable(R.drawable.selector_dos_moto));
+                                    text_final_turno.setTextColor(act.getResources().getColor(R.color.colorMoto));
+                                    boton_uno.setBackground(act.getResources().getDrawable(R.drawable.selector_uno_moto));
+                                    text_parcial_turno.setTextColor(act.getResources().getColor(R.color.colorMoto));
+                                    text_ultimos_finales.setTextColor(act.getResources().getColor(R.color.colorMoto));
+                                    boton_tres.setBackground(act.getResources().getDrawable(R.drawable.selector_tres_moto));
                                     break;
                                 case "3":
                                     boton_dos.setBackground(act.getResources().getDrawable(R.drawable.selector_dos_taxi));
-                                    break;
-                            }
-
-                            boton_uno.setEnabled(true);
-                            switch (tipo_empresa) {
-                                case "1":
-                                    boton_uno.setBackground(act.getResources().getDrawable(R.drawable.selector_uno));
-                                    break;
-                                case "2":
-                                    boton_uno.setBackground(act.getResources().getDrawable(R.drawable.selector_uno_moto));
-                                    break;
-                                case "3":
+                                    text_final_turno.setTextColor(act.getResources().getColor(R.color.colorTaxi));
                                     boton_uno.setBackground(act.getResources().getDrawable(R.drawable.selector_uno_taxi));
+                                    text_parcial_turno.setTextColor(act.getResources().getColor(R.color.colorTaxi));
+                                    text_ultimos_finales.setTextColor(act.getResources().getColor(R.color.colorTaxi));
+                                    boton_tres.setBackground(act.getResources().getDrawable(R.drawable.selector_tres_taxi));
                                     break;
                             }
 
@@ -2987,65 +2773,39 @@ private void procesarRespuestaParametroTurno(JSONObject response, Context contex
                         String l_nro_turno = object.getString("nro_turno");
 
                         turno.setText("TURNO INICIADO - " + l_fecha + " - " + l_hora_inicio);
-                        this.boton_automatico.setEnabled(true);
+                        this.boton_turno.setText(act.getResources().getString(R.string.cerrar_turno));
+                        this.boton_viaje.setEnabled(true);
 
-                        switch (tipo_empresa) {
-                            case "1":
-                                this.boton_automatico.setBackground(act.getResources().getDrawable(R.drawable.selector_automatico));
-                                break;
-                            case "2":
-                                this.boton_automatico.setBackground(act.getResources().getDrawable(R.drawable.selector_automatico_moto));
-                                break;
-                            case "3":
-                                this.boton_automatico.setBackground(act.getResources().getDrawable(R.drawable.selector_automatico_taxi));
-                                break;
-                        }
+
                         if(l_impresion.equals("1")) {
                             if (lb_bluetooth) {
                                 cargarImpresora(context);
                             }
                         }
-                    }else{
+                    }else {
                         this.boton_uno.setEnabled(false);
                         this.boton_dos.setEnabled(false);
                         this.boton_tres.setEnabled(false);
                         this.boton_cuatro.setEnabled(false);
-                        this.boton_seis.setEnabled(false);
-                        this.boton_siete.setEnabled(false);
-                        this.boton_cinco.setEnabled(false);
+                        this.boton_ocho.setEnabled(false);
+                        this.boton_viaje.setVisibility(View.GONE);
+                        this.buttonParadas.setEnabled(false);
+                        this.boton_turno.setEnabled(false);
+                        this.repetirTicket.setVisibility(View.GONE);
+                        text_parcial_turno.setTextColor(act.getResources().getColor(R.color.colorGris));
+                        text_final_turno.setTextColor(act.getResources().getColor(R.color.colorGris));
 
-                        switch (tipo_empresa) {
-                            case "1":
-                                this.boton_uno.setBackground(act.getResources().getDrawable(R.drawable.uno_gris));
-                                this.boton_dos.setBackground(act.getResources().getDrawable(R.drawable.dos_gris));
-                                this.boton_tres.setBackground(act.getResources().getDrawable(R.drawable.tres_gris));
-                                this.boton_cuatro.setBackground(act.getResources().getDrawable(R.drawable.cuatro_gris));
-                                this.boton_seis.setBackground(act.getResources().getDrawable(R.drawable.seis_gris));
-                                this.boton_siete.setBackground(act.getResources().getDrawable(R.drawable.siete_gris));
-                                this.boton_cinco.setBackground(act.getResources().getDrawable(R.drawable.cinco_gris));
-                                break;
-                            case "2":
-                                this.boton_uno.setBackground(act.getResources().getDrawable(R.drawable.uno_gris_moto));
-                                this.boton_dos.setBackground(act.getResources().getDrawable(R.drawable.dos_gris_moto));
-                                this.boton_tres.setBackground(act.getResources().getDrawable(R.drawable.tres_gris_moto));
-                                this.boton_cuatro.setBackground(act.getResources().getDrawable(R.drawable.cuatro_gris_moto));
-                                this.boton_seis.setBackground(act.getResources().getDrawable(R.drawable.seis_gris_moto));
-                                this.boton_siete.setBackground(act.getResources().getDrawable(R.drawable.siete_gris_moto));
-                                this.boton_cinco.setBackground(act.getResources().getDrawable(R.drawable.cinco_gris_moto));
-                                break;
-                            case "3":
-                                this.boton_uno.setBackground(act.getResources().getDrawable(R.drawable.uno_gris));
-                                this.boton_dos.setBackground(act.getResources().getDrawable(R.drawable.dos_gris));
-                                this.boton_tres.setBackground(act.getResources().getDrawable(R.drawable.tres_gris));
-                                this.boton_cuatro.setBackground(act.getResources().getDrawable(R.drawable.cuatro_gris));
-                                this.boton_seis.setBackground(act.getResources().getDrawable(R.drawable.seis_gris));
-                                this.boton_siete.setBackground(act.getResources().getDrawable(R.drawable.siete_gris));
-                                this.boton_cinco.setBackground(act.getResources().getDrawable(R.drawable.cinco_gris));
-                                break;
-                        }
+                        this.boton_uno.setBackground(act.getResources().getDrawable(R.drawable.uno_gris));
+                        this.boton_dos.setBackground(act.getResources().getDrawable(R.drawable.dos_gris));
+                        this.boton_tres.setBackground(act.getResources().getDrawable(R.drawable.tres_gris));
+                        this.boton_cuatro.setBackground(act.getResources().getDrawable(R.drawable.cuatro_gris));
+                        this.boton_ocho.setBackground(act.getResources().getDrawable(R.drawable.ocho_gris));
+                        this.text_ultimos_finales.setTextColor(act.getResources().getColor(R.color.colorGris));
+                        text_viaje_x_viaje.setTextColor(act.getResources().getColor(R.color.colorGris));
+                        text_historial.setTextColor(act.getResources().getColor(R.color.colorGris));
+
+
                     }
-
-
                     break;
                 case "2":
 
@@ -3054,30 +2814,12 @@ private void procesarRespuestaParametroTurno(JSONObject response, Context contex
                             "No hay turno iniciado",
                             Toast.LENGTH_LONG).show();
                     turno.setText(act.getResources().getString(R.string.turno_finalizado) );
-                    this.boton_automatico.setEnabled(false);
-                    switch (tipo_empresa) {
-                        case "1":
-                            this.boton_automatico.setBackground(act.getResources().getDrawable(R.drawable.automtico_gris));
-                            break;
-                        case "2":
-                            this.boton_automatico.setBackground(act.getResources().getDrawable(R.drawable.automatico_gris_moto));
-                            break;
-                        case "3":
-                            this.boton_automatico.setBackground(act.getResources().getDrawable(R.drawable.automtico_gris));
-                            break;
-                    }
+                    this.boton_turno.setText(act.getResources().getString(R.string.nuevo_turno));
+                    this.boton_viaje.setEnabled(false);
+
                     this.boton_uno.setEnabled(false);
-                    switch (tipo_empresa) {
-                        case "1":
-                            this.boton_uno.setBackground(act.getResources().getDrawable(R.drawable.uno_gris));
-                            break;
-                        case "2":
-                            this.boton_uno.setBackground(act.getResources().getDrawable(R.drawable.uno_gris_moto));
-                            break;
-                        case "3":
-                            this.boton_uno.setBackground(act.getResources().getDrawable(R.drawable.uno_gris));
-                            break;
-                    }
+                    text_parcial_turno.setTextColor(act.getResources().getColor(R.color.colorGris));
+                    this.boton_uno.setBackground(act.getResources().getDrawable(R.drawable.uno_gris));
                     break;
 
             }
@@ -3683,84 +3425,7 @@ private void procesarRespuestaParametroTurno(JSONObject response, Context contex
 
     }
 
-    protected void impresion_cero() {
 
-        outputStream = impresion.getOutputStream();
-
-        if(outputStream == null){
-            Toast.makeText(context, "No se pudo conectar el dispositivo. Verifique si la impresora esta encendida", Toast.LENGTH_SHORT).show();
-        }else {
-
-            //print command
-            try {
-                try {
-                    Thread.sleep(1000);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-
-                byte[] printformat = {0x1B, 0 * 21, FONT_TYPE};
-                //outputStream.write(printformat);
-
-                //print title
-                printUnicode();
-                //print normal text
-                printCustom(act.getResources().getString(R.string.empresa), 2, 1);
-                printNewLine();
-
-                String fecha_hoy = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(new Date());
-                printCustom(fecha_hoy, 0, 1);
-                printNewLine();
-                printUnicode();
-                printText(act.getResources().getString(R.string.menu_reportes)); // total 32 char in a single line
-
-                printNewLine();
-                printUnicode();
-                printNewLine();
-
-                printCustom(act.getResources().getString(R.string.reporte_ayuda), 0, 0);
-                printNewLine();
-                printText(act.getResources().getString(R.string.reporte_parcial));
-                printNewLine();
-                printText(act.getResources().getString(R.string.reporte_turno));
-                printNewLine();
-                printText(stringABytes(act.getResources().getString(R.string.reporte_ultimos)));
-                printNewLine();
-                printText(act.getResources().getString(R.string.reporte_resumen));
-                printNewLine();
-                printText(act.getResources().getString(R.string.fin_turno));
-                printNewLine();
-                printText(stringABytes(act.getResources().getString(R.string.reporte_ticket)));
-                printNewLine();
-                printText(act.getResources().getString(R.string.reporte_fin_turno));
-                printNewLine();
-                printText(act.getResources().getString(R.string.reporte_viajes));
-                printNewLine();
-                printText(act.getResources().getString(R.string.reporte_viaje));
-                printNewLine();
-                printText(act.getResources().getString(R.string.automatico));
-                printNewLine();
-                printText(act.getResources().getString(R.string.mapa));
-                printNewLine();
-                printText(act.getResources().getString(R.string.reporte_impresora));
-                printNewLine();
-                printText(act.getResources().getString(R.string.automatico));
-
-                printNewLine();
-                printNewLine();
-                //resetPrint(); //reset printer
-                printUnicode();
-                printNewLine();
-                printNewLine();
-
-                outputStream.flush();
-
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-
-    }
 
     private void directorio(){
         checkFilePermissions();
@@ -3784,157 +3449,6 @@ private void procesarRespuestaParametroTurno(JSONObject response, Context contex
         }
     }
 
-    private void crear_pfd_cero()
-    {
-        directorio();
-        pdf_cero( );
-        Intent target = new Intent(Intent.ACTION_VIEW);
-        target.setDataAndType(FileProvider.getUriForFile(context, act.getPackageName() + ".my.package.name.provider", file), "application/pdf");
-        target.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-
-        try {
-            startActivity(target);
-        } catch (ActivityNotFoundException e) {
-            Intent intent = Intent.createChooser(target, "Open File");
-            startActivity(intent);
-        }
-    }
-
-    private Boolean pdf_cero()
-    {
-        boolean success = false;
-        PdfPCell cell;
-
-
-        //saldo=saldo.replace("\n","");
-        //create document file
-        Document doc = new Document(PageSize.A5, 14f, 10f, 10f, 10f);
-        try {
-            doc.left(10f);
-            //doc.top(15f);
-            file = new File(dir, "ayuda.pdf");
-            FileOutputStream fOut = new FileOutputStream(file);
-            PdfWriter writer = PdfWriter.getInstance(doc, fOut);
-
-            doc.open();
-
-            BaseFont bf = BaseFont.createFont(
-                    BaseFont.HELVETICA,
-                    BaseFont.CP1252,
-                    BaseFont.EMBEDDED);
-            Font font = new Font(bf, 15);
-
-            Font titulo = new Font(bf, 20);
-
-            float[] columnWidth;
-
-            columnWidth = new float[]{100};
-
-            PdfPTable tabla_enc = new PdfPTable(1);
-
-            cell = new PdfPCell(new Phrase(act.getResources().getString(R.string.empresa),titulo));
-            cell.setBorder(Rectangle.NO_BORDER);
-            cell.setHorizontalAlignment(PdfPCell.ALIGN_LEFT);
-            tabla_enc.addCell(cell);
-
-            cell = new PdfPCell(new Phrase(act.getResources().getString(R.string.menu_reportes),font));
-            cell.setBorder(Rectangle.NO_BORDER);
-            cell.setHorizontalAlignment(PdfPCell.ALIGN_LEFT);
-            tabla_enc.addCell(cell);
-
-            doc.add(tabla_enc);
-
-            LineSeparator lineSeparator = new LineSeparator();
-
-            lineSeparator.setLineColor(new BaseColor(255, 255, 255, 68));
-
-            doc.add(new Paragraph(""));
-            doc.add(new Chunk(lineSeparator));
-            doc.add(new Paragraph(""));
-
-
-            PdfPTable table = new PdfPTable(1);
-
-
-            cell = new PdfPCell(new Phrase(act.getResources().getString(R.string.reporte_ayuda),font));
-            cell.setBorder(Rectangle.NO_BORDER);
-            cell.setHorizontalAlignment(PdfPCell.ALIGN_LEFT);
-            table.addCell(cell);
-
-            cell = new PdfPCell(new Phrase(act.getResources().getString(R.string.reporte_parcial),font));
-            cell.setBorder(Rectangle.NO_BORDER);
-            cell.setHorizontalAlignment(PdfPCell.ALIGN_LEFT);
-            table.addCell(cell);
-
-            cell = new PdfPCell(new Phrase(act.getResources().getString(R.string.reporte_turno),font));
-            cell.setBorder(Rectangle.NO_BORDER);
-            cell.setHorizontalAlignment(PdfPCell.ALIGN_LEFT);
-            table.addCell(cell);
-
-            cell = new PdfPCell(new Phrase(act.getResources().getString(R.string.reporte_ultimos),font));
-            cell.setBorder(Rectangle.NO_BORDER);
-            cell.setHorizontalAlignment(PdfPCell.ALIGN_LEFT);
-            table.addCell(cell);
-
-            cell = new PdfPCell(new Phrase(act.getResources().getString(R.string.reporte_resumen),font));
-            cell.setBorder(Rectangle.NO_BORDER);
-            cell.setHorizontalAlignment(PdfPCell.ALIGN_LEFT);
-            table.addCell(cell);
-
-            cell = new PdfPCell(new Phrase(act.getResources().getString(R.string.fin_turno),font));
-            cell.setBorder(Rectangle.NO_BORDER);
-            cell.setHorizontalAlignment(PdfPCell.ALIGN_LEFT);
-            table.addCell(cell);
-
-            cell = new PdfPCell(new Phrase(act.getResources().getString(R.string.reporte_ticket),font));
-            cell.setBorder(Rectangle.NO_BORDER);
-            cell.setHorizontalAlignment(PdfPCell.ALIGN_LEFT);
-            table.addCell(cell);
-
-            cell = new PdfPCell(new Phrase(act.getResources().getString(R.string.reporte_fin_turno),font));
-            cell.setBorder(Rectangle.NO_BORDER);
-            cell.setHorizontalAlignment(PdfPCell.ALIGN_LEFT);
-            table.addCell(cell);
-
-            cell = new PdfPCell(new Phrase(act.getResources().getString(R.string.reporte_viajes),font));
-            cell.setBorder(Rectangle.NO_BORDER);
-            cell.setHorizontalAlignment(PdfPCell.ALIGN_LEFT);
-            table.addCell(cell);
-
-            cell = new PdfPCell(new Phrase(act.getResources().getString(R.string.reporte_viaje),font));
-            cell.setBorder(Rectangle.NO_BORDER);
-            cell.setHorizontalAlignment(PdfPCell.ALIGN_LEFT);
-            table.addCell(cell);
-
-            cell = new PdfPCell(new Phrase(act.getResources().getString(R.string.automatico),font));
-            cell.setBorder(Rectangle.NO_BORDER);
-            cell.setHorizontalAlignment(PdfPCell.ALIGN_LEFT);
-            table.addCell(cell);
-
-            cell = new PdfPCell(new Phrase(act.getResources().getString(R.string.reporte_impresora),font));
-            cell.setBorder(Rectangle.NO_BORDER);
-            cell.setHorizontalAlignment(PdfPCell.ALIGN_LEFT);
-            table.addCell(cell);
-
-            cell = new PdfPCell(new Phrase(act.getResources().getString(R.string.mapa),font));
-            cell.setBorder(Rectangle.NO_BORDER);
-            cell.setHorizontalAlignment(PdfPCell.ALIGN_LEFT);
-            table.addCell(cell);
-
-
-            doc.add(table);
-
-        } catch (DocumentException | IOException de) {
-            Log.e("PDFCreator", "DocumentException:" + de);
-        } finally {
-            doc.close();
-
-            success = true;
-        }
-
-        return success;
-
-        }
     //print custom
     private void printCustom(String msg, int size, int align) {
         //Print config "mode"
@@ -4495,7 +4009,7 @@ private void procesarRespuestaParametroTurno(JSONObject response, Context contex
                     }else{
                         crear_pfd_repetir_ticket();
                     }
-
+                    break;
                 case "2":
                     Toast.makeText(
                             context,

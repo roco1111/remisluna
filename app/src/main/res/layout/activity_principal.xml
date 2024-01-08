@@ -12,332 +12,467 @@
 
     android:orientation="vertical">
 
-    <RelativeLayout
-        android:id="@+id/id_numeros"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical">
 
-        <RelativeLayout
-            android:id="@+id/id_datos_superior"
+
+
+    <ScrollView
+            android:id="@+id/scrollView1"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="10dp"
+            android:layout_marginBottom="5dp"
+            android:fillViewport="true"
+            android:padding="2dp">
+            <RelativeLayout
+                android:id="@+id/rl_panel"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:paddingBottom="5dp"
+                android:paddingTop="5dp"
+                tools:layout_editor_absoluteX="8dp"
+                tools:layout_editor_absoluteY="0dp"
+                android:orientation="vertical">
 
-            android:orientation="horizontal">
+            <RelativeLayout
+                android:id="@+id/id_numeros"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
 
-            <TextView
-                android:id="@+id/gps"
+                <RelativeLayout
+                    android:id="@+id/id_datos_superior"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:id="@+id/gps"
+                        android:layout_width="wrap_content"
+                        android:layout_height="@dimen/icono_chico"
+                        android:layout_alignParentStart="true"
+                        android:text="@string/gps"
+                        android:textAlignment="center"
+                        android:textColor="@color/colorPrimary"
+                        android:textSize="@dimen/tamanio_parrafo"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/red"
+                        android:layout_width="wrap_content"
+                        android:layout_height="@dimen/icono_chico"
+                        android:layout_centerHorizontal="true"
+                        android:text="@string/red"
+                        android:textAlignment="center"
+                        android:textColor="@color/colorPrimary"
+                        android:textSize="@dimen/tamanio_parrafo"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/tarifa"
+                        android:layout_width="wrap_content"
+                        android:layout_height="@dimen/icono_chico"
+                        android:layout_alignParentEnd="true"
+                        android:text="@string/tarifa"
+                        android:textAlignment="center"
+                        android:textColor="@color/colorPrimary"
+                        android:textSize="@dimen/tamanio_parrafo"
+                        android:textStyle="bold" />
+                </RelativeLayout>
+
+                <RelativeLayout
+                    android:id="@+id/id_datos_libre"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/id_datos_superior"
+                    android:layout_marginTop="@dimen/margin_top_item"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:id="@+id/impresora"
+                        android:layout_width="@dimen/medidores"
+                        android:layout_height="@dimen/icono_chico"
+                        android:layout_alignParentStart="true"
+                        android:text="@string/impresora_lista"
+                        android:textAlignment="center"
+                        android:textColor="@color/alarma"
+                        android:textSize="@dimen/tamanio_parrafo"
+                        android:textStyle="bold"
+                        android:visibility="gone"/>
+
+                    <TextView
+                        android:id="@+id/parada"
+                        android:layout_width="wrap_content"
+                        android:layout_height="@dimen/icono_chico"
+                        android:layout_centerHorizontal="true"
+                        android:text="@string/parada"
+                        android:textAlignment="center"
+                        android:textColor="@color/colorPrimary"
+                        android:textSize="@dimen/tamanio_parrafo"
+                        android:textStyle="bold"
+                        android:visibility="gone"/>
+
+
+                    <TextView
+                        android:id="@+id/libre"
+                        android:layout_width="wrap_content"
+                        android:layout_height="@dimen/icono_chico"
+                        android:layout_alignParentEnd="true"
+                        android:text="@string/libre"
+                        android:textAlignment="center"
+                        android:textColor="@color/alarma"
+                        android:textSize="@dimen/tamanio_parrafo"
+                        android:textStyle="bold" />
+                </RelativeLayout>
+
+                <RelativeLayout
+                    android:id="@+id/id_turno"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/id_datos_libre"
+                    android:layout_marginTop="@dimen/margin_top_item"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:id="@+id/turno"
+                        android:layout_width="wrap_content"
+                        android:layout_height="@dimen/icono_chico"
+                        android:layout_alignParentStart="true"
+                        android:text="@string/libre"
+                        android:textAlignment="center"
+                        android:textColor="@color/colorPrimary"
+                        android:textSize="@dimen/tamanio_parrafo"
+                        android:textStyle="bold" />
+                </RelativeLayout>
+
+
+            </RelativeLayout>
+
+                <RelativeLayout
+                    android:id="@+id/id_viajes"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/id_numeros"
+                    android:layout_centerHorizontal="true"
+                    android:layout_marginTop="@dimen/margin_top_menu2"
+                    android:orientation="horizontal">
+
+                    <android.widget.Button
+                        android:id="@+id/buttonViaje"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+
+                        android:layout_centerHorizontal="true"
+                        android:layout_marginTop="14dp"
+                        android:background="@drawable/boton"
+                        android:backgroundTint="@color/colorPrimary"
+                        android:text="@string/nuevo_viaje"
+                        android:textColor="@color/colorSecondaryText"
+                        tools:ignore="RtlHardcoded" />
+
+
+                </RelativeLayout>
+
+                <RelativeLayout
+                    android:id="@+id/id_turnos"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/id_viajes"
+                    android:layout_centerHorizontal="true"
+                    android:layout_marginTop="@dimen/margin_start"
+                    android:orientation="horizontal">
+
+                    <android.widget.Button
+                        android:id="@+id/buttonTurno"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentStart="true"
+                        android:layout_marginTop="14dp"
+                        android:background="@drawable/boton_chico"
+                        android:backgroundTint="@color/colorPrimary"
+                        android:text="@string/nuevo_turno"
+                        android:textColor="@color/colorSecondaryText"
+                        tools:ignore="RtlHardcoded" />
+
+                    <android.widget.Button
+                        android:id="@+id/buttonTicket"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentEnd="true"
+                        android:layout_marginTop="14dp"
+                        android:background="@drawable/boton_chico"
+                        android:backgroundTint="@color/suspender"
+                        android:text="@string/reporte_ticket"
+                        android:textColor="@color/colorSecondaryText"
+                        android:textSize="@dimen/tamanio_parrafo"
+                        tools:ignore="RtlHardcoded" />
+
+
+                </RelativeLayout>
+
+
+                <RelativeLayout
+                    android:id="@+id/id_paradas"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/id_turnos"
+                    android:layout_centerHorizontal="true"
+                    android:layout_marginTop="@dimen/margin_top_menu2"
+                    android:orientation="horizontal">
+
+                    <android.widget.Button
+                        android:id="@+id/buttonImpresora"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+
+                        android:layout_alignParentStart="true"
+                        android:layout_marginTop="14dp"
+                        android:background="@drawable/boton_chico"
+                        android:backgroundTint="@color/colorPrimary"
+                        android:text="@string/boton_impresora"
+                        android:textColor="@color/colorSecondaryText"
+                        tools:ignore="RtlHardcoded"
+                        android:visibility="gone"
+                        />
+
+
+                    <android.widget.Button
+                        android:id="@+id/buttonParadas"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+
+                        android:layout_alignParentEnd="true"
+                        android:layout_marginTop="14dp"
+                        android:background="@drawable/boton_chico"
+                        android:backgroundTint="@color/colorPrimary"
+                        android:text="@string/paradas"
+                        android:textColor="@color/colorSecondaryText"
+                        tools:ignore="RtlHardcoded"
+                        android:visibility="gone"/>
+
+
+                </RelativeLayout>
+
+                <RelativeLayout
+                    android:id="@+id/id_impresora"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/id_paradas"
+                    android:layout_centerHorizontal="true"
+                    android:layout_marginTop="@dimen/margin_start"
+                    android:orientation="horizontal">
+
+                    <ImageButton
+                        android:id="@+id/imageWa"
+                        android:layout_width="@dimen/ancho_boton"
+                        android:layout_height="@dimen/ancho_boton"
+                        android:layout_centerHorizontal="true"
+                        android:layout_marginStart="@dimen/campos_height"
+                        android:layout_marginTop="14dp"
+                        android:background="@drawable/wa"
+                        tools:ignore="RtlHardcoded" />
+
+
+                </RelativeLayout>
+
+                <TextView
+                    android:id="@+id/text_reportes"
+                    android:layout_width="@dimen/imagen_regla"
+                    android:layout_height="@dimen/icono_chico"
+                    android:layout_below="@id/id_impresora"
+                    android:layout_marginTop="@dimen/margin_top_menu2"
+
+                    android:text="@string/reportes"
+                    android:textAlignment="center"
+                    android:textColor="@color/colorPrimary"
+                    android:textSize="@dimen/tamanio_parrafo"
+                    android:textStyle="bold" />
+
+            <RelativeLayout
+                android:id="@+id/id_teclado_sup"
                 android:layout_width="wrap_content"
-                android:layout_height="@dimen/icono_chico"
-                android:layout_alignParentStart="true"
-                android:text="@string/gps"
-                android:textAlignment="center"
-                android:textColor="@color/colorPrimary"
-                android:textSize="@dimen/tamanio_parrafo"
-                android:textStyle="bold" />
-
-            <TextView
-                android:id="@+id/red"
-                android:layout_width="wrap_content"
-                android:layout_height="@dimen/icono_chico"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/text_reportes"
                 android:layout_centerHorizontal="true"
-                android:text="@string/red"
-                android:textAlignment="center"
-                android:textColor="@color/colorPrimary"
-                android:textSize="@dimen/tamanio_parrafo"
-                android:textStyle="bold" />
+                android:layout_marginTop="@dimen/margin_top_item"
+                android:orientation="horizontal">
 
-            <TextView
-                android:id="@+id/tarifa"
+
+                <RelativeLayout
+                    android:id="@+id/parcial_turno"
+                    android:layout_width="@dimen/ancho_reporte"
+                    android:layout_height="wrap_content"
+
+                    android:layout_marginTop="@dimen/margin_top_item"
+                    android:orientation="horizontal">
+
+                    <ImageButton
+                        android:id="@+id/imageButtonUno"
+                        android:layout_width="@dimen/ancho_icono"
+                        android:layout_height="@dimen/alto_icono"
+                        android:layout_centerHorizontal="true"
+                        android:background="@drawable/selector_uno"
+                        android:scaleType="fitXY" />
+
+                    <TextView
+                        android:id="@+id/text_parcial_turno"
+                        android:layout_width="@dimen/ancho_texto"
+                        android:layout_height="@dimen/alto_boton"
+                        android:layout_below="@id/imageButtonUno"
+                        android:layout_centerHorizontal="true"
+                        android:layout_marginTop="@dimen/margin_top_item"
+                        android:text="@string/reporte_parcial"
+                        android:textAlignment="center"
+                        android:textColor="@color/colorPrimary"
+                        android:textSize="@dimen/tamanio_texto"
+                        android:textStyle="bold" />
+                </RelativeLayout>
+
+                <RelativeLayout
+                    android:id="@+id/final_turno"
+                    android:layout_width="@dimen/ancho_reporte"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/margin_top_item"
+                    android:layout_marginTop="@dimen/margin_top_item"
+                    android:layout_toEndOf="@id/parcial_turno"
+                    android:orientation="horizontal">
+
+
+                    <ImageButton
+                        android:id="@+id/imageButtonDos"
+                        android:layout_width="@dimen/alto_icono"
+                        android:layout_height="@dimen/alto_icono"
+                        android:layout_centerHorizontal="true"
+                        android:layout_marginStart="@dimen/campos_height"
+                        android:background="@drawable/selector_dos"
+                        android:scaleType="fitXY" />
+
+                    <TextView
+                        android:id="@+id/text_final_turno"
+                        android:layout_width="@dimen/ancho_texto"
+                        android:layout_height="@dimen/alto_boton"
+                        android:layout_below="@id/imageButtonDos"
+                        android:layout_centerHorizontal="true"
+                        android:layout_marginTop="@dimen/margin_top_item"
+                        android:text="@string/reporte_turno"
+                        android:textAlignment="center"
+                        android:textColor="@color/colorPrimary"
+                        android:textSize="@dimen/tamanio_texto"
+                        android:textStyle="bold" />
+                </RelativeLayout>
+
+                <RelativeLayout
+                    android:id="@+id/Ult_final_turno"
+                    android:layout_width="@dimen/ancho_reporte"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/margin_top_item"
+                    android:layout_marginTop="@dimen/margin_top_item"
+                    android:layout_toEndOf="@id/final_turno"
+                    android:orientation="horizontal">
+
+                    <ImageButton
+                        android:id="@+id/imageButtonTres"
+                        android:layout_width="@dimen/ancho_icono"
+                        android:layout_height="@dimen/alto_icono"
+                        android:layout_centerHorizontal="true"
+                        android:layout_marginStart="@dimen/campos_height"
+                        android:background="@drawable/selector_tres"
+                        android:scaleType="fitXY" />
+
+                    <TextView
+                        android:id="@+id/text_ultimos_finales"
+                        android:layout_width="@dimen/ancho_texto"
+                        android:layout_height="@dimen/ancho_boton"
+                        android:layout_below="@id/imageButtonTres"
+                        android:layout_centerHorizontal="true"
+                        android:layout_marginTop="@dimen/margin_top_item"
+                        android:text="@string/reporte_ultimos"
+                        android:textAlignment="center"
+                        android:textColor="@color/colorPrimary"
+                        android:textSize="@dimen/tamanio_texto"
+                        android:textStyle="bold" />
+                </RelativeLayout>
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:id="@+id/id_teclado_medio"
                 android:layout_width="wrap_content"
-                android:layout_height="@dimen/icono_chico"
-                android:layout_alignParentEnd="true"
-                android:text="@string/tarifa"
-                android:textAlignment="center"
-                android:textColor="@color/colorPrimary"
-                android:textSize="@dimen/tamanio_parrafo"
-                android:textStyle="bold" />
-        </RelativeLayout>
-
-        <RelativeLayout
-            android:id="@+id/id_datos_libre"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_below="@id/id_datos_superior"
-            android:layout_marginTop="@dimen/margin_top_item"
-            android:orientation="horizontal">
-
-            <TextView
-                android:id="@+id/impresora"
-                android:layout_width="@dimen/medidores"
-                android:layout_height="@dimen/icono_chico"
-                android:layout_alignParentStart="true"
-                android:text="@string/impresora_lista"
-                android:textAlignment="center"
-                android:textColor="@color/alarma"
-                android:textSize="@dimen/tamanio_parrafo"
-                android:textStyle="bold" />
-
-            <TextView
-                android:id="@+id/parada"
-                android:layout_width="wrap_content"
-                android:layout_height="@dimen/icono_chico"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/id_teclado_sup"
                 android:layout_centerHorizontal="true"
-                android:text="@string/parada"
-                android:textAlignment="center"
-                android:textColor="@color/colorPrimary"
-                android:textSize="@dimen/tamanio_parrafo"
-                android:textStyle="bold" />
+                android:layout_marginTop="@dimen/margin_top_item"
+                android:orientation="horizontal">
+
+                <RelativeLayout
+                    android:id="@+id/viaje_x_viaje"
+                    android:layout_width="@dimen/ancho_reporte"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/margin_top_item"
+                    android:layout_marginTop="@dimen/margin_top_item"
+
+                    android:orientation="horizontal">
+
+                    <ImageButton
+                        android:id="@+id/imageButtonCuatro"
+                        android:layout_width="@dimen/ancho_icono"
+                        android:layout_height="@dimen/alto_icono"
+                        android:layout_centerHorizontal="true"
+                        android:background="@drawable/selector_cuatro"
+                        android:scaleType="fitXY" />
+
+                    <TextView
+                        android:id="@+id/text_viaje_x_viaje"
+                        android:layout_width="@dimen/ancho_texto"
+                        android:layout_height="@dimen/ancho_boton"
+                        android:layout_below="@id/imageButtonCuatro"
+                        android:layout_centerHorizontal="true"
+                        android:layout_marginTop="@dimen/margin_top_item"
+                        android:text="@string/reporte_resumen"
+                        android:textAlignment="center"
+                        android:textColor="@color/colorPrimary"
+                        android:textSize="@dimen/tamanio_texto"
+                        android:textStyle="bold" />
+                </RelativeLayout>
+
+                <RelativeLayout
+                    android:id="@+id/id_historial"
+                    android:layout_width="@dimen/ancho_reporte"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/margin_top_item"
+                    android:layout_marginTop="@dimen/margin_top_item"
+                    android:layout_toEndOf="@id/viaje_x_viaje"
+                    android:orientation="horizontal">
+
+                    <ImageButton
+                        android:id="@+id/imageButtonOcho"
+                        android:layout_width="@dimen/ancho_icono"
+                        android:layout_height="@dimen/alto_icono"
+                        android:layout_centerHorizontal="true"
+                        android:layout_marginStart="@dimen/campos_height"
+                        android:background="@drawable/selector_ocho"
+                        android:scaleType="fitXY" />
+
+                    <TextView
+                        android:id="@+id/text_historial"
+                        android:layout_width="@dimen/ancho_texto"
+                        android:layout_height="@dimen/ancho_boton"
+                        android:layout_below="@id/imageButtonOcho"
+                        android:layout_centerHorizontal="true"
+                        android:layout_marginTop="@dimen/margin_top_item"
+                        android:text="@string/reporte_viajes"
+                        android:textAlignment="center"
+                        android:textColor="@color/colorPrimary"
+                        android:textSize="@dimen/tamanio_texto"
+                        android:textStyle="bold" />
+                </RelativeLayout>
 
 
-            <TextView
-                android:id="@+id/libre"
-                android:layout_width="wrap_content"
-                android:layout_height="@dimen/icono_chico"
-                android:layout_alignParentEnd="true"
-                android:text="@string/libre"
-                android:textAlignment="center"
-                android:textColor="@color/alarma"
-                android:textSize="@dimen/tamanio_parrafo"
-                android:textStyle="bold" />
+            </RelativeLayout>
+
+
+
+
         </RelativeLayout>
-
-        <RelativeLayout
-            android:id="@+id/id_turno"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_below="@id/id_datos_libre"
-            android:layout_marginTop="@dimen/margin_top_item"
-            android:orientation="horizontal">
-
-            <TextView
-                android:id="@+id/turno"
-                android:layout_width="wrap_content"
-                android:layout_height="@dimen/icono_chico"
-                android:layout_alignParentStart="true"
-                android:text="@string/libre"
-                android:textAlignment="center"
-                android:textColor="@color/colorPrimary"
-                android:textSize="@dimen/tamanio_parrafo"
-                android:textStyle="bold" />
-        </RelativeLayout>
-
-        <TextView
-            android:id="@+id/precio"
-            android:layout_width="wrap_content"
-            android:layout_height="@dimen/tamanio_campo_numero_chico"
-            android:layout_below="@id/id_turno"
-            android:layout_centerHorizontal="true"
-            android:layout_marginTop="@dimen/margin_top_item"
-
-            android:fontFamily="@font/digital"
-            android:text="@string/cero_pesos"
-            android:textAlignment="center"
-            android:textColor="@color/colorPrimary"
-            android:textSize="@dimen/tamanio_numero_chico"
-            android:textStyle="bold" />
-
-        <RelativeLayout
-            android:id="@+id/id_datos_inferior"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-
-            android:layout_below="@id/precio"
-            android:orientation="horizontal">
-
-            <TextView
-                android:id="@+id/tiempo"
-                android:layout_width="wrap_content"
-                android:layout_height="@dimen/tamanio_numero_tiempo"
-                android:layout_alignParentStart="true"
-                android:fontFamily="@font/digital"
-                android:text="@string/cero_tiempo"
-                android:textAlignment="center"
-                android:textColor="@color/colorPrimary"
-                android:textSize="@dimen/tamanio_texto_tiempo"
-                android:textStyle="bold" />
-
-            <TextView
-                android:id="@+id/kms"
-                android:layout_width="wrap_content"
-                android:layout_height="@dimen/tamanio_numero_tiempo"
-                android:layout_alignParentEnd="true"
-                android:fontFamily="@font/digital"
-                android:text="@string/cero_distancia"
-                android:textAlignment="center"
-                android:textColor="@color/colorPrimary"
-                android:textSize="@dimen/tamanio_texto_tiempo"
-                android:textStyle="bold" />
-        </RelativeLayout>
-
-
-    </RelativeLayout>
-
-    <RelativeLayout
-        android:id="@+id/id_teclado_sup"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/id_numeros"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="@dimen/margin_top_item"
-        android:orientation="horizontal">
-
-        <ImageButton
-            android:id="@+id/imageButtonUno"
-            android:layout_width="@dimen/ancho_boton"
-            android:layout_height="@dimen/ancho_boton"
-            android:background="@drawable/selector_uno"
-            android:scaleType="fitXY" />
-
-        <ImageButton
-            android:id="@+id/imageButtonDos"
-            android:layout_width="@dimen/ancho_boton"
-            android:layout_height="@dimen/ancho_boton"
-            android:layout_marginStart="@dimen/campos_height"
-            android:layout_toEndOf="@id/imageButtonUno"
-            android:background="@drawable/selector_dos"
-            android:scaleType="fitXY" />
-
-        <ImageButton
-            android:id="@+id/imageButtonTres"
-            android:layout_width="@dimen/ancho_boton"
-            android:layout_height="@dimen/ancho_boton"
-            android:layout_marginStart="@dimen/campos_height"
-            android:layout_toEndOf="@id/imageButtonDos"
-            android:background="@drawable/selector_tres"
-            android:scaleType="fitXY" />
-
-    </RelativeLayout>
-
-    <RelativeLayout
-        android:id="@+id/id_teclado_medio"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/id_teclado_sup"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="@dimen/margin_top_item"
-        android:orientation="horizontal">
-
-        <ImageButton
-            android:id="@+id/imageButtonCuatro"
-            android:layout_width="@dimen/ancho_boton"
-            android:layout_height="@dimen/ancho_boton"
-            android:background="@drawable/selector_cuatro"
-            android:scaleType="fitXY" />
-
-        <ImageButton
-            android:id="@+id/imageButtonCinco"
-            android:layout_width="@dimen/ancho_boton"
-            android:layout_height="@dimen/ancho_boton"
-            android:layout_marginStart="@dimen/campos_height"
-            android:layout_toEndOf="@id/imageButtonCuatro"
-            android:background="@drawable/selector_cinco"
-            android:scaleType="fitXY" />
-
-        <ImageButton
-            android:id="@+id/imageButtonSeis"
-            android:layout_width="@dimen/ancho_boton"
-            android:layout_height="@dimen/ancho_boton"
-            android:layout_marginStart="@dimen/campos_height"
-            android:layout_toEndOf="@id/imageButtonCinco"
-            android:background="@drawable/selector_seis"
-            android:scaleType="fitXY" />
-
-    </RelativeLayout>
-
-    <RelativeLayout
-        android:id="@+id/id_teclado_inferior"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/id_teclado_medio"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="@dimen/margin_top_item"
-        android:orientation="horizontal">
-
-        <ImageButton
-            android:id="@+id/imageButtonSiete"
-            android:layout_width="@dimen/ancho_boton"
-            android:layout_height="@dimen/ancho_boton"
-            android:background="@drawable/selector_siete"
-            android:scaleType="fitXY" />
-
-        <ImageButton
-            android:id="@+id/imageButtonOcho"
-            android:layout_width="@dimen/ancho_boton"
-            android:layout_height="@dimen/ancho_boton"
-            android:layout_marginStart="@dimen/campos_height"
-            android:layout_toEndOf="@id/imageButtonSiete"
-            android:background="@drawable/selector_ocho"
-            android:scaleType="fitXY" />
-
-        <ImageButton
-            android:id="@+id/imageButtonNueve"
-            android:layout_width="@dimen/ancho_boton"
-            android:layout_height="@dimen/ancho_boton"
-            android:layout_marginStart="@dimen/campos_height"
-            android:layout_toEndOf="@id/imageButtonOcho"
-            android:background="@drawable/selector_nueve"
-            android:scaleType="fitXY" />
-
-
-    </RelativeLayout>
-
-    <RelativeLayout
-        android:id="@+id/id_teclado_cero"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/id_teclado_inferior"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="@dimen/margin_top_item"
-        android:orientation="horizontal">
-
-
-
-
-        <ImageButton
-            android:id="@+id/imageButtonCero"
-            android:layout_width="@dimen/ancho_boton"
-            android:layout_height="@dimen/ancho_boton"
-            android:background="@drawable/selector_cero"
-            android:scaleType="fitXY" />
-
-        <ImageButton
-            android:id="@+id/imageWa"
-            android:layout_width="@dimen/ancho_boton"
-            android:layout_height="@dimen/ancho_boton"
-            android:layout_marginStart="@dimen/campos_height"
-            android:layout_toEndOf="@id/imageButtonCero"
-            android:background="@drawable/wa"
-
-            tools:ignore="RtlHardcoded" />
-
-        <ImageButton
-            android:id="@+id/imageImpresora"
-            android:layout_width="@dimen/ancho_boton"
-            android:layout_height="@dimen/ancho_boton"
-            android:layout_marginStart="@dimen/campos_height"
-            android:layout_toEndOf="@id/imageWa"
-            android:background="@drawable/selector_impresora"
-            android:scaleType="fitXY" />
-
-    </RelativeLayout>
-    <RelativeLayout
-        android:id="@+id/id_teclado_automatico"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/id_teclado_cero"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="@dimen/margin_top_item"
-        android:orientation="horizontal">
-
-        <ImageButton
-            android:id="@+id/imageautomatico"
-            android:layout_width="@dimen/ancho_boton"
-            android:layout_height="@dimen/ancho_boton"
-
-            android:background="@drawable/selector_automatico"
-
-            android:scaleType="fitXY" />
-
-    </RelativeLayout>
+    </ScrollView>
 </RelativeLayout>

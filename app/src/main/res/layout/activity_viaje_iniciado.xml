@@ -247,7 +247,7 @@
     </RelativeLayout>
 
     <RelativeLayout
-        android:id="@+id/id_botones"
+        android:id="@+id/id_botones_en_curso"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="@dimen/margin_top"
@@ -257,16 +257,18 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
 
-            android:layout_marginTop="10dp"
+            android:layout_marginTop="@dimen/margin_start"
             android:id="@+id/idTicket"
             android:layout_centerHorizontal="true">
 
-            <Button
+            <android.widget.Button
                 android:id="@+id/buttonSinTicket"
-                android:layout_width="@dimen/campos_width_medio"
-                android:layout_height="@dimen/alto_imagen"
-                android:background="@android:color/transparent"
-                android:drawableTop="@drawable/terminar_viaje"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/boton"
+                android:backgroundTint="@color/colorPrimary"
+                android:text="@string/terminar_viaje"
+                android:textColor="@color/colorSecondaryText"
                 tools:ignore="RtlHardcoded" />
 
 
@@ -278,27 +280,95 @@
             android:layout_height="wrap_content"
             android:layout_below="@id/idTicket"
             android:layout_centerHorizontal="true"
-            android:id="@+id/botones"
+            android:layout_marginTop="@dimen/margin_start"
+
            >
 
-            <Button
-                android:id="@+id/buttonAlarma"
-                android:layout_width="@dimen/perfil_image_size"
-                android:layout_height="@dimen/alto_boton"
-                android:background="@android:color/transparent"
-                android:drawableTop="@drawable/boton_alarma"
-                tools:ignore="RtlHardcoded" />
 
-            <Button
-                android:id="@+id/buttonSuspender"
-                android:layout_width="@dimen/perfil_image_size"
-                android:layout_height="@dimen/alto_boton"
-                android:layout_marginStart="10dp"
-                android:background="@android:color/transparent"
-                android:drawableTop="@drawable/boton_suspender"
+            <android.widget.Button
+                android:id="@+id/buttonAlarma"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/boton"
+                android:backgroundTint="@color/alarma"
+                android:text="@string/alarma"
+                android:textColor="@color/colorSecondaryText"
                 tools:ignore="RtlHardcoded" />
         </LinearLayout>
     </RelativeLayout>
+    <RelativeLayout
+        android:id="@+id/id_botones_asignado"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/margin_top"
+        android:orientation="vertical">
 
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="@dimen/margin_start"
+            >
+
+
+            <android.widget.Button
+                android:id="@+id/buttonInicio"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/boton"
+                android:backgroundTint="@color/colorPrimary"
+                android:text="@string/iniciar"
+                android:textColor="@color/colorSecondaryText"
+                tools:ignore="RtlHardcoded" />
+        </LinearLayout>
+
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:id="@+id/id_botones_terminar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/margin_top"
+        android:orientation="vertical">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            android:id="@+id/idterminar"
+            android:layout_marginTop="@dimen/margin_start"
+            >
+
+
+            <android.widget.Button
+                android:id="@+id/buttonmenu"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/boton"
+                android:backgroundTint="@color/suspender"
+                android:text="@string/volver_menu"
+                android:textColor="@color/colorSecondaryText"
+                tools:ignore="RtlHardcoded" />
+        </LinearLayout>
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            android:layout_below="@id/idterminar"
+            android:layout_marginTop="@dimen/margin_start"
+
+            >
+            <android.widget.Button
+                android:id="@+id/buttonviaje"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/boton"
+                android:backgroundTint="@color/colorPrimary"
+                android:text="@string/nuevo_viaje"
+                android:textColor="@color/colorSecondaryText"
+                tools:ignore="RtlHardcoded" />
+        </LinearLayout>
+
+    </RelativeLayout>
 
 </LinearLayout>

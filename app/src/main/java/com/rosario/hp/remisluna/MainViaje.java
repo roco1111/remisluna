@@ -82,7 +82,6 @@ public class MainViaje extends AppCompatActivity {
     @Override
     protected void onStart() {
         super.onStart();
-        fragmentManager = getSupportFragmentManager();
         // Bind to LocalService
         //Intent intent = new Intent(this, Impresion.class);
         //bindService(intent, connection, Context.BIND_AUTO_CREATE);
@@ -128,7 +127,7 @@ public class MainViaje extends AppCompatActivity {
         Objects.requireNonNull(getSupportActionBar()).setTitle("Viaje Asignado");
         i_pasadas = 0;
         fragmentManager = getSupportFragmentManager();
-        Fragment fragment = new fragment_vacia();
+        Fragment fragment = new fragment_viaje_iniciado();
 
 
         fragmentManager.beginTransaction()
@@ -379,19 +378,14 @@ public class MainViaje extends AppCompatActivity {
                     editor.putString("importe_fichas",object.getString("importe_fichas"));
                     editor.putString("importe_espera_viaje",object.getString("importe_espera_viaje"));
                     editor.putString("salida_coordenadas",object.getString("salida_coordenadas"));
-                    editor.putString("tiempo_tolerancia",object.getString("tiempo_tolerancia"));
-                    editor.putString("tiempo_acumulado",object.getString("tiempo_acumulado"));
-                    editor.putString("tiempo_acumulado",object.getString("tiempo_acumulado"));
+                    editor.putLong("tiempo_tolerancia",Long.parseLong(object.getString("tiempo_tolerancia")));
+                    editor.putLong("tiempo_acumulado",Long.parseLong(object.getString("tiempo_acumulado")));
+                    editor.putString("estado_viaje","en curso");
 
 
                     editor.apply();
-                    fragment = new fragment_viaje_iniciado();
 
-                    fragmentManager.beginTransaction()
-                            .replace(R.id.main_content, fragment)
-                            .commit();
-
-                    //permiso_back();
+                    permiso_back();
                     break;
 
                 case "2":
@@ -399,8 +393,6 @@ public class MainViaje extends AppCompatActivity {
                     break;
 
             }
-
-
 
 
         } catch (JSONException e) {
@@ -480,16 +472,13 @@ public class MainViaje extends AppCompatActivity {
                     ls_telefono = object.getString("telefono");
 
                     editor.putString("telefono_remiseria",ls_telefono);
+                    editor.putString("estado_viaje","asignado");
+                    editor.putString("salida_coordenadas",object.getString("salida_coordenadas"));
+                    editor.putString("destino_coordenadas",object.getString("destino_coordenadas"));
+                    editor.putString("id_movil",object.getString("id_movil"));
 
                     editor.apply();
 
-
-                    fragment = new fragment_viaje();
-
-
-                    fragmentManager.beginTransaction()
-                            .replace(R.id.main_content, fragment)
-                            .commit();
                     habilitar_gps();
                     break;
 
