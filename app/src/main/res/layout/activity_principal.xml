@@ -168,7 +168,8 @@
                         android:background="@drawable/boton"
                         android:backgroundTint="@color/colorPrimary"
                         android:text="@string/nuevo_viaje"
-                        android:textColor="@color/colorSecondaryText"
+                        android:textSize="@dimen/tamanio_texto"
+                        android:textColor="@color/colorPrimaryText"
                         tools:ignore="RtlHardcoded" />
 
 
@@ -188,11 +189,12 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_alignParentStart="true"
-                        android:layout_marginTop="14dp"
+                        android:layout_marginTop="@dimen/margin_start"
                         android:background="@drawable/boton_chico"
                         android:backgroundTint="@color/colorPrimary"
                         android:text="@string/nuevo_turno"
-                        android:textColor="@color/colorSecondaryText"
+                        android:textSize="@dimen/tamanio_texto"
+                        android:textColor="@color/colorPrimaryText"
                         tools:ignore="RtlHardcoded" />
 
                     <android.widget.Button
@@ -200,11 +202,11 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_alignParentEnd="true"
-                        android:layout_marginTop="14dp"
+                        android:layout_marginTop="@dimen/margin_start"
                         android:background="@drawable/boton_chico"
                         android:backgroundTint="@color/suspender"
                         android:text="@string/reporte_ticket"
-                        android:textColor="@color/colorSecondaryText"
+                        android:textColor="@color/colorPrimaryText"
                         android:textSize="@dimen/tamanio_parrafo"
                         tools:ignore="RtlHardcoded" />
 

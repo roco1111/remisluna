@@ -123,7 +123,7 @@
     <string name="fin_turno">5: Inicio y Fin Turnos</string>
     <string name="automatico">A:Viaje de Prueba </string>
     <string name="whatsapps">W:Whatsapps </string>
-    <string name="mapa">M:Mapa Ubicación </string>
+    <string name="mapa">Mapa Ubicación </string>
 
     <string name="diurno">Tar. Diurna</string>
     <string name="nocturno">Tar. Nocturna</string>

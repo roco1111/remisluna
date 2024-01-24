@@ -566,8 +566,6 @@ public class fragment_principal extends Fragment {
             }
         }
 
-
-
         MediaPlayer mediaPlayer = MediaPlayer.create(getActivity(), R.raw.everblue);
 
         this.boton_viaje.setOnClickListener(new View.OnClickListener() {
@@ -579,7 +577,6 @@ public class fragment_principal extends Fragment {
 
             }
         });
-
 
         this.boton_whatsapp.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -4838,7 +4835,10 @@ private void procesarRespuestaParametroTurno(JSONObject response, Context contex
 
             switch (estado) {
                 case "1":
-
+                    SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(context);
+                    SharedPreferences.Editor editor = settings.edit();
+                    editor.putString("automatico", "1");
+                    editor.apply();
                     Intent intent2 = new Intent(context, MainViaje.class);
                     context.startActivity(intent2);
                     ((MainActivity)context).locationEnd();

@@ -3,7 +3,7 @@
     <dimen name="tamanio_subtitulo">22sp</dimen>
     <dimen name="tamanio_parrafo">18sp</dimen>
     <dimen name="tamanio_campo_numero">120sp</dimen>
-    <dimen name="tamanio_numero">140sp</dimen>
+    <dimen name="tamanio_numero">120sp</dimen>
     <dimen name="tamanio_campo_numero_chico">70sp</dimen>
     <dimen name="tamanio_numero_chico">70sp</dimen>
     <dimen name="tamanio_numero_tiempo">40sp</dimen>

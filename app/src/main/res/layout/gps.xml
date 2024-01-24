@@ -11,40 +11,61 @@
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:background="?attr/android:colorBackground">
 
-
-    <ImageView
-        android:id="@+id/imageView"
-        android:layout_width="@dimen/perfil_image_size"
-        android:layout_height="@dimen/perfil_image_size"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="@dimen/ancho_boton"
-        android:background="@drawable/logo_callisto" />
-
-    <TextView
-        android:id="@+id/texto"
+    <ScrollView
+        android:id="@+id/scrollView1"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/imageView"
-        android:layout_centerHorizontal="true"
-        android:text="@string/texto_ubicacion"
-        android:textAlignment="center"
-        android:layout_marginTop="@dimen/imagen_regla"
-        android:textColor="?android:attr/textColorPrimary"
-        android:textSize="@dimen/tamanio_subtitulo" />
+        android:layout_height="match_parent"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
+        android:layout_marginBottom="5dp"
+        android:fillViewport="true"
+        android:padding="2dp">
+
+        <RelativeLayout
+            android:id="@+id/rl_panel"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:paddingBottom="5dp"
+            android:paddingTop="5dp"
+            tools:layout_editor_absoluteX="8dp"
+            tools:layout_editor_absoluteY="0dp"
+            android:orientation="vertical">
+
+
+            <ImageView
+                android:id="@+id/imageView"
+                android:layout_width="@dimen/perfil_image_size"
+                android:layout_height="@dimen/perfil_image_size"
+                android:layout_centerHorizontal="true"
+                android:layout_marginTop="@dimen/ancho_boton"
+                android:background="@drawable/logo_callisto" />
+
+            <TextView
+                android:id="@+id/texto"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/imageView"
+                android:layout_centerHorizontal="true"
+                android:text="@string/texto_ubicacion"
+                android:textAlignment="center"
+                android:layout_marginTop="@dimen/imagen_regla"
+                android:textColor="?android:attr/textColorPrimary"
+                android:textSize="@dimen/tamanio_subtitulo" />
 
 
 
-    <Button
-        android:id="@+id/aceptar"
-        android:layout_width="140dp"
-        android:layout_height="46dp"
-        android:layout_below="@+id/texto"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="24dp"
-        android:background="?attr/colorPrimary"
-        android:text="@string/dialog_aceptar"
-        android:textColor="@color/colorSecondaryText"
-        tools:ignore="RtlHardcoded" />
+            <Button
+                android:id="@+id/aceptar"
+                android:layout_width="140dp"
+                android:layout_height="46dp"
+                android:layout_below="@+id/texto"
+                android:layout_centerHorizontal="true"
+                android:layout_marginTop="24dp"
+                android:background="?attr/colorPrimary"
+                android:text="@string/dialog_aceptar"
+                android:textColor="@color/colorSecondaryText"
+                tools:ignore="RtlHardcoded" />
 
-
+        </RelativeLayout>
+    </ScrollView>
 </RelativeLayout>

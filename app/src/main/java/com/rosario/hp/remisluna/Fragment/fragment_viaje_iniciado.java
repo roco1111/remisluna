@@ -1,15 +1,23 @@
 package com.rosario.hp.remisluna.Fragment;
 
+import static com.rosario.hp.remisluna.include.Utils.stringABytes;
+
 import android.Manifest;
 import android.app.Activity;
 import android.app.ActivityManager;
+import android.bluetooth.BluetoothAdapter;
+import android.content.ActivityNotFoundException;
 import android.content.BroadcastReceiver;
 
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
@@ -18,7 +26,11 @@ import android.media.MediaPlayer;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
+import android.os.Handler;
+import android.os.IBinder;
 import android.preference.PreferenceManager;
 import android.provider.Settings;
 import android.util.Log;
@@ -27,11 +39,14 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageButton;
+import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+import androidx.core.content.FileProvider;
 import androidx.fragment.app.Fragment;
 
 import com.android.volley.DefaultRetryPolicy;
@@ -40,22 +55,43 @@ import com.android.volley.Response;
 import com.android.volley.error.VolleyError;
 import com.android.volley.misc.AsyncTask;
 import com.android.volley.request.JsonObjectRequest;
+import com.itextpdf.text.BaseColor;
+import com.itextpdf.text.Chunk;
+import com.itextpdf.text.Document;
+import com.itextpdf.text.DocumentException;
+import com.itextpdf.text.Font;
+import com.itextpdf.text.PageSize;
+import com.itextpdf.text.Paragraph;
+import com.itextpdf.text.Phrase;
+import com.itextpdf.text.Rectangle;
+import com.itextpdf.text.pdf.BaseFont;
+import com.itextpdf.text.pdf.PdfPCell;
+import com.itextpdf.text.pdf.PdfPTable;
+import com.itextpdf.text.pdf.PdfWriter;
+import com.itextpdf.text.pdf.draw.LineSeparator;
+import com.rosario.hp.remisluna.Impresion;
 import com.rosario.hp.remisluna.MainActivity;
 import com.rosario.hp.remisluna.MainViaje;
 import com.rosario.hp.remisluna.R;
 import com.rosario.hp.remisluna.ServicioGeolocalizacion;
-import com.rosario.hp.remisluna.ServicioGeolocalizacionFused;
+import com.rosario.hp.remisluna.WebActivity;
 import com.rosario.hp.remisluna.include.Constantes;
+import com.rosario.hp.remisluna.include.PrinterCommands;
+import com.rosario.hp.remisluna.include.Utils;
 import com.rosario.hp.remisluna.include.VolleySingleton;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -66,6 +102,7 @@ import java.util.Map;
 public class fragment_viaje_iniciado extends Fragment {
     private JsonObjectRequest myRequest;
     private static final String TAG = fragment_viaje_iniciado.class.getSimpleName();
+    private static OutputStream outputStream;
     private String ls_id_conductor;
     private TextView id_viaje;
     private TextView solicitante;
@@ -79,7 +116,10 @@ public class fragment_viaje_iniciado extends Fragment {
     private TextView ficha_espera;
     private TextView salida;
     private TextView texto_destino;
+    private TextView monto_ficha;
     private TextView gps;
+    private TextView titulo_ficha;
+    private TextView titulo_espera;
     private String hora_inicio;
     private String hora_fin;
     private String fecha_tarifa;
@@ -97,6 +137,7 @@ public class fragment_viaje_iniciado extends Fragment {
     private Button buttonmenu;
     private Button alarma;
     private Button boton_viaje;
+    private Button repetirTicket;
     private String importe_bajada;
     private String importe_ficha;
     private String importe_espera;
@@ -137,6 +178,7 @@ public class fragment_viaje_iniciado extends Fragment {
     private String tipo_empresa;
 
     private Button boton_whatsapp;
+    private Button boton_mapa;
     private String telefono_base;
     private Boolean lb_servicio = false;
     private Button inicio;
@@ -150,7 +192,40 @@ public class fragment_viaje_iniciado extends Fragment {
     private RelativeLayout id_botones_en_curso;
     private RelativeLayout id_botones_asignado;
     private RelativeLayout id_botones_terminar;
+    private LinearLayout id_datos_viaje;
     private String l_estado_viaje;
+
+    private String fecha_ultimo;
+    private String salida_ultimo;
+    private String destino_ultimo;
+    private String hora_salida_ultimo;
+    private String hora_destino_ultimo;
+    private String importe_ultimo;
+    private String espera_ultimo;
+    private String total_ultimo;
+    private String chofer_ultimo ;
+    private String distancia_ultimo ;
+    private String fecha_tarifa_ultimo ;
+    private String movil_ultimo ;
+    private String fichas_ultimo;
+    private String bajada_ultimo;
+    private String chapa;
+    private String patente;
+    private Impresion impresion;
+    private String l_impresion;
+    private String nro_recibo;
+    private String precio_km;
+    boolean mBound = false;
+    private boolean lb_bluetooth;
+    private File file;
+    private File dir;
+    private String nombre_remiseria;
+    private String telefono_queja;
+    private String localidad_abreviada;
+    private String telefono_remiseria;
+    private String path;
+    private String viajes_automaticos;
+    private String automatico;
 
     @Override
     public void onPause() {
@@ -158,6 +233,11 @@ public class fragment_viaje_iniciado extends Fragment {
             if (isMyServiceRunning(ServicioGeolocalizacion.class)) {
                 act.unregisterReceiver(onBroadcast);
             }
+        }
+        if(mBound) {
+            act.unbindService(connection);
+
+            mBound = false;
         }
 
         super.onPause();
@@ -167,6 +247,11 @@ public class fragment_viaje_iniciado extends Fragment {
     public void onResume() {
         if(lb_servicio) {
             act.registerReceiver(onBroadcast, new IntentFilter("key"));
+        }
+        if(l_impresion.equals("1")) {
+            if (lb_bluetooth) {
+                cargarImpresora(getContext());
+            }
         }
         super.onResume();
     }
@@ -181,11 +266,25 @@ public class fragment_viaje_iniciado extends Fragment {
         context = getContext();
         mLocationManager = (LocationManager) act.getSystemService(Context.LOCATION_SERVICE);
 
+        BluetoothAdapter bt = BluetoothAdapter.getDefaultAdapter();
+        if (bt == null)
+        { //Does not support Bluetooth
+            lb_bluetooth = false;
+        }else{
+            //Magic starts. Let's check if it's enabled
+            if (!bt.isEnabled())
+            { lb_bluetooth = false; }
+            else{
+                lb_bluetooth = true;
+            }
+        }
+
         //((MainActivity) getActivity()).locationEnd();
 
         id_botones_en_curso = v.findViewById(R.id.id_botones_en_curso);
         id_botones_terminar = v.findViewById(R.id.id_botones_terminar);
         id_botones_asignado = v.findViewById(R.id.id_botones_asignado);
+        id_datos_viaje = v.findViewById(R.id.id_datos_viaje);
 
         id_viaje = v.findViewById(R.id.dato_viaje);
         solicitante = v.findViewById(R.id.dato_solicitante);
@@ -198,6 +297,8 @@ public class fragment_viaje_iniciado extends Fragment {
         inicio = v.findViewById(R.id.buttonInicio);
         buttonmenu = v.findViewById(R.id.buttonmenu);
         boton_viaje = v.findViewById(R.id.buttonviaje);
+        boton_mapa = v.findViewById(R.id.mapa);
+        this.repetirTicket = v.findViewById(R.id.buttonTicket);
 
         alarma = v.findViewById(R.id.buttonAlarma);
         kms = v.findViewById(R.id.kms);
@@ -207,6 +308,9 @@ public class fragment_viaje_iniciado extends Fragment {
         ficha_espera = v.findViewById(R.id.ficha_espera);
         salida = v.findViewById(R.id.salida);
         gps = v.findViewById(R.id.gps);
+        monto_ficha = v.findViewById(R.id.monto_ficha);
+        titulo_espera = v.findViewById(R.id.titulo_espera);
+        titulo_ficha = v.findViewById(R.id.titulo_ficha);
 
 
         MediaPlayer mediaPlayer = MediaPlayer.create(act, R.raw.doorbell);
@@ -239,10 +343,34 @@ public class fragment_viaje_iniciado extends Fragment {
             }
         });
 
+        this.boton_mapa.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mediaPlayer.start();
+                SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(context);
+                SharedPreferences.Editor editor = settings.edit();
+
+                editor.putString("url", "https://callisto.com.ar/remiseria/mapa_movil.php?viaje=" + l_id_viaje );
+                editor.apply();
+                Intent intent = new Intent(getContext(), WebActivity.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                act.startActivity(intent);
+
+            }
+        });
+
         this.alarma.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 mediaPlayer.start();
+                lb_ticket = false;
+                lb_viaje_terminado = true;
+                if(isMyServiceRunning(ServicioGeolocalizacion.class)) {
+                    act.unregisterReceiver(onBroadcast);
+                    act.stopService(new Intent(act, ServicioGeolocalizacion.class));
+                    //act.stopService(new Intent(act, ServicioGeolocalizacion_metros.class));
+                    Log.d("Servicio","Servicio detenido");
+                }
                 alarma_viaje(context);
             }
         });
@@ -281,6 +409,14 @@ public class fragment_viaje_iniciado extends Fragment {
 
             }
         });
+
+        this.repetirTicket.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mediaPlayer.start();
+                repetirTicket(context);
+            }
+        });
         reiniciar();
 
         return v;
@@ -299,6 +435,9 @@ public class fragment_viaje_iniciado extends Fragment {
         tipo_empresa = settings.getString("tipo_empresa","");
         l_estado_viaje = settings.getString("estado_viaje","");
         l_id_viaje = settings.getString("id_viaje","");
+        l_impresion = settings.getString("impresion","");
+        viajes_automaticos = settings.getString("viajes_automaticos", "");
+        automatico = settings.getString("automatico", "");
 
         sdf = new SimpleDateFormat("MM/dd/yyyy HH:mm");
         lb_viaje_terminado = false;
@@ -337,6 +476,9 @@ public class fragment_viaje_iniciado extends Fragment {
                 texto_solicitante.setTextColor(act.getResources().getColor(R.color.colorPrimary));
                 texto_tarifa.setTextColor(act.getResources().getColor(R.color.colorPrimary));
                 gps.setTextColor(act.getResources().getColor(R.color.colorPrimary));
+                monto_ficha.setTextColor(act.getResources().getColor(R.color.colorPrimary));
+                titulo_ficha.setTextColor(act.getResources().getColor(R.color.colorPrimary));
+                titulo_espera.setTextColor(act.getResources().getColor(R.color.colorPrimary));
                 break;
             case "2":
                 id_viaje.setTextColor(act.getResources().getColor(R.color.colorMoto));
@@ -352,6 +494,9 @@ public class fragment_viaje_iniciado extends Fragment {
                 texto_solicitante.setTextColor(act.getResources().getColor(R.color.colorMoto));
                 texto_tarifa.setTextColor(act.getResources().getColor(R.color.colorMoto));
                 gps.setTextColor(act.getResources().getColor(R.color.colorMoto));
+                monto_ficha.setTextColor(act.getResources().getColor(R.color.colorMoto));
+                titulo_ficha.setTextColor(act.getResources().getColor(R.color.colorMoto));
+                titulo_espera.setTextColor(act.getResources().getColor(R.color.colorMoto));
                 break;
             case "3":
                 id_viaje.setTextColor(act.getResources().getColor(R.color.colorTaxi));
@@ -367,6 +512,9 @@ public class fragment_viaje_iniciado extends Fragment {
                 texto_solicitante.setTextColor(act.getResources().getColor(R.color.colorTaxi));
                 texto_tarifa.setTextColor(act.getResources().getColor(R.color.colorTaxi));
                 gps.setTextColor(act.getResources().getColor(R.color.colorTaxi));
+                monto_ficha.setTextColor(act.getResources().getColor(R.color.colorTaxi));
+                titulo_ficha.setTextColor(act.getResources().getColor(R.color.colorTaxi));
+                titulo_espera.setTextColor(act.getResources().getColor(R.color.colorTaxi));
                 break;
         }
 
@@ -382,6 +530,21 @@ public class fragment_viaje_iniciado extends Fragment {
             cargarDatos(context);
         }else if(l_estado_viaje.equals("asignado")){
             cargarTarifaInicial(context);
+        }
+        if (viajes_automaticos.equals("0")) {
+            this.boton_viaje.setVisibility(View.GONE);
+
+        } else {
+            this.boton_viaje.setVisibility(View.VISIBLE);
+
+        }
+
+        if (automatico.equals("0")) {
+            this.boton_mapa.setVisibility(View.VISIBLE);
+            id_datos_viaje.setVisibility(View.VISIBLE);
+        }else{
+            this.boton_mapa.setVisibility(View.GONE);
+            id_datos_viaje.setVisibility(View.GONE);
         }
     }
 
@@ -474,11 +637,6 @@ public class fragment_viaje_iniciado extends Fragment {
                         }
                     }
 
-                    if(l_nocturno.equals("0")){
-                        texto_tarifa.setText(R.string.diurno);
-                    }else{
-                        texto_tarifa.setText(R.string.nocturno);
-                    }
 
                     SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(context);
                     SharedPreferences.Editor editor = settings.edit();
@@ -495,14 +653,16 @@ public class fragment_viaje_iniciado extends Fragment {
 
                     importe.setText(importe_bajada);
 
-                    id_viaje.setText(settings.getString("id_viaje",""));
-                    solicitante.setText(settings.getString("solicitante",""));
-                    dato_salida.setText(settings.getString("salida",""));
-                    destino.setText(settings.getString("destino",""));
+
                     salida_coordenada = settings.getString("salida_coordenadas","");
                     destino_coordenada = settings.getString("destino_coordenadas","");
                     id_vehiculo = settings.getString("id_movil","");
 
+                    id_viaje.setText(settings.getString("id_viaje",""));
+                    solicitante.setText(settings.getString("solicitante",""));
+                    dato_salida.setText(settings.getString("salida",""));
+                    destino.setText(settings.getString("destino",""));
+                    editor.putString("bajada","null");
 
                     editor.apply();
 
@@ -623,6 +783,7 @@ public class fragment_viaje_iniciado extends Fragment {
         }
     }
 
+
     public void cargarTarifa(final Context context, final String[] tokens) {
 
         // Añadir parámetro a la URL del web service
@@ -734,6 +895,7 @@ public class fragment_viaje_iniciado extends Fragment {
                             precio_ficha = getValor(getTwoDecimals(precio_ficha));
                             cuadras++;
                             kms.setText( String.valueOf(cuadras));
+                            monto_ficha.setText(String.valueOf(precio_ficha));
                             String ls_es_tolerancia;
                             ls_es_tolerancia = tokens[3];
                             if(ls_es_tolerancia.equals("NO")) {
@@ -1157,7 +1319,6 @@ public class fragment_viaje_iniciado extends Fragment {
     }
 
 
-
     public void cargarDatosFinal(final Context context) {
 
         String ls_viaje = id_viaje.getText().toString();
@@ -1219,8 +1380,15 @@ public class fragment_viaje_iniciado extends Fragment {
                     SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(context);
                     SharedPreferences.Editor editor = settings.edit();
                     editor.putLong("tiempo_acumulado",0L);
+                    editor.putLong("tiempo_tolerancia",0L);
+                    editor.putString("total","0");
+                    editor.putString("importe_fichas","0.00");
+                    editor.putString("importe_espera_viaje","0.00");
                     editor.putBoolean("boolean_tolerancia",true);
                     editor.apply();
+
+                    tiempo_acumulado = 0L;
+                    tiempo_tolerancia = 0L;
 
                     cargarViaje_solicitado(context);
 
@@ -1302,8 +1470,6 @@ public class fragment_viaje_iniciado extends Fragment {
                     editor.putString("id_viaje",ls_viaje);
                     l_estado_viaje = "asignado";
                     editor.putString("estado_viaje","asignado");
-
-
 
                     break;
 
@@ -1645,9 +1811,6 @@ public class fragment_viaje_iniciado extends Fragment {
         map.put("importe_titular", String.valueOf(descuento_titular));
         map.put("precio_km", String.valueOf(precio_km));
 
-
-
-
         JSONObject jobject = new JSONObject(map);
 
         // Depurando objeto Json...
@@ -1878,8 +2041,28 @@ public class fragment_viaje_iniciado extends Fragment {
 
             switch (estado) {
                 case "1":
-                    Intent intent2 = new Intent(context, MainViaje.class);
-                    context.startActivity(intent2);
+                    SharedPreferences settings1 = PreferenceManager.getDefaultSharedPreferences(context);
+
+                    SharedPreferences.Editor editor = settings1.edit();
+
+                    l_estado_viaje = "terminado";
+                    editor.putString("estado_viaje","terminado");
+
+                    editor.putLong("tiempo_acumulado",0L);
+                    editor.putLong("tiempo_tolerancia",0L);
+                    editor.putBoolean("boolean_tolerancia",true);
+                    editor.putString("importe_fichas","0.00");
+                    editor.putString("importe_espera_viaje","0.00");
+
+                    tiempo_viaje.setText("00:00");
+                    tiempo_viaje.setText(getResources().getString(R.string.cero_tiempo));
+                    ficha_espera.setText(getResources().getString(R.string.cero_pesos));
+                    monto_ficha.setText(getResources().getString(R.string.cero_pesos));
+                    kms.setText("0");
+
+                    editor.apply();
+
+                    reiniciar();
                     break;
                 case "2":
                     // Mostrar mensaje
@@ -2899,11 +3082,15 @@ public class fragment_viaje_iniciado extends Fragment {
 
 
                     editor.putString("estado_viaje","asignado");
-
+                    editor.putString("automatico", "1");
                     editor.putLong("tiempo_acumulado",0L);
+                    editor.putLong("tiempo_tolerancia",0L);
                     editor.putBoolean("boolean_tolerancia",true);
-                    tiempo_viaje.setText("00:00");
-                    ficha_espera.setText("0");
+                    editor.putString("importe_fichas","0.00");
+                    editor.putString("importe_espera_viaje","0.00");
+                    tiempo_viaje.setText(getResources().getString(R.string.cero_tiempo));
+                    ficha_espera.setText(getResources().getString(R.string.cero_pesos));
+                    monto_ficha.setText(getResources().getString(R.string.cero_pesos));
                     kms.setText("0");
 
                     editor.apply();
@@ -2926,5 +3113,707 @@ public class fragment_viaje_iniciado extends Fragment {
         }
     }
 
+
+    public void repetirTicket(final Context context) {
+
+        // Añadir parámetro a la URL del web service
+        String newURL = Constantes.GET_ULTIMO_VIAJE + "?conductor=" + ls_id_conductor;
+        Log.d(TAG,newURL);
+
+        // Realizar petición GET_BY_ID
+        VolleySingleton.getInstance(context).addToRequestQueue(
+                myRequest = new JsonObjectRequest(
+                        Request.Method.POST,
+                        newURL,
+                        null,
+                        new Response.Listener<JSONObject>() {
+
+                            @Override
+                            public void onResponse(JSONObject response) {
+                                // Procesar respuesta Json
+                                procesarRespuestaRepetir(response, context);
+                            }
+                        },
+                        new Response.ErrorListener() {
+                            @Override
+                            public void onErrorResponse(VolleyError error) {
+                                Log.d(TAG, "Error Volley turno: " + error.getMessage());
+
+                            }
+                        }
+                )
+        );
+        myRequest.setRetryPolicy(new DefaultRetryPolicy(
+                50000,
+                5,//DefaultRetryPolicy.DEFAULT_MAX_RETRIES
+                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+
+    }
+
+    private void procesarRespuestaRepetir(JSONObject response, Context context) {
+
+        try {
+            // Obtener atributo "mensaje"
+            String mensaje = response.getString("estado");
+            switch (mensaje) {
+                case "1":
+                    // Obtener objeto "cliente"
+                    JSONArray mensaje1 = response.getJSONArray("viaje");
+
+                    JSONObject object = mensaje1.getJSONObject(0);
+                    //Parsear objeto
+
+                    fecha_ultimo =object.getString("fecha");
+                    salida_ultimo = object.getString("salida");
+                    destino_ultimo = object.getString("destino");
+                    hora_salida_ultimo = object.getString("hora_inicio");
+                    hora_destino_ultimo =  object.getString("hora_fin");
+                    String ls_importe;
+                    ls_importe = object.getString("importe");
+                    if(ls_importe.equals("null"))
+                    {
+                        ls_importe = "0,00";
+                    }
+                    importe_ultimo = ls_importe;
+
+
+                    ls_importe = object.getString("importe_espera");
+                    if(ls_importe.equals("null"))
+                    {
+                        ls_importe = "0,00";
+                    }
+                    espera_ultimo = ls_importe;
+
+                    ls_importe = object.getString("importe_fichas");
+                    if(ls_importe.equals("null"))
+                    {
+                        ls_importe = "0,00";
+                    }
+                    fichas_ultimo = ls_importe;
+
+                    ls_importe = object.getString("bajada");
+                    if(ls_importe.equals("null"))
+                    {
+                        ls_importe = "0,00";
+                    }
+                    bajada_ultimo = ls_importe;
+
+                    ls_importe = object.getString("total");
+                    if(ls_importe.equals("null"))
+                    {
+                        ls_importe = "0,00";
+                    }
+                    total_ultimo = ls_importe;
+
+                    chofer_ultimo = object.getString("chofer");
+                    distancia_ultimo = object.getString("distancia");
+                    fecha_tarifa_ultimo = object.getString("fecha_tarifa");
+                    movil_ultimo = object.getString("movil");
+                    chapa = object.getString("chapa");
+                    patente = object.getString("patente");
+                    nro_recibo = object.getString("nro_recibo");
+                    precio_km = object.getString("precio_km");
+                    nombre_remiseria = object.getString("remiseria");
+                    telefono_queja = object.getString("telefono_queja");
+                    localidad_abreviada = object.getString("abreviada");
+                    telefono_remiseria = object.getString("telefono");
+
+                    if(mBound) {
+                        repetirTicket();
+                    }else{
+                        crear_pfd_repetir_ticket();
+                    }
+
+                case "2":
+                    Toast.makeText(
+                            context,
+                            mensaje,
+                            Toast.LENGTH_LONG).show();
+
+                    break;
+
+            }
+
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    protected void repetirTicket() {
+
+        outputStream = impresion.getOutputStream();
+
+        if(outputStream == null){
+            Toast.makeText(context, "No se pudo conectar el dispositivo. Verifique si la impresora esta encendida", Toast.LENGTH_SHORT).show();
+        }else {
+
+            //print command
+            try {
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+
+                Locale locale2 = new Locale ("es", "ES");
+                NumberFormat objNF2 = NumberFormat.getInstance (locale2);
+                objNF2.setMinimumFractionDigits(2);
+                objNF2.setMaximumFractionDigits(2);
+
+                byte[] printformat = {0x1B, 0x21, 0x08};
+                outputStream.write(printformat);
+
+                //print title
+                printUnicode();
+                //print normal text
+                printCustom(nombre_remiseria, 2, 1);
+                printNewLine();
+                printCustom("Tel. Remis: " + telefono_remiseria, 1, 1);
+                printNewLine();
+                printCustom("Tel. Queja: " + telefono_queja, 1, 1);
+                printNewLine();
+                printText(act.getResources().getString(R.string.recibo)); // total 32 char in a single line
+                printNewLine();
+                printText("Nro Recibo: " + nro_recibo ); // total 32 char in a single line
+                printNewLine();
+                printText(stringABytes(act.getResources().getString(R.string.servicio) + ' ' + localidad_abreviada));
+                printNewLine();
+                printText(fecha_ultimo);//fecha
+                printNewLine();
+                printCustom("Chofer: " + chofer_ultimo, 1, 0);
+                printText(stringABytes(act.getResources().getString(R.string.nro_movil) + movil_ultimo));
+                printCustom("Patente: " + patente, 1, 0);
+                printText(stringABytes(act.getResources().getString(R.string.chapa) + chapa));
+                printNewLine();
+                printText("SALIDA  " + hora_salida_ultimo);
+                printNewLine();
+                printText("DESDE  " + salida_ultimo);
+                printNewLine();
+                printText("HASTA  " + destino_ultimo);
+                printNewLine();
+                printText("LLEGADA  " + hora_destino_ultimo);
+                printNewLine();
+                printText("RECORRIDO  " + String.format(Locale.GERMANY, "%.2f", Double.parseDouble(distancia_ultimo)) + " Kms.");
+                printNewLine();
+                printNewLine();
+                printText("TARIFA AL  " + fecha_tarifa_ultimo);
+                printNewLine();
+                printText("BAJADA  " + '$' + objNF2.format(Double.valueOf(Double.parseDouble(bajada_ultimo))));
+                printNewLine();
+                printText("VIAJE  " + '$' + objNF2.format(Double.valueOf(Double.parseDouble(fichas_ultimo))));
+                printNewLine();
+                printText("ESPERA  " + '$' + objNF2.format(Double.valueOf(Double.parseDouble(espera_ultimo))));
+                printNewLine();
+                printNewLine();
+                printCustom("TOTAL:  " + '$' + objNF2.format(Double.valueOf(Double.parseDouble(importe_ultimo))), 2, 0);
+                printCustom("", 1, 1);
+                printUnicode();
+                printNewLine();
+                printNewLine();
+                outputStream.flush();
+
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private void crear_pfd_repetir_ticket()
+    {
+        directorio();
+        pdf_repetir_ticket( );
+        Intent target = new Intent(Intent.ACTION_VIEW);
+        target.setDataAndType(FileProvider.getUriForFile(context, act.getPackageName() + ".my.package.name.provider", file), "application/pdf");
+        target.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+
+        try {
+            startActivity(target);
+        } catch (ActivityNotFoundException e) {
+            Intent intent = Intent.createChooser(target, "Open File");
+            startActivity(intent);
+        }
+    }
+
+    private Boolean pdf_repetir_ticket()
+    {
+        boolean success = false;
+        PdfPCell cell;
+
+
+        //saldo=saldo.replace("\n","");
+        //create document file
+        Document doc = new Document(PageSize.A5, 14f, 10f, 10f, 10f);
+        try {
+            doc.left(10f);
+            //doc.top(15f);
+            file = new File(dir, "ticket-"+ nro_recibo +".pdf");
+            FileOutputStream fOut = new FileOutputStream(file);
+            PdfWriter writer = PdfWriter.getInstance(doc, fOut);
+
+            Locale locale2 = new Locale ("es", "ES");
+            NumberFormat objNF2 = NumberFormat.getInstance (locale2);
+            objNF2.setMinimumFractionDigits(2);
+            objNF2.setMaximumFractionDigits(2);
+
+            doc.open();
+
+            BaseFont bf = BaseFont.createFont(
+                    BaseFont.HELVETICA,
+                    BaseFont.CP1252,
+                    BaseFont.EMBEDDED);
+            Font font = new Font(bf, 15);
+
+            Font titulo = new Font(bf, 20);
+
+            float[] columnWidth;
+
+            columnWidth = new float[]{100};
+
+            PdfPTable tabla_enc = new PdfPTable(1);
+
+            cell = new PdfPCell(new Phrase(nombre_remiseria,titulo));
+            cell.setBorder(Rectangle.NO_BORDER);
+            cell.setHorizontalAlignment(PdfPCell.ALIGN_LEFT);
+            tabla_enc.addCell(cell);
+
+            cell = new PdfPCell(new Phrase("Tel. Remisería: " + telefono_remiseria,font));
+            cell.setBorder(Rectangle.NO_BORDER);
+            cell.setHorizontalAlignment(PdfPCell.ALIGN_LEFT);
+            tabla_enc.addCell(cell);
+
+            cell = new PdfPCell(new Phrase("Tel. Queja: " + telefono_queja,font));
+            cell.setBorder(Rectangle.NO_BORDER);
+            cell.setHorizontalAlignment(PdfPCell.ALIGN_LEFT);
+            tabla_enc.addCell(cell);
+
+            doc.add(tabla_enc);
+
+            LineSeparator lineSeparator = new LineSeparator();
+
+            lineSeparator.setLineColor(new BaseColor(255, 255, 255, 68));
+
+            doc.add(new Paragraph(""));
+            doc.add(new Chunk(lineSeparator));
+            doc.add(new Paragraph(""));
+
+
+            PdfPTable table1 = new PdfPTable(1);
+
+
+            cell = new PdfPCell(new Phrase(act.getResources().getString(R.string.recibo),font));
+            cell.setBorder(Rectangle.NO_BORDER);
+            cell.setHorizontalAlignment(PdfPCell.ALIGN_LEFT);
+            table1.addCell(cell);
+
+            cell = new PdfPCell(new Phrase("Nro Recibo: " + nro_recibo,font));
+            cell.setBorder(Rectangle.NO_BORDER);
+            cell.setHorizontalAlignment(PdfPCell.ALIGN_LEFT);
+            table1.addCell(cell);
+
+            cell = new PdfPCell(new Phrase(act.getResources().getString(R.string.servicio) + ' ' + localidad_abreviada,font));
+            cell.setBorder(Rectangle.NO_BORDER);
+            cell.setHorizontalAlignment(PdfPCell.ALIGN_LEFT);
+            table1.addCell(cell);
+
+            doc.add(table1);
+
+            doc.add(new Paragraph(""));
+            doc.add(new Chunk(lineSeparator));
+            doc.add(new Paragraph(""));
+
+
+            PdfPTable table2 = new PdfPTable(1);
+
+            cell = new PdfPCell(new Phrase(fecha_ultimo,font));
+            cell.setBorder(Rectangle.NO_BORDER);
+            cell.setHorizontalAlignment(PdfPCell.ALIGN_LEFT);
+            table2.addCell(cell);
+
+            cell = new PdfPCell(new Phrase("Chofer: " + chofer_ultimo,font));
+            cell.setBorder(Rectangle.NO_BORDER);
+            cell.setHorizontalAlignment(PdfPCell.ALIGN_LEFT);
+            table2.addCell(cell);
+
+            cell = new PdfPCell(new Phrase("Patente: " + patente,font));
+            cell.setBorder(Rectangle.NO_BORDER);
+            cell.setHorizontalAlignment(PdfPCell.ALIGN_LEFT);
+            table2.addCell(cell);
+
+            cell = new PdfPCell(new Phrase(act.getResources().getString(R.string.chapa) + chapa,font));
+            cell.setBorder(Rectangle.NO_BORDER);
+            cell.setHorizontalAlignment(PdfPCell.ALIGN_LEFT);
+            table2.addCell(cell);
+            doc.add(table2);
+
+            doc.add(new Paragraph(""));
+            doc.add(new Chunk(lineSeparator));
+            doc.add(new Paragraph(""));
+
+
+            PdfPTable table = new PdfPTable(1);
+
+            cell = new PdfPCell(new Phrase("SALIDA: " + hora_salida_ultimo,font));
+            cell.setBorder(Rectangle.NO_BORDER);
+            cell.setHorizontalAlignment(PdfPCell.ALIGN_LEFT);
+            table.addCell(cell);
+
+            cell = new PdfPCell(new Phrase("DESDE: " + salida_ultimo,font));
+            cell.setBorder(Rectangle.NO_BORDER);
+            cell.setHorizontalAlignment(PdfPCell.ALIGN_LEFT);
+            table.addCell(cell);
+
+            cell = new PdfPCell(new Phrase("HASTA: " + destino_ultimo,font));
+            cell.setBorder(Rectangle.NO_BORDER);
+            cell.setHorizontalAlignment(PdfPCell.ALIGN_LEFT);
+            table.addCell(cell);
+
+            cell = new PdfPCell(new Phrase("LLEGADA: " + hora_destino_ultimo,font));
+            cell.setBorder(Rectangle.NO_BORDER);
+            cell.setHorizontalAlignment(PdfPCell.ALIGN_LEFT);
+            table.addCell(cell);
+
+            cell = new PdfPCell(new Phrase("RECORRIDO: " + String.format(Locale.GERMANY, "%.2f", Double.parseDouble(distancia_ultimo)) + " Kms.",font));
+            cell.setBorder(Rectangle.NO_BORDER);
+            cell.setHorizontalAlignment(PdfPCell.ALIGN_LEFT);
+            table.addCell(cell);
+
+            doc.add(table);
+
+            doc.add(new Paragraph(""));
+            doc.add(new Chunk(lineSeparator));
+            doc.add(new Paragraph(""));
+
+
+            PdfPTable table3 = new PdfPTable(1);
+
+            cell = new PdfPCell(new Phrase("TARIFA AL " + fecha_tarifa_ultimo,font));
+            cell.setBorder(Rectangle.NO_BORDER);
+            cell.setHorizontalAlignment(PdfPCell.ALIGN_LEFT);
+            table3.addCell(cell);
+
+            cell = new PdfPCell(new Phrase("BAJADA: " + '$' + objNF2.format(Double.valueOf(Double.parseDouble(bajada_ultimo))),font));
+            cell.setBorder(Rectangle.NO_BORDER);
+            cell.setHorizontalAlignment(PdfPCell.ALIGN_LEFT);
+            table3.addCell(cell);
+
+            cell = new PdfPCell(new Phrase("VIAJE: " + '$' + objNF2.format(Double.valueOf(Double.parseDouble(fichas_ultimo))),font));
+            cell.setBorder(Rectangle.NO_BORDER);
+            cell.setHorizontalAlignment(PdfPCell.ALIGN_LEFT);
+            table3.addCell(cell);
+
+            cell = new PdfPCell(new Phrase("ESPERA: " + '$' + objNF2.format(Double.valueOf(Double.parseDouble(espera_ultimo))),font));
+            cell.setBorder(Rectangle.NO_BORDER);
+            cell.setHorizontalAlignment(PdfPCell.ALIGN_LEFT);
+            table3.addCell(cell);
+
+            doc.add(table3);
+
+            doc.add(new Paragraph(""));
+            doc.add(new Chunk(lineSeparator));
+            doc.add(new Paragraph(""));
+
+
+            PdfPTable table4 = new PdfPTable(1);
+
+            cell = new PdfPCell(new Phrase("TOTAL: " + '$' + objNF2.format(Double.valueOf(Double.parseDouble(importe_ultimo))),titulo));
+            cell.setBorder(Rectangle.NO_BORDER);
+            cell.setHorizontalAlignment(PdfPCell.ALIGN_LEFT);
+            table4.addCell(cell);
+
+            doc.add(table4);
+
+        } catch (DocumentException | IOException de) {
+            Log.e("PDFCreator", "DocumentException:" + de);
+        } finally {
+            doc.close();
+
+            success = true;
+        }
+
+        return success;
+
+    }
+
+    //print custom
+    private void printCustom(String msg, int size, int align) {
+        //Print config "mode"
+        byte[] cc = new byte[]{0x1B,0x21,0x03};  // 0- normal size text
+        //byte[] cc1 = new byte[]{0x1B,0x21,0x00};  // 0- normal size text
+        byte[] bb = new byte[]{0x1B,0x21,0x08};  // 1- only bold text
+        byte[] bb2 = new byte[]{0x1B,0x21,0x20}; // 2- bold with medium text
+        byte[] bb3 = new byte[]{0x1B,0x21,0x10}; // 3- bold with large text
+        try {
+            switch (size){
+                case 0:
+                    outputStream.write(cc);
+                    break;
+                case 1:
+                    outputStream.write(bb);
+                    break;
+                case 2:
+                    outputStream.write(bb2);
+                    break;
+                case 3:
+                    outputStream.write(bb3);
+                    break;
+            }
+
+            switch (align){
+                case 0:
+                    //left align
+                    outputStream.write(PrinterCommands.ESC_ALIGN_LEFT);
+                    break;
+                case 1:
+                    //center align
+                    outputStream.write(PrinterCommands.ESC_ALIGN_CENTER);
+                    break;
+                case 2:
+                    //right align
+                    outputStream.write(PrinterCommands.ESC_ALIGN_RIGHT);
+                    break;
+            }
+            outputStream.write(msg.getBytes());
+            outputStream.write(PrinterCommands.LF);
+            //outputStream.write(cc);
+            //printNewLine();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    //print unicode
+    public void printUnicode(){
+        try {
+            outputStream.write(PrinterCommands.ESC_ALIGN_CENTER);
+            printText(Utils.UNICODE_TEXT);
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    //print new line
+    private void printNewLine() {
+        try {
+            outputStream.write(PrinterCommands.FEED_LINE);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    //print text
+    private void printText(String msg) {
+        try {
+            // Print normal text
+            outputStream.write(msg.getBytes());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    //print byte[]
+    private void printText(byte[] msg) {
+        try {
+            // Print normal text
+            outputStream.write(msg);
+            printNewLine();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    //print photo
+    public void printPhoto(int img) {
+        try {
+            Bitmap bmp = BitmapFactory.decodeResource(act.getResources(),
+                    img);
+            if(bmp!=null){
+                byte[] command = Utils.decodeBitmap(bmp);
+                outputStream.write(PrinterCommands.ESC_ALIGN_CENTER);
+                printText(command);
+            }else{
+                Log.e("Print Photo error", "the file isn't exists");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            Log.e("PrintTools", "the file isn't exists");
+        }
+    }
+
+    /** Defines callbacks for service binding, passed to bindService() */
+    private ServiceConnection connection = new ServiceConnection() {
+
+        @Override
+        public void onServiceConnected(ComponentName className,
+                                       IBinder service) {
+            // We've bound to LocalService, cast the IBinder and get LocalService instance
+            Impresion.LocalBinder binder = (Impresion.LocalBinder) service;
+            impresion = binder.getService();
+            if (impresion.getBluetoothAdapter() != null && impresion.getbluetoothSocket() != null) {
+                if (impresion.getOutputStream() != null) {
+
+                    mBound = true;
+                } else {
+                    mBound = false;
+
+                }
+            } else {
+                mBound = false;
+            }
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName arg0) {
+            mBound = false;
+        }
+        @Override
+        public void onBindingDied (ComponentName arg0) {
+            mBound = false;
+        }
+    };
+
+    public void cargarImpresora(final Context context) {
+
+        String newURL = Constantes.GET_CONDUCTOR_BY_ID + "?conductor=" + ls_id_conductor;
+        Log.d(TAG,newURL);
+
+        // Realizar petición GET_BY_ID
+        VolleySingleton.getInstance(context).addToRequestQueue(
+                myRequest = new JsonObjectRequest(
+                        Request.Method.POST,
+                        newURL,
+                        null,
+                        new Response.Listener<JSONObject>() {
+
+                            @Override
+                            public void onResponse(JSONObject response) {
+                                // Procesar respuesta Json
+                                procesarRespuestaImpresora(response, context);
+                            }
+                        },
+                        new Response.ErrorListener() {
+                            @Override
+                            public void onErrorResponse(VolleyError error) {
+                                Log.d(TAG, "Error Volley parametro: " + error.getMessage());
+
+                            }
+                        }
+                )
+        );
+        myRequest.setRetryPolicy(new DefaultRetryPolicy(
+                50000,
+                5,//DefaultRetryPolicy.DEFAULT_MAX_RETRIES
+                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+
+    }
+
+    private void procesarRespuestaImpresora(JSONObject response, Context context) {
+
+        try {
+            // Obtener atributo "mensaje"
+            String mensaje = response.getString("estado");
+
+            switch (mensaje) {
+                case "1":
+                    JSONArray datos_parada = response.getJSONArray("conductor");
+
+                    for(int i = 0; i < datos_parada.length(); i++)
+                    {
+                        JSONObject object = datos_parada.getJSONObject(i);
+
+                        SharedPreferences settings1 = PreferenceManager.getDefaultSharedPreferences(context);
+
+                        SharedPreferences.Editor editor = settings1.edit();
+
+                        String l_impresora;
+
+                        l_impresora = object.getString("impresora");
+
+                        editor.putString("impresora",l_impresora);
+                        editor.putString("tipo_ventana", "main");
+                        editor.apply();
+
+                        if(!l_impresora.equals("")) {
+
+
+                            Intent intent = new Intent(context, Impresion.class);
+                            context.startService(intent);
+                            esperarYCerrar(1500, intent,context);
+
+                        }else{
+
+                            Intent intent = new Intent(context, Impresion.class);
+                            context.bindService(intent, connection, Context.BIND_AUTO_CREATE);
+                            context.startService(intent);
+
+                        }
+
+                    }
+                    break;
+
+            }
+
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    public void esperarYCerrar(int milisegundos, Intent intent, final Context context) {
+        Handler handler = new Handler();
+        handler.postDelayed(new Runnable() {
+            public void run() {
+                // acciones que se ejecutan tras los milisegundos
+                bindApp(intent, context);
+            }
+        }, milisegundos);
+    }
+    public void bindApp(Intent intent, Context context) {
+        Log.d("impresora", "bind");
+        context.bindService(intent, connection, Context.BIND_AUTO_CREATE);
+        if (impresion != null) {
+            if (impresion.getBluetoothAdapter() != null) {
+                if (impresion.getOutputStream() != null) {
+                    mBound = true;
+                } else {
+                    mBound = false;
+
+                }
+            } else {
+                mBound = false;
+            }
+        }else{
+            mBound = false;
+        }
+    }
+
+    private void directorio(){
+        checkFilePermissions();
+        path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).toString() + "/pdf";
+        dir = new File(path);
+        if (!dir.exists()) {
+            dir.mkdirs();
+        }
+    }
+
+    private void checkFilePermissions() {
+        if(Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP){
+            int permissionCheck = ContextCompat.checkSelfPermission(context,"Manifest.permission.READ_EXTERNAL_STORAGE");
+            permissionCheck += ContextCompat.checkSelfPermission(context,"Manifest.permission.WRITE_EXTERNAL_STORAGE");
+            if (permissionCheck != 0) {
+
+                ActivityCompat.requestPermissions(act,new String[]{android.Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE}, 1001); //Any number
+            }
+        }else{
+            Log.d(TAG, "checkBTPermissions: No need to check permissions. SDK version < LOLLIPOP.");
+        }
+    }
 
 }
