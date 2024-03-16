@@ -1,11 +1,17 @@
 package com.rosario.hp.remisluna;
 
 import android.Manifest;
+import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.content.pm.ServiceInfo;
+import android.graphics.Color;
 import android.location.Address;
 import android.location.Criteria;
 import android.location.Geocoder;
@@ -25,7 +31,10 @@ import android.util.Log;
 
 import android.widget.Toast;
 
+import androidx.annotation.RequiresApi;
 import androidx.core.app.ActivityCompat;
+import androidx.core.app.NotificationCompat;
+import androidx.core.app.ServiceCompat;
 
 import com.android.volley.request.JsonObjectRequest;
 import com.google.android.gms.common.api.GoogleApi;
@@ -89,9 +98,18 @@ public class ServicioGeolocalizacion extends Service implements Runnable {
 
     @Override
     public void onCreate() {
+
+        notificacion();
+        super.onCreate();
+
         Toast.makeText(this, "Taxímetro iniciado", Toast.LENGTH_SHORT).show();
         Log.d("Taxímetro","Taxímetro iniciado");
-        super.onCreate();
+        actualizar_coordenadas();
+
+    }
+
+    private void actualizar_coordenadas(){
+
         distancia_acumulada = 0;
         l_diferencia = 0L;
         tiempo_acumulado = 0L;
@@ -112,14 +130,6 @@ public class ServicioGeolocalizacion extends Service implements Runnable {
         l_inicio = System.currentTimeMillis();
         mLocationListener = new MyLocationListener();
         mLocationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-
-        actualizar_coordenadas();
-
-    }
-
-
-
-    private void actualizar_coordenadas(){
 
         Geocoder coder = new Geocoder(getApplicationContext());
         try {
@@ -150,10 +160,55 @@ public class ServicioGeolocalizacion extends Service implements Runnable {
     @Override
     public int onStartCommand(Intent intenc, int flags, int idArranque) {
         // Toast.makeText(this,"Servicio arrancado "+ idArranque,Toast.LENGTH_SHORT).show();
+        //notificacion();
         obtenerSenalGPS();
         Log.d("geolicalizacion","gps");
         return START_STICKY;
     }
+
+   private Void notificacion(){
+       Log.d("notificacion","notificacion");
+       if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+           String NOTIFICATION_CHANNEL_ID = "Callisto";
+           NotificationChannel channel = new NotificationChannel(
+                   NOTIFICATION_CHANNEL_ID,
+                   NOTIFICATION_CHANNEL_ID,
+                   NotificationManager.IMPORTANCE_LOW
+           );
+           getSystemService(NotificationManager.class).createNotificationChannel(channel);
+
+           Notification.Builder builder = new Notification.Builder(this, NOTIFICATION_CHANNEL_ID)
+                   .setContentTitle("Callisto")
+                   .setContentText("Taxímetro iniciado")
+                   .setColor(getResources().getColor(R.color.black))
+                   .setSmallIcon(R.drawable.icono_toolbar);
+
+           Notification notification = builder.build();
+           if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+               startForeground(5, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_LOCATION);
+           } else {
+               startForeground(5, notification);
+           }
+
+       } else {
+
+           NotificationCompat.Builder builder = new NotificationCompat.Builder(this)
+                   .setContentTitle(getString(R.string.app_name))
+                   .setContentText("Taxímetro iniciado")
+                   .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                   .setAutoCancel(true);
+
+           Notification notification = builder.build();
+
+
+
+           startForeground(5, notification);
+       }
+
+       return null;
+   }
+
+
 
     /**
      * Metodo para Obtener la se–al del GPS
@@ -445,8 +500,6 @@ public class ServicioGeolocalizacion extends Service implements Runnable {
             });
         }
     }
-
-
 
 
     /**

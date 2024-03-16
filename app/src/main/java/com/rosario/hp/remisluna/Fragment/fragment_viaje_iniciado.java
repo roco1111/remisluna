@@ -226,6 +226,7 @@ public class fragment_viaje_iniciado extends Fragment {
     private String path;
     private String viajes_automaticos;
     private String automatico;
+    private String viajes_automaticos_chofer;
 
     @Override
     public void onPause() {
@@ -324,6 +325,7 @@ public class fragment_viaje_iniciado extends Fragment {
 
                 if(isMyServiceRunning(ServicioGeolocalizacion.class)) {
                     act.unregisterReceiver(onBroadcast);
+
                     act.stopService(new Intent(act, ServicioGeolocalizacion.class));
                     //act.stopService(new Intent(act, ServicioGeolocalizacion_metros.class));
                     Log.d("Servicio","Servicio detenido");
@@ -438,6 +440,7 @@ public class fragment_viaje_iniciado extends Fragment {
         l_impresion = settings.getString("impresion","");
         viajes_automaticos = settings.getString("viajes_automaticos", "");
         automatico = settings.getString("automatico", "");
+        viajes_automaticos_chofer = settings.getString("viajes_automaticos_chofer", "");
 
         sdf = new SimpleDateFormat("MM/dd/yyyy HH:mm");
         lb_viaje_terminado = false;
@@ -531,20 +534,15 @@ public class fragment_viaje_iniciado extends Fragment {
         }else if(l_estado_viaje.equals("asignado")){
             cargarTarifaInicial(context);
         }
-        if (viajes_automaticos.equals("0")) {
-            this.boton_viaje.setVisibility(View.GONE);
-
-        } else {
-            this.boton_viaje.setVisibility(View.VISIBLE);
-
-        }
 
         if (automatico.equals("0")) {
             this.boton_mapa.setVisibility(View.VISIBLE);
             id_datos_viaje.setVisibility(View.VISIBLE);
+            this.boton_viaje.setVisibility(View.GONE);
         }else{
             this.boton_mapa.setVisibility(View.GONE);
             id_datos_viaje.setVisibility(View.GONE);
+            this.boton_viaje.setVisibility(View.VISIBLE);
         }
     }
 
@@ -648,8 +646,15 @@ public class fragment_viaje_iniciado extends Fragment {
                         texto_tarifa.setText(R.string.diurno);
                     }else{
                         importe_bajada = object.getString("importe_bajada_nocturno");
+
                         texto_tarifa.setText(R.string.nocturno);
                     }
+                    editor.putString("importe_bajada",object.getString("importe_bajada"));
+                    editor.putString("importe_bajada_nocturno",object.getString("importe_bajada_nocturno"));
+                    editor.putString("importe_ficha",object.getString("importe_ficha"));
+                    editor.putString("importe_ficha_nocturno",object.getString("importe_ficha_nocturno"));
+                    editor.putString("importe_espera",object.getString("importe_espera"));
+                    editor.putString("importe_espera_nocturno",object.getString("importe_espera_nocturno"));
 
                     importe.setText(importe_bajada);
 
@@ -1301,7 +1306,13 @@ public class fragment_viaje_iniciado extends Fragment {
     private class Iniciar_servicio_tiempo extends AsyncTask<Void, Integer, Integer> {
         protected Integer doInBackground(Void... params ) {
 
-            act.startService(new Intent(act,ServicioGeolocalizacion.class));
+            //act.startService(new Intent(act,ServicioGeolocalizacion.class));
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                context.startForegroundService(new Intent(act,ServicioGeolocalizacion.class).putExtra("stops",true));
+            }else{
+                context.startService(new Intent(act,ServicioGeolocalizacion.class));
+            }
             //act.startService(new Intent(act,ServicioGeolocalizacionFused.class));
             //Iniciar_servicio_metros = new Iniciar_servicio_metros();
             //Iniciar_servicio_metros.execute();

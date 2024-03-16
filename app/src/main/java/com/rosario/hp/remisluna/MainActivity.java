@@ -497,6 +497,7 @@ public class MainActivity extends AppCompatActivity {
 
                     editor.putString("id_turno_chofer",object.getString("id"));
                     editor.putString("viajes_automaticos",object.getString("viajes_automaticos"));
+                    editor.putString("viajes_automaticos_chofer",object.getString("viajes_automaticos_chofer"));
                     editor.putString("tipo_empresa",object.getString("tipo"));
                     editor.apply();
 
@@ -806,6 +807,7 @@ public class MainActivity extends AppCompatActivity {
                     String ls_telefono = object.getString("telefono");
 
                     editor.putString("telefono_remiseria",ls_telefono);
+                    editor.putString("automatico", "0");
 
                     String ls_tipo_empresa = object.getString("tipo");
 
@@ -1151,6 +1153,7 @@ public class MainActivity extends AppCompatActivity {
                     editor.putString("id_viaje",ls_viaje);
                     editor.putString("estado_conductor",object.getString("estado_conductor"));
                     editor.putString("estado_vehiculo",object.getString("estado_vehiculo"));
+
                     editor.apply();
 
                     locationEnd();

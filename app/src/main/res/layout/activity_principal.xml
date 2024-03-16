@@ -168,8 +168,9 @@
                         android:background="@drawable/boton"
                         android:backgroundTint="@color/colorPrimary"
                         android:text="@string/nuevo_viaje"
-                        android:textSize="@dimen/tamanio_texto"
                         android:textColor="@color/colorPrimaryText"
+                        android:textSize="@dimen/tamanio_texto"
+                        android:visibility="gone"
                         tools:ignore="RtlHardcoded" />
 
 
@@ -193,8 +194,8 @@
                         android:background="@drawable/boton_chico"
                         android:backgroundTint="@color/colorPrimary"
                         android:text="@string/nuevo_turno"
-                        android:textSize="@dimen/tamanio_texto"
                         android:textColor="@color/colorPrimaryText"
+                        android:textSize="@dimen/tamanio_texto"
                         tools:ignore="RtlHardcoded" />
 
                     <android.widget.Button

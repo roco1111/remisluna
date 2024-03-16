@@ -713,6 +713,7 @@ public class MainViaje extends AppCompatActivity {
                     editor.putString("salida_coordenadas",object.getString("salida_coordenadas"));
                     editor.putLong("tiempo_tolerancia",Long.parseLong(object.getString("tiempo_tolerancia")));
                     editor.putLong("tiempo_acumulado",Long.parseLong(object.getString("tiempo_acumulado")));
+                    editor.putString("viajes_automaticos_chofer",object.getString("viajes_automaticos"));
                     editor.putString("estado_viaje","en curso");
 
 
@@ -818,6 +819,8 @@ public class MainViaje extends AppCompatActivity {
                     editor.putString("salida",object.getString("salida"));
                     editor.putString("destino",object.getString("destino"));
                     editor.putString("solicitante",object.getString("solicitante"));
+                    editor.putString("porc_titular",object.getString("porc_titular"));
+                    editor.putString("viajes_automaticos_chofer",object.getString("viajes_automaticos"));
 
                     editor.apply();
 

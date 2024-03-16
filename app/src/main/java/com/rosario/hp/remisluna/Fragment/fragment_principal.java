@@ -207,6 +207,7 @@ public class fragment_principal extends Fragment {
     private String l_impresion;
     private String l_paradas;
     private String tipo_empresa;
+    private String viajes_automaticos_chofer;
 
     @Override
     public void onStart() {
@@ -340,6 +341,7 @@ public class fragment_principal extends Fragment {
         l_impresion = settings.getString("impresion", "");
         l_turno_app = settings.getString("turnos_app", "");
         l_paradas = settings.getString("paradas", "");
+        viajes_automaticos_chofer = settings.getString("viajes_automaticos_chofer", "");
 
         this.boton_uno = v.findViewById(R.id.imageButtonUno);
         this.boton_dos = v.findViewById(R.id.imageButtonDos);
@@ -415,7 +417,7 @@ public class fragment_principal extends Fragment {
         impresion = new Impresion();
         this.boton_turno.setText(act.getResources().getString(R.string.nuevo_turno));
 
-        if (viajes_automaticos.equals("0")) {
+        if (viajes_automaticos.equals("0") || viajes_automaticos_chofer.equals("0")) {
             this.boton_viaje.setVisibility(View.GONE);
         } else {
             this.boton_viaje.setVisibility(View.VISIBLE);
@@ -2686,7 +2688,9 @@ private void procesarRespuestaParametroTurno(JSONObject response, Context contex
                     {
                         this.boton_ocho.setEnabled(true);
                         this.boton_cuatro.setEnabled(true);
-                        this.boton_viaje.setVisibility(View.VISIBLE);
+                        if(viajes_automaticos.equals("1") && viajes_automaticos_chofer.equals("1")) {
+                            this.boton_viaje.setVisibility(View.VISIBLE);
+                        }
                         this.buttonParadas.setEnabled(true);
                         this.boton_uno.setEnabled(true);
                         this.repetirTicket.setVisibility(View.VISIBLE);
