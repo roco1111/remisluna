@@ -8,13 +8,15 @@
     <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
         android:id="@+id/swipeRefreshLayout"
         android:layout_width="match_parent"
+
         android:layout_height="match_parent">
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/reciclador"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:background="@color/background"
+
+            android:background="@color/white"
             android:padding="3dp"
             android:scrollbars="vertical" />
     </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
@@ -30,20 +32,22 @@
         android:layout_marginRight="10dp"
         android:foregroundGravity="center"
         android:paddingStart="30dp"
-        android:src="@drawable/no_elementos" />
+        android:src="@drawable/no_elementos"
+        android:visibility = "gone"/>
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/TwEmpty"
-            android:text="@string/vacio"
-            android:textAlignment="center"
-            android:textSize="18sp"
-            android:layout_marginLeft="30dp"
-            android:layout_marginRight="30dp"
-            android:layout_alignParentBottom="true"
-            android:layout_centerHorizontal="true"
-            android:layout_marginBottom="90dp" />
+    <TextView
+        android:id="@+id/TwEmpty"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginLeft="30dp"
+        android:layout_marginRight="30dp"
+        android:layout_marginBottom="150dp"
+        android:text="@string/vacio"
+        android:textAlignment="center"
+        android:textSize="18sp"
+        android:visibility = "gone"/>
 
 
 </RelativeLayout>

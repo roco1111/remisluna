@@ -33,6 +33,7 @@ public class Constantes {
     public static final String ALARMA_VIAJE = "https://" + IP + PUERTO_HOST + "/alarma_viaje.php";
     public static final String INSERTAR_TRAYECTORIA = "https://" + IP + PUERTO_HOST + "/agregar_trayectoria.php";
     public static final String VIAJE_AUTOMATICO = "https://" + IP + PUERTO_HOST + "/agregar_viaje_aut.php";
+    public static final String VIAJE_QR= "https://" + IP + PUERTO_HOST + "/agregar_viaje_aut_qr.php";
 
     public static final String GET_VEHICULO = "https://" + IP + PUERTO_HOST + "/obtener_vehiculo.php";
     public static final String GET_ID_VEHICULO = "https://" + IP + PUERTO_HOST + "/obtener_id_vehiculo.php";
@@ -64,6 +65,14 @@ public class Constantes {
 
     public static final String GET_REMISERIA = "https://" + IP + PUERTO_HOST + "/obtener_remiseria.php";
     public static final String GET_TOLERANCIA = "https://" + IP + PUERTO_HOST + "/obtener_tolerancia.php";
+
+    public static final String GET_HABILITADO_SERVICIO = "https://" + IP + PUERTO_HOST + "/obtener_habilitado_servicio.php";
+
+    public static final String GET_EMPRESAS_REMISERIAS = "https://" + IP + PUERTO_HOST + "/obtener_empresas_remiseria.php";
+
+    public static final String GET_SECTORES_EMPRESAS = "https://" + IP + PUERTO_HOST + "/obtener_sectores_empresa.php";
+
+    public static final String GET_SOLICITANTE = "https://" + IP + PUERTO_HOST + "/obtener_solicitante.php";
 
     public static final String VERIFICAR_IMPRESORA = "https://" + IP + PUERTO_HOST + "/verificar_impresora.php";
 

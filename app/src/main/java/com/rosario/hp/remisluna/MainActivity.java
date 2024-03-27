@@ -125,12 +125,120 @@ public class MainActivity extends AppCompatActivity {
                  .commit();
 
 
-         cargarParametroTurno(context);
+         CargarServicioHabilitado(context);
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+
+    }
+
+    public void CargarServicioHabilitado(final Context context) {
+
+        HashMap<String, String> map = new HashMap<>();// Mapeo previo
+
+        map.put("remiseria", ls_remiseria);
+        map.put("servicio", "4");
+
+        JSONObject jobject = new JSONObject(map);
+
+
+        // Depurando objeto Json...
+        Log.d(TAG, jobject.toString());
+
+        StringBuilder encodedParams = new StringBuilder();
+        try {
+            for (Map.Entry<String, String> entry : map.entrySet()) {
+                encodedParams.append(URLEncoder.encode(entry.getKey(), "utf-8"));
+                encodedParams.append('=');
+                encodedParams.append(URLEncoder.encode(entry.getValue(), "utf-8"));
+                encodedParams.append('&');
+            }
+        } catch (UnsupportedEncodingException uee) {
+            throw new RuntimeException("Encoding not supported: " + "utf-8", uee);
+        }
+
+        encodedParams.setLength(Math.max(encodedParams.length() - 1, 0));
+
+        // Añadir parámetro a la URL del web service
+        String newURL = Constantes.GET_HABILITADO_SERVICIO + "?" + encodedParams;
+        Log.d(TAG,newURL);
+
+        // Realizar petición GET_BY_ID
+        VolleySingleton.getInstance(context).addToRequestQueue(
+                myRequest = new JsonObjectRequest(
+                        Request.Method.POST,
+                        newURL,
+                        null,
+                        new Response.Listener<JSONObject>() {
+
+                            @Override
+                            public void onResponse(JSONObject response) {
+                                // Procesar respuesta Json
+                                procesarRespuestaServicioHabilitado(response, context);
+                            }
+                        },
+                        new Response.ErrorListener() {
+                            @Override
+                            public void onErrorResponse(VolleyError error) {
+                                Log.d(TAG, "Error Volley parámetro: " + error.getMessage());
+
+                            }
+                        }
+                )
+        );
+        myRequest.setRetryPolicy(new DefaultRetryPolicy(
+                50000,
+                5,//DefaultRetryPolicy.DEFAULT_MAX_RETRIES
+                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+
+    }
+
+    private void procesarRespuestaServicioHabilitado(JSONObject response, Context context) {
+
+        try {
+            // Obtener atributo "mensaje"
+            String mensaje = response.getString("estado");
+
+            String l_habilitado = "";
+
+            switch (mensaje) {
+                case "1":
+                    JSONArray datos_parametro = response.getJSONArray("habilitado");
+
+                    for (int i = 0; i < datos_parametro.length(); i++) {
+                        JSONObject object = datos_parametro.getJSONObject(i);
+
+                        l_habilitado = object.getString("habilitado");
+
+                    }
+
+                    SharedPreferences settings1 = PreferenceManager.getDefaultSharedPreferences(context);
+
+                    SharedPreferences.Editor editor = settings1.edit();
+
+
+                    editor.putString("servicio_empresarial",l_habilitado);
+                    editor.apply();
+
+                    cargarParametroTurno(context);
+
+                    break;
+                case "2":
+                    String mensaje2 = response.getString("mensaje");
+                    Toast.makeText(
+                            context,
+                            mensaje2,
+                            Toast.LENGTH_LONG).show();
+                    break;
+
+            }
+
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
 
     }
 

@@ -71,6 +71,7 @@ import com.itextpdf.text.pdf.PdfWriter;
 import com.itextpdf.text.pdf.draw.LineSeparator;
 import com.rosario.hp.remisluna.Impresion;
 import com.rosario.hp.remisluna.MainActivity;
+import com.rosario.hp.remisluna.MainQR;
 import com.rosario.hp.remisluna.MainViaje;
 import com.rosario.hp.remisluna.R;
 import com.rosario.hp.remisluna.ServicioGeolocalizacion;
@@ -182,6 +183,7 @@ public class fragment_viaje_iniciado extends Fragment {
     private String telefono_base;
     private Boolean lb_servicio = false;
     private Button inicio;
+    private Button boton_viaje_empresarial;
     private LocationManager mLocationManager;
     private String latitud_salida;
     private String longitud_salida;
@@ -227,6 +229,7 @@ public class fragment_viaje_iniciado extends Fragment {
     private String viajes_automaticos;
     private String automatico;
     private String viajes_automaticos_chofer;
+    private String servicios_empresariales;
 
     @Override
     public void onPause() {
@@ -298,6 +301,7 @@ public class fragment_viaje_iniciado extends Fragment {
         inicio = v.findViewById(R.id.buttonInicio);
         buttonmenu = v.findViewById(R.id.buttonmenu);
         boton_viaje = v.findViewById(R.id.buttonviaje);
+        this.boton_viaje_empresarial = v.findViewById(R.id.buttonViajeEmpresarial);
         boton_mapa = v.findViewById(R.id.mapa);
         this.repetirTicket = v.findViewById(R.id.buttonTicket);
 
@@ -419,6 +423,18 @@ public class fragment_viaje_iniciado extends Fragment {
                 repetirTicket(context);
             }
         });
+        this.boton_viaje_empresarial.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                mediaPlayer.start();
+
+                Intent intent2;
+                intent2 = new Intent(context, MainQR.class);
+
+                context.startActivity(intent2);
+            }
+        });
         reiniciar();
 
         return v;
@@ -441,6 +457,7 @@ public class fragment_viaje_iniciado extends Fragment {
         viajes_automaticos = settings.getString("viajes_automaticos", "");
         automatico = settings.getString("automatico", "");
         viajes_automaticos_chofer = settings.getString("viajes_automaticos_chofer", "");
+        servicios_empresariales = settings.getString("servicio_empresarial", "0");
 
         sdf = new SimpleDateFormat("MM/dd/yyyy HH:mm");
         lb_viaje_terminado = false;
@@ -529,12 +546,6 @@ public class fragment_viaje_iniciado extends Fragment {
         getMyTime_desde = l_hoy + ' ' + l_hora_desde;
         getMyTime_hasta = l_hoy + ' ' + l_hora_hasta;
 
-        if(l_estado_viaje.equals("en curso")) {
-            cargarDatos(context);
-        }else if(l_estado_viaje.equals("asignado")){
-            cargarTarifaInicial(context);
-        }
-
         if (automatico.equals("0")) {
             this.boton_mapa.setVisibility(View.VISIBLE);
             id_datos_viaje.setVisibility(View.VISIBLE);
@@ -544,6 +555,29 @@ public class fragment_viaje_iniciado extends Fragment {
             id_datos_viaje.setVisibility(View.GONE);
             this.boton_viaje.setVisibility(View.VISIBLE);
         }
+
+        switch (l_estado_viaje) {
+            case "en curso":
+                cargarDatos(context);
+                break;
+            case "asignado":
+                cargarTarifaInicial(context);
+
+                break;
+            case "terminado":
+                if (servicios_empresariales.equals("1")) {
+                    boton_viaje_empresarial.setVisibility(View.VISIBLE);
+                    boton_viaje.setVisibility(View.GONE);
+                } else {
+                    boton_viaje_empresarial.setVisibility(View.GONE);
+                    boton_viaje.setVisibility(View.VISIBLE);
+                }
+                break;
+        }
+
+
+
+
     }
 
 
@@ -1482,11 +1516,13 @@ public class fragment_viaje_iniciado extends Fragment {
                     l_estado_viaje = "asignado";
                     editor.putString("estado_viaje","asignado");
 
+
                     break;
 
                 case "2":
                     l_estado_viaje = "terminado";
                     editor.putString("estado_viaje","terminado");
+
 
                     break;
 

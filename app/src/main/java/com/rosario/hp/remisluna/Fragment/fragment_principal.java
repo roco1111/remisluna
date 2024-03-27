@@ -70,10 +70,12 @@ import com.rosario.hp.remisluna.Entidades.turno;
 import com.rosario.hp.remisluna.Entidades.viaje;
 import com.rosario.hp.remisluna.Impresion;
 import com.rosario.hp.remisluna.MainActivity;
+import com.rosario.hp.remisluna.MainQR;
 import com.rosario.hp.remisluna.MainViaje;
 
 import com.rosario.hp.remisluna.R;
 
+import com.rosario.hp.remisluna.empresas_activity;
 import com.rosario.hp.remisluna.include.Constantes;
 import com.rosario.hp.remisluna.include.PrinterCommands;
 import com.rosario.hp.remisluna.include.Utils;
@@ -123,6 +125,7 @@ public class fragment_principal extends Fragment {
     private Button boton_impresora;
     private Button boton_turno;
     private Button boton_viaje;
+    private Button boton_viaje_empresarial;
     private Button buttonParadas;
     private Button repetirTicket;
 
@@ -208,6 +211,7 @@ public class fragment_principal extends Fragment {
     private String l_paradas;
     private String tipo_empresa;
     private String viajes_automaticos_chofer;
+    private String servicios_empresariales;
 
     @Override
     public void onStart() {
@@ -342,6 +346,7 @@ public class fragment_principal extends Fragment {
         l_turno_app = settings.getString("turnos_app", "");
         l_paradas = settings.getString("paradas", "");
         viajes_automaticos_chofer = settings.getString("viajes_automaticos_chofer", "");
+        servicios_empresariales = settings.getString("servicio_empresarial", "0");
 
         this.boton_uno = v.findViewById(R.id.imageButtonUno);
         this.boton_dos = v.findViewById(R.id.imageButtonDos);
@@ -367,6 +372,7 @@ public class fragment_principal extends Fragment {
         this.turno = v.findViewById(R.id.turno);
         texto_tarifa = v.findViewById(R.id.tarifa);
         this.boton_impresora = v.findViewById(R.id.buttonImpresora);
+        this.boton_viaje_empresarial = v.findViewById(R.id.buttonViajeEmpresarial);
         paradas = new ArrayList<>();
 
         if (gps_habilitado()) {
@@ -568,6 +574,13 @@ public class fragment_principal extends Fragment {
             }
         }
 
+        if(servicios_empresariales.equals("1")){
+            boton_viaje_empresarial.setVisibility(View.VISIBLE);
+            boton_viaje.setVisibility(View.GONE);
+        }else{
+            boton_viaje_empresarial.setVisibility(View.GONE);
+        }
+
         MediaPlayer mediaPlayer = MediaPlayer.create(getActivity(), R.raw.everblue);
 
         this.boton_viaje.setOnClickListener(new View.OnClickListener() {
@@ -577,6 +590,21 @@ public class fragment_principal extends Fragment {
                 mediaPlayer.start();
                 viaje_automatico(context);
 
+            }
+        });
+
+        this.boton_viaje_empresarial.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                mediaPlayer.start();
+
+                Intent intent2;
+                intent2 = new Intent(context, MainQR.class);
+
+                context.startActivity(intent2);
+                ((MainActivity)context).locationEnd();
+                //act.finish();
             }
         });
 

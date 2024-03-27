@@ -52,6 +52,8 @@
     <string name="nombre">Nombre</string>
     <string name="apellido">Apellido</string>
     <string name="nuevo_viaje">Nuevo Viaje </string>
+    <string name="iniciar_viaje">Iniciar Viaje </string>
+    <string name="viaje_sin_qr">Viaje sin QR </string>
 
     <string name="confirmar_cliente">Confirmar Contraseña</string>
     <string name="foto">Foto Perfil</string>

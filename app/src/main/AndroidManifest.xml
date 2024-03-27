@@ -20,6 +20,7 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+    <uses-permission android:name="android.permission.CAMERA" />
     <queries>
 
         <package android:name="com.whatsapp" />
@@ -151,6 +152,24 @@
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".turnos_activity" />
+        </activity>
+        <activity android:name=".empresas_activity"
+            android:screenOrientation="portrait">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".MainActivity" />
+        </activity>
+        <activity android:name=".sectores_activity"
+            android:screenOrientation="portrait">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".empresas_activity" />
+        </activity>
+        <activity android:name=".MainQR"
+            android:screenOrientation="portrait">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".MainActivity" />
         </activity>
         <service android:name=".FCMService"
             android:exported="true">

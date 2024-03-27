@@ -22,15 +22,14 @@
             android:textSize="@dimen/tamanio_parrafo" />
 
 
-
         <View
             android:id="@+id/divider_perfil"
             android:layout_width="fill_parent"
-            android:textColor="@color/colorPrimaryText"
             android:layout_height="1dp"
             android:layout_alignParentBottom="true"
+            android:background="@android:color/darker_gray"
 
-            android:background="@android:color/darker_gray" />
+            android:textColor="@color/colorPrimaryText" />
     </RelativeLayout>
 
     <RelativeLayout
@@ -130,10 +129,10 @@
             android:id="@+id/divider_acerca"
             android:layout_width="fill_parent"
             android:layout_height="1dp"
-            android:textColor="@color/colorPrimaryText"
             android:layout_alignParentBottom="true"
+            android:background="@android:color/darker_gray"
 
-            android:background="@android:color/darker_gray" />
+            android:textColor="@color/colorPrimaryText" />
     </RelativeLayout>
 
     <RelativeLayout
