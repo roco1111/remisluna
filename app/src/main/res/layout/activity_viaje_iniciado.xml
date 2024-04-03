@@ -408,6 +408,78 @@
     </RelativeLayout>
 
     <RelativeLayout
+        android:id="@+id/id_botones_pagos"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/margin_top"
+        android:orientation="vertical">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            android:id="@+id/id_efectivo"
+            android:layout_marginTop="@dimen/margin_start"
+            android:orientation="vertical">
+
+            <android.widget.Button
+                android:id="@+id/buttonefectivo"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/boton"
+                android:backgroundTint="@color/colorPrimary"
+                android:text="@string/efectivo"
+                android:textSize="@dimen/tamanio_texto"
+                android:textColor="@color/colorPrimaryText"
+                tools:ignore="RtlHardcoded" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            android:layout_below="@id/id_efectivo"
+            android:id="@+id/id_cuenta_corriente"
+            android:layout_marginTop="@dimen/margin_start"
+            android:orientation="vertical">
+
+            <android.widget.Button
+                android:id="@+id/buttonViajeEmpresarial"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/boton"
+                android:backgroundTint="@color/colorPrimary"
+                android:text="@string/cuenta_corriente"
+                android:textSize="@dimen/tamanio_texto"
+                android:textColor="@color/colorPrimaryText"
+                tools:ignore="RtlHardcoded" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            android:layout_below="@id/id_cuenta_corriente"
+            android:id="@+id/id_mercado_pago"
+            android:layout_marginTop="@dimen/margin_start"
+            android:orientation="vertical">
+
+            <android.widget.Button
+                android:id="@+id/buttonmp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/boton"
+                android:backgroundTint="@color/colorPrimary"
+                android:text="@string/mercado_pago"
+                android:textSize="@dimen/tamanio_texto"
+                android:textColor="@color/colorPrimaryText"
+                tools:ignore="RtlHardcoded" />
+
+        </LinearLayout>
+    </RelativeLayout>
+    <RelativeLayout
         android:id="@+id/id_botones_terminar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -478,25 +550,7 @@
 
         </LinearLayout>
 
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_centerHorizontal="true"
-            android:layout_below="@id/idviaje"
-            android:layout_marginTop="@dimen/margin_start"
 
-            >
-            <android.widget.Button
-                android:id="@+id/buttonViajeEmpresarial"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:background="@drawable/boton"
-                android:backgroundTint="@color/colorPrimary"
-                android:text="@string/iniciar_viaje"
-                android:textColor="@color/colorPrimaryText"
-                android:textSize="@dimen/tamanio_texto"
-                tools:ignore="RtlHardcoded" />
-        </LinearLayout>
     </RelativeLayout>
 
 </LinearLayout>

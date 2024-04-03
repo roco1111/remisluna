@@ -40,15 +40,20 @@ import com.google.android.gms.vision.barcode.BarcodeDetector;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 
 import com.rosario.hp.remisluna.Entidades.conductor_titular;
 import com.rosario.hp.remisluna.Entidades.solicitante;
 import com.rosario.hp.remisluna.MainActivity;
+import com.rosario.hp.remisluna.MainMP;
+import com.rosario.hp.remisluna.MainQR;
 import com.rosario.hp.remisluna.MainViaje;
 import com.rosario.hp.remisluna.R;
 import com.rosario.hp.remisluna.include.Constantes;
@@ -75,14 +80,28 @@ public class fragment_qr extends Fragment implements SurfaceHolder.Callback{
     private String id_movil;
     Camera.Parameters params;
     private Activity act;
-    private String ls_id_conductor;
-    private Button boton_viaje;
+    private String ls_id_empresa;
+    private String ls_id_solicitante;
+    private Button boton_mp;
+    private Button boton_efectivo;
+    private String cantidad_ficha;
+    private String cantidad_espera;
+    private String importe_bajada;
+    private String importe_ficha;
+    private String importe_espera;
+    private String l_nocturno;
+    private String monto_espera;
+    private String monto_ficha;
+    private String monto_total;
+    private String l_tarifa_cc;
 
     Camera camera;
     private CameraManager mCameraManager;
     boolean isFlash = false;
     boolean isOn = false;
     private String mCameraId;
+
+    private String l_id_viaje;
 
 
     @Override
@@ -113,7 +132,8 @@ public class fragment_qr extends Fragment implements SurfaceHolder.Callback{
 
         View v = inflater.inflate(R.layout.activity_qr, container, false);
         cameraView = v.findViewById(R.id.camera_view);
-        this.boton_viaje = v.findViewById(R.id.buttonViaje);
+        this.boton_mp = v.findViewById(R.id.buttonmp);
+        this.boton_efectivo = v.findViewById(R.id.buttonEfectivo);
 
         SurfaceHolder mHolder = cameraView.getHolder();
         mHolder.addCallback(this);
@@ -121,8 +141,8 @@ public class fragment_qr extends Fragment implements SurfaceHolder.Callback{
         context = getContext();
 
         SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(context);
-        ls_id_conductor = settings.getString("id", "");
-
+        l_id_viaje = settings.getString("id_viaje","");
+        l_nocturno = settings.getString("nocturno","");
 
         if (camera == null) {
 
@@ -145,12 +165,26 @@ public class fragment_qr extends Fragment implements SurfaceHolder.Callback{
 
         MediaPlayer mediaPlayer = MediaPlayer.create(getActivity(), R.raw.everblue);
 
-        this.boton_viaje.setOnClickListener(new View.OnClickListener() {
+        this.boton_mp.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
 
                 mediaPlayer.start();
-                viaje_automatico(context);
+                Intent intent2 = new Intent(context, MainMP.class);
+                context.startActivity(intent2);
+                act.finish();
+
+            }
+        });
+
+        this.boton_efectivo.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                mediaPlayer.start();
+                Intent intent2 = new Intent(context, MainActivity.class);
+                context.startActivity(intent2);
+                act.finish();
 
             }
         });
@@ -247,6 +281,10 @@ public class fragment_qr extends Fragment implements SurfaceHolder.Callback{
                         tokenanterior = token;
                         Log.i("token", token);
 
+                        MediaPlayer mediaPlayer = MediaPlayer.create(getActivity(), R.raw.everblue);
+
+                        mediaPlayer.start();
+
                         String ls_codigo;
 
                         ls_codigo = String.valueOf(Integer.parseInt(token.substring(0,10)));
@@ -326,8 +364,9 @@ public class fragment_qr extends Fragment implements SurfaceHolder.Callback{
                         String qr = object.getString("qr");
 
                         if(qr.equals(qr_ini)){
-                            String ls_solicitante =  object.getString("id");
-                            viaje_automatico_qr(getContext(), ls_solicitante);
+                            ls_id_solicitante =  object.getString("id");
+                            ls_id_empresa =  object.getString("id_empresa");
+                            cargarViaje(getContext());
                         }else{
                             Toast.makeText(
                                     context,
@@ -355,81 +394,202 @@ public class fragment_qr extends Fragment implements SurfaceHolder.Callback{
 
     }
 
-    private void viaje_automatico(final Context context) {
-        String newURL = Constantes.VIAJE_AUTOMATICO + "?conductor=" + ls_id_conductor;
 
-        Log.d("viaje",newURL);
 
-        // Actualizar datos en el servidor
+    public void cargarViaje(final Context context) {
+
+        // Añadir parámetro a la URL del web service
+        String newURL = Constantes.GET_VIAJE_BY_ID + "?id=" + l_id_viaje;
+        Log.d(TAG,newURL);
+
+        // Realizar petición GET_BY_ID
         VolleySingleton.getInstance(context).addToRequestQueue(
-                new JsonObjectRequest(
+                myRequest = new JsonObjectRequest(
                         Request.Method.POST,
                         newURL,
                         null,
                         new Response.Listener<JSONObject>() {
+
                             @Override
                             public void onResponse(JSONObject response) {
-                                procesarAgregarViajeAut(response, context);
+                                // Procesar respuesta Json
+                                procesarRespuesta(response, context);
                             }
                         },
                         new Response.ErrorListener() {
                             @Override
                             public void onErrorResponse(VolleyError error) {
-                                Log.d(TAG, "Error inicio: " + error.getMessage());
+                                Log.d(TAG, "Error Volley turno: " + error.getMessage());
 
                             }
                         }
-
-                ) {
-                    @Override
-                    public Map<String, String> getHeaders() {
-                        Map<String, String> headers = new HashMap<>();
-                        headers.put("Content-Type", "application/json; charset=utf-8");
-                        return headers;
-                    }
-
-                    @Override
-                    public String getBodyContentType() {
-                        return "application/json; charset=utf-8" + getParamsEncoding();
-                    }
-                }
+                )
         );
+        myRequest.setRetryPolicy(new DefaultRetryPolicy(
+                50000,
+                5,//DefaultRetryPolicy.DEFAULT_MAX_RETRIES
+                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+
     }
 
-    private void procesarAgregarViajeAut(JSONObject response, Context context) {
+    private void procesarRespuesta(JSONObject response, Context context) {
 
         try {
-            // Obtener estado
-            String estado = response.getString("estado");
-            // Obtener mensaje
-            String mensaje = response.getString("mensaje");
-
-            switch (estado) {
+            // Obtener atributo "mensaje"
+            String mensaje = response.getString("estado");
+            switch (mensaje) {
                 case "1":
+                    // Obtener objeto "cliente"
+                    JSONArray mensaje1 = response.getJSONArray("viaje");
 
-                    cargarIdVehiculoParada(context);
+                    JSONObject object = mensaje1.getJSONObject(0);
+                    //Parsear objeto
 
+                    cantidad_espera = object.getString("fichas_espera");
+                    cantidad_ficha = object.getString("fichas");
+
+                    cargarTarifa(context);
                     break;
+
                 case "2":
-                    // Mostrar mensaje
                     Toast.makeText(
                             context,
                             mensaje,
                             Toast.LENGTH_LONG).show();
-                    // Enviar código de falla
+
                     break;
+
             }
+
+
         } catch (JSONException e) {
             e.printStackTrace();
         }
+
+    }
+
+    public void cargarTarifa(final Context context) {
+
+        // Añadir parámetro a la URL del web service
+        String newURL = Constantes.GET_TARIFA_CC + "?id_empresa=" + ls_id_empresa ;
+        Log.d(TAG,newURL);
+
+        // Realizar petición GET_BY_ID
+        VolleySingleton.getInstance(context).addToRequestQueue(
+                myRequest = new JsonObjectRequest(
+                        Request.Method.POST,
+                        newURL,
+                        null,
+                        new Response.Listener<JSONObject>() {
+
+                            @Override
+                            public void onResponse(JSONObject response) {
+                                // Procesar respuesta Json
+
+                                procesarRespuestaTarifa(response, context);
+
+                            }
+                        },
+                        new Response.ErrorListener() {
+                            @Override
+                            public void onErrorResponse(VolleyError error) {
+                                Log.d(TAG, "Error Volley viaje: " + error.getMessage());
+
+                            }
+                        }
+                )
+        );
+        myRequest.setRetryPolicy(new DefaultRetryPolicy(
+                50000,
+                5,//DefaultRetryPolicy.DEFAULT_MAX_RETRIES
+                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+
+    }
+
+    private void procesarRespuestaTarifa(JSONObject response, Context context) {
+
+        try {
+            // Obtener atributo "mensaje"
+            String mensaje = response.getString("estado");
+
+            switch (mensaje) {
+                case "1":
+                    JSONArray mensaje1 = response.getJSONArray("tarifa");
+
+                    JSONObject object = mensaje1.getJSONObject(0);
+                    //Parsear objeto
+
+                    if(l_nocturno.equals("0")) {
+                        importe_bajada = object.getString("importe_bajada");
+                        importe_ficha = object.getString("importe_ficha");
+                        importe_espera = object.getString("importe_espera");
+                    }else{
+                        importe_bajada = object.getString("importe_bajada_nocturno");
+                        importe_ficha = object.getString("importe_ficha_nocturno");
+                        importe_espera = object.getString("importe_espera_nocturno");
+                    }
+
+                    Double valor_ficha ;
+
+                    valor_ficha = Double.parseDouble(importe_ficha);
+
+                    Double cant_fichas;
+
+                    cant_fichas = Double.parseDouble(cantidad_ficha);
+
+                    Double ldb_monto_ficha = valor_ficha * cant_fichas;
+
+
+                    Double valor_ficha_espera = 0.00 ;
+
+                    valor_ficha_espera = Double.parseDouble(importe_espera);
+
+                    Double cant_fichas_espera;
+
+                    cant_fichas_espera = Double.parseDouble(cantidad_espera);
+
+                    Double ldb_monto_ficha_espera = valor_ficha_espera * cant_fichas_espera;
+
+                    Double ldb_bajada = Double.parseDouble(importe_bajada);
+
+                    Double total = ldb_bajada + ldb_monto_ficha + ldb_monto_ficha_espera;
+
+                    monto_espera = String.valueOf(ldb_monto_ficha_espera);
+                    monto_ficha = String.valueOf(ldb_monto_ficha);
+                    monto_total = String.valueOf(total);
+
+                    l_tarifa_cc = object.getString("id");
+
+                    viaje_automatico_qr(getContext(), ls_id_solicitante);
+
+                    break;
+
+            }
+
+
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
     }
 
     private void viaje_automatico_qr(final Context context, String ls_id) {
 
         HashMap<String, String> map = new HashMap<>();// Mapeo previo
 
-        map.put("conductor", ls_id_conductor);
+        map.put("id_viaje", l_id_viaje);
         map.put("solicitante", ls_id);
+        map.put("importe_bajada_cc", importe_bajada);
+        map.put("importe_ficha_cc", importe_ficha);
+        map.put("importe_espera_cc", importe_espera);
+        map.put("monto_espera_cc", monto_espera);
+        map.put("monto_ficha_cc", monto_ficha);
+        map.put("importe_cc", monto_total);
+        map.put("importe_restante", monto_total);
+        map.put("id_tarifa_cta_cte", l_tarifa_cc);
+        map.put("tipo_tarifa", l_nocturno);
+
 
         JSONObject jobject = new JSONObject(map);
 
@@ -501,176 +661,15 @@ public class fragment_qr extends Fragment implements SurfaceHolder.Callback{
 
             switch (estado) {
                 case "1":
-
-                    cargarIdVehiculoParada(context);
-
-                    break;
-                case "2":
-                    // Mostrar mensaje
                     Toast.makeText(
                             context,
                             mensaje,
                             Toast.LENGTH_LONG).show();
-                    // Enviar código de falla
-                    break;
-            }
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-    }
 
-    public void cargarIdVehiculoParada(final Context context) {
-
-        // Añadir parámetro a la URL del web service
-        String newURL = Constantes.GET_ID_VEHICULO + "?id=" + ls_id_conductor;
-        Log.d(TAG,newURL);
-
-        // Realizar petición GET_BY_ID
-        VolleySingleton.getInstance(context).addToRequestQueue(
-                myRequest = new JsonObjectRequest(
-                        Request.Method.POST,
-                        newURL,
-                        null,
-                        new Response.Listener<JSONObject>() {
-
-                            @Override
-                            public void onResponse(JSONObject response) {
-                                // Procesar respuesta Json
-                                procesarRespuesta_ID_Parada(response, context);
-                            }
-                        },
-                        new Response.ErrorListener() {
-                            @Override
-                            public void onErrorResponse(VolleyError error) {
-                                Log.d(TAG, "Error Volley viaje: " + error.getMessage());
-
-                            }
-                        }
-                )
-        );
-        myRequest.setRetryPolicy(new DefaultRetryPolicy(
-                50000,
-                5,//DefaultRetryPolicy.DEFAULT_MAX_RETRIES
-                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
-
-    }
-
-    private void procesarRespuesta_ID_Parada(JSONObject response, Context context) {
-
-        try {
-            // Obtener atributo "mensaje"
-            String mensaje = response.getString("estado");
-
-            switch (mensaje) {
-                case "1":
-                    // Obtener objeto "cliente"
-                    JSONArray mensaje1 = response.getJSONArray("vehiculo");
-
-                    JSONObject object = mensaje1.getJSONObject(0);
-                    //Parsear objeto
-
-                    id_movil = object.getString("id");
-                    borrar_parada(context);
-                    break;
-
-                case "2":
-
-                    break;
-
-            }
-
-
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-
-    }
-
-    private void borrar_parada(final Context context){
-
-        HashMap<String, String> map = new HashMap<>();// Mapeo previo
-        String l_parada = "0";
-
-        map.put("parada", l_parada);
-        map.put("id", id_movil);
-
-
-        // Crear nuevo objeto Json basado en el mapa
-        JSONObject jobject = new JSONObject(map);
-
-
-        // Depurando objeto Json...
-        Log.d(TAG, jobject.toString());
-
-        StringBuilder encodedParams = new StringBuilder();
-        try {
-            for (Map.Entry<String, String> entry : map.entrySet()) {
-                encodedParams.append(URLEncoder.encode(entry.getKey(), "utf-8"));
-                encodedParams.append('=');
-                encodedParams.append(URLEncoder.encode(entry.getValue(), "utf-8"));
-                encodedParams.append('&');
-            }
-        } catch (UnsupportedEncodingException uee) {
-            throw new RuntimeException("Encoding not supported: " + "utf-8", uee);
-        }
-
-        encodedParams.setLength(Math.max(encodedParams.length() - 1, 0));
-
-        String newURL = Constantes.UPDATE_PARADAS + "?" + encodedParams;
-        Log.d(TAG,newURL);
-
-        // Actualizar datos en el servidor
-        VolleySingleton.getInstance(context).addToRequestQueue(
-                new JsonObjectRequest(
-                        Request.Method.POST,
-                        newURL,
-                        null,
-                        new Response.Listener<JSONObject>() {
-                            @Override
-                            public void onResponse(JSONObject response) {
-                                procesarRespuestaBorrarParada(response, context);
-                            }
-                        },
-                        new Response.ErrorListener() {
-                            @Override
-                            public void onErrorResponse(VolleyError error) {
-                                Log.d(TAG, "Error inicio: " + error.getMessage());
-
-                            }
-                        }
-
-                ) {
-                    @Override
-                    public Map<String, String> getHeaders() {
-                        Map<String, String> headers = new HashMap<>();
-                        headers.put("Content-Type", "application/json; charset=utf-8");
-                        return headers;
-                    }
-
-                    @Override
-                    public String getBodyContentType() {
-                        return "application/json; charset=utf-8" + getParamsEncoding();
-                    }
-                }
-        );
-    }
-    private void procesarRespuestaBorrarParada(JSONObject response, Context context) {
-
-        try {
-            // Obtener estado
-            String estado = response.getString("estado");
-            // Obtener mensaje
-            String mensaje = response.getString("mensaje");
-
-            switch (estado) {
-                case "1":
-                    SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(context);
-                    SharedPreferences.Editor editor = settings.edit();
-                    editor.putString("automatico", "1");
-                    editor.apply();
-                    Intent intent2 = new Intent(context, MainViaje.class);
+                    Intent intent2 = new Intent(context, MainActivity.class);
+                    intent2.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                     context.startActivity(intent2);
-                    act.finish();
+
                     break;
                 case "2":
                     // Mostrar mensaje
@@ -678,6 +677,7 @@ public class fragment_qr extends Fragment implements SurfaceHolder.Callback{
                             context,
                             mensaje,
                             Toast.LENGTH_LONG).show();
+                    Log.d(TAG, "Error qr " + mensaje);
                     // Enviar código de falla
                     break;
             }
@@ -685,7 +685,6 @@ public class fragment_qr extends Fragment implements SurfaceHolder.Callback{
             e.printStackTrace();
         }
     }
-
 
     @Override
     public void surfaceDestroyed(SurfaceHolder holder) {
@@ -723,9 +722,6 @@ public class fragment_qr extends Fragment implements SurfaceHolder.Callback{
         }
 //set max Picture Size
         params.setPreviewSize(size.width, size.height);
-
-
-
 
     }
 }

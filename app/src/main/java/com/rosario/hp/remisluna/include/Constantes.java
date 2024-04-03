@@ -33,7 +33,9 @@ public class Constantes {
     public static final String ALARMA_VIAJE = "https://" + IP + PUERTO_HOST + "/alarma_viaje.php";
     public static final String INSERTAR_TRAYECTORIA = "https://" + IP + PUERTO_HOST + "/agregar_trayectoria.php";
     public static final String VIAJE_AUTOMATICO = "https://" + IP + PUERTO_HOST + "/agregar_viaje_aut.php";
-    public static final String VIAJE_QR= "https://" + IP + PUERTO_HOST + "/agregar_viaje_aut_qr.php";
+    public static final String VIAJE_QR= "https://" + IP + PUERTO_HOST + "/actualizar_viaje_qr.php";
+    public static final String VIAJE_MP= "https://" + IP + PUERTO_HOST + "/actualizar_viaje_mp.php";
+    public static final String VIAJE_EFECTIVO= "https://" + IP + PUERTO_HOST + "/actualizar_viaje_efectivo.php";
 
     public static final String GET_VEHICULO = "https://" + IP + PUERTO_HOST + "/obtener_vehiculo.php";
     public static final String GET_ID_VEHICULO = "https://" + IP + PUERTO_HOST + "/obtener_id_vehiculo.php";
@@ -55,6 +57,7 @@ public class Constantes {
     public static final String UPDATE_PARAMETRO = "https://" + IP + PUERTO_HOST + "/actualizar_parametro.php";
 
     public static final String GET_TARIFAS = "https://" + IP + PUERTO_HOST + "/obtener_ultima_tarifa.php";
+    public static final String GET_TARIFA_CC = "https://" + IP + PUERTO_HOST + "/obtener_tarifa_cc.php";
 
     public static final String GET_FERIADO = "https://" + IP + PUERTO_HOST + "/es_feriado.php";
 

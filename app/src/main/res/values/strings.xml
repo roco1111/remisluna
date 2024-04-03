@@ -79,6 +79,10 @@
     <string name="motivo">Motivo</string>
     <string name="observaciones">Observaciones</string>
 
+    <string name="efectivo">Efectivo</string>
+    <string name="cuenta_corriente">Cuenta Corriente</string>
+    <string name="mercado_pago">Mercado Pago</string>
+
     <string name="fecha">Fecha</string>
     <string name="hora_inicio">Inicio</string>
     <string name="hora_fin">Fin</string>

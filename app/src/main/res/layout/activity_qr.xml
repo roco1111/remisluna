@@ -46,15 +46,27 @@
     </androidx.cardview.widget.CardView>
 
     <android.widget.Button
-        android:id="@+id/buttonViaje"
+        android:id="@+id/buttonmp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_above="@id/buttonEfectivo"
+        android:layout_marginBottom="@dimen/margin_top"
+        android:background="@drawable/boton"
+        android:backgroundTint="@color/colorPrimary"
+        android:text="@string/mercado_pago"
+        android:textColor="@color/colorPrimaryText"
+        android:textSize="@dimen/tamanio_texto"
+        tools:ignore="RtlHardcoded" />
 
+    <android.widget.Button
+        android:id="@+id/buttonEfectivo"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:layout_marginBottom="@dimen/margin_top"
         android:background="@drawable/boton"
         android:backgroundTint="@color/colorPrimary"
-        android:text="@string/viaje_sin_qr"
+        android:text="@string/efectivo"
         android:textColor="@color/colorPrimaryText"
         android:textSize="@dimen/tamanio_texto"
         tools:ignore="RtlHardcoded" />

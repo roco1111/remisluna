@@ -71,6 +71,7 @@ import com.itextpdf.text.pdf.PdfWriter;
 import com.itextpdf.text.pdf.draw.LineSeparator;
 import com.rosario.hp.remisluna.Impresion;
 import com.rosario.hp.remisluna.MainActivity;
+import com.rosario.hp.remisluna.MainMP;
 import com.rosario.hp.remisluna.MainQR;
 import com.rosario.hp.remisluna.MainViaje;
 import com.rosario.hp.remisluna.R;
@@ -134,7 +135,7 @@ public class fragment_viaje_iniciado extends Fragment {
     private String id_vehiculo;
     private String id_turno;
     private String movil;
-    private Button sin_ticket;
+    private Button terminar_viaje;
     private Button buttonmenu;
     private Button alarma;
     private Button boton_viaje;
@@ -183,7 +184,9 @@ public class fragment_viaje_iniciado extends Fragment {
     private String telefono_base;
     private Boolean lb_servicio = false;
     private Button inicio;
-    private Button boton_viaje_empresarial;
+    private Button boton_efectivo;
+    private Button boton_mercado_pago;
+    private Button boton_cta_cte;
     private LocationManager mLocationManager;
     private String latitud_salida;
     private String longitud_salida;
@@ -194,6 +197,7 @@ public class fragment_viaje_iniciado extends Fragment {
     private RelativeLayout id_botones_en_curso;
     private RelativeLayout id_botones_asignado;
     private RelativeLayout id_botones_terminar;
+    private RelativeLayout id_botones_pagos;
     private LinearLayout id_datos_viaje;
     private String l_estado_viaje;
 
@@ -289,6 +293,7 @@ public class fragment_viaje_iniciado extends Fragment {
         id_botones_terminar = v.findViewById(R.id.id_botones_terminar);
         id_botones_asignado = v.findViewById(R.id.id_botones_asignado);
         id_datos_viaje = v.findViewById(R.id.id_datos_viaje);
+        id_botones_pagos = v.findViewById(R.id.id_botones_pagos);
 
         id_viaje = v.findViewById(R.id.dato_viaje);
         solicitante = v.findViewById(R.id.dato_solicitante);
@@ -296,12 +301,14 @@ public class fragment_viaje_iniciado extends Fragment {
         dato_salida = v.findViewById(R.id.dato_salida);
         destino = v.findViewById(R.id.dato_destino);
         texto_destino = v.findViewById(R.id.destino);
-        sin_ticket = v.findViewById(R.id.buttonSinTicket);
+        terminar_viaje = v.findViewById(R.id.buttonSinTicket);
         boton_whatsapp = v.findViewById(R.id.imageWa);
         inicio = v.findViewById(R.id.buttonInicio);
         buttonmenu = v.findViewById(R.id.buttonmenu);
         boton_viaje = v.findViewById(R.id.buttonviaje);
-        this.boton_viaje_empresarial = v.findViewById(R.id.buttonViajeEmpresarial);
+        this.boton_efectivo = v.findViewById(R.id.buttonefectivo);
+        this.boton_mercado_pago = v.findViewById(R.id.buttonmp);
+        this.boton_cta_cte = v.findViewById(R.id.buttonViajeEmpresarial);
         boton_mapa = v.findViewById(R.id.mapa);
         this.repetirTicket = v.findViewById(R.id.buttonTicket);
 
@@ -318,9 +325,9 @@ public class fragment_viaje_iniciado extends Fragment {
         titulo_ficha = v.findViewById(R.id.titulo_ficha);
 
 
-        MediaPlayer mediaPlayer = MediaPlayer.create(act, R.raw.doorbell);
+        MediaPlayer mediaPlayer = MediaPlayer.create(act, R.raw.everblue);
 
-        this.sin_ticket.setOnClickListener(new View.OnClickListener() {
+        this.terminar_viaje.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 lb_ticket = false;
@@ -337,6 +344,55 @@ public class fragment_viaje_iniciado extends Fragment {
 
                 cargarDatosVehiculo(context); }
 
+        });
+
+        this.boton_efectivo.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mediaPlayer.start();
+
+                l_estado_viaje = "terminado";
+                SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(context);
+                SharedPreferences.Editor editor = settings.edit();
+                editor.putString("estado_viaje","terminado");
+                editor.apply();
+                reiniciar();
+
+            }
+        });
+
+        this.boton_mercado_pago.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mediaPlayer.start();
+
+                l_estado_viaje = "terminado";
+                SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(context);
+                SharedPreferences.Editor editor = settings.edit();
+                editor.putString("estado_viaje","terminado");
+                editor.apply();
+                Intent intent2 = new Intent(context, MainMP.class);
+                context.startActivity(intent2);
+                act.finish();
+
+            }
+        });
+
+        this.boton_cta_cte.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mediaPlayer.start();
+
+                l_estado_viaje = "terminado";
+                SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(context);
+                SharedPreferences.Editor editor = settings.edit();
+                editor.putString("estado_viaje","terminado");
+                editor.apply();
+                Intent intent2 = new Intent(context, MainQR.class);
+                context.startActivity(intent2);
+                act.finish();
+
+            }
         });
 
         this.inicio.setOnClickListener(new View.OnClickListener() {
@@ -423,18 +479,7 @@ public class fragment_viaje_iniciado extends Fragment {
                 repetirTicket(context);
             }
         });
-        this.boton_viaje_empresarial.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
 
-                mediaPlayer.start();
-
-                Intent intent2;
-                intent2 = new Intent(context, MainQR.class);
-
-                context.startActivity(intent2);
-            }
-        });
         reiniciar();
 
         return v;
@@ -467,17 +512,26 @@ public class fragment_viaje_iniciado extends Fragment {
                 id_botones_asignado.setVisibility(View.VISIBLE);
                 id_botones_terminar.setVisibility(View.GONE);
                 id_botones_en_curso.setVisibility(View.GONE);
+                id_botones_pagos.setVisibility(View.GONE);
                 break;
             case "en curso":
                 id_botones_asignado.setVisibility(View.GONE);
                 id_botones_terminar.setVisibility(View.GONE);
                 id_botones_en_curso.setVisibility(View.VISIBLE);
+                id_botones_pagos.setVisibility(View.GONE);
                 act.registerReceiver(onBroadcast, new IntentFilter("key"));
                 break;
             case "terminado":
                 id_botones_asignado.setVisibility(View.GONE);
                 id_botones_terminar.setVisibility(View.VISIBLE);
                 id_botones_en_curso.setVisibility(View.GONE);
+                id_botones_pagos.setVisibility(View.GONE);
+                break;
+            case "pagar":
+                id_botones_asignado.setVisibility(View.GONE);
+                id_botones_terminar.setVisibility(View.GONE);
+                id_botones_en_curso.setVisibility(View.GONE);
+                id_botones_pagos.setVisibility(View.VISIBLE);
                 break;
         }
 
@@ -564,18 +618,8 @@ public class fragment_viaje_iniciado extends Fragment {
                 cargarTarifaInicial(context);
 
                 break;
-            case "terminado":
-                if (servicios_empresariales.equals("1")) {
-                    boton_viaje_empresarial.setVisibility(View.VISIBLE);
-                    boton_viaje.setVisibility(View.GONE);
-                } else {
-                    boton_viaje_empresarial.setVisibility(View.GONE);
-                    boton_viaje.setVisibility(View.VISIBLE);
-                }
-                break;
+            
         }
-
-
 
 
     }
@@ -1520,8 +1564,8 @@ public class fragment_viaje_iniciado extends Fragment {
                     break;
 
                 case "2":
-                    l_estado_viaje = "terminado";
-                    editor.putString("estado_viaje","terminado");
+                    l_estado_viaje = "pagar";
+                    editor.putString("estado_viaje","pagar");
 
 
                     break;
