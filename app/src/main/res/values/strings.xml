@@ -80,6 +80,7 @@
     <string name="observaciones">Observaciones</string>
 
     <string name="efectivo">Efectivo</string>
+    <string name="sin_qr">Sin QR</string>
     <string name="cuenta_corriente">Cuenta Corriente</string>
     <string name="mercado_pago">Mercado Pago</string>
 

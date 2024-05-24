@@ -234,6 +234,8 @@ public class fragment_viaje_iniciado extends Fragment {
     private String automatico;
     private String viajes_automaticos_chofer;
     private String servicios_empresariales;
+    private String habilitada;
+
 
     @Override
     public void onPause() {
@@ -366,10 +368,10 @@ public class fragment_viaje_iniciado extends Fragment {
             public void onClick(View v) {
                 mediaPlayer.start();
 
-                l_estado_viaje = "terminado";
+                l_estado_viaje = "asignado";
                 SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(context);
                 SharedPreferences.Editor editor = settings.edit();
-                editor.putString("estado_viaje","terminado");
+                editor.putString("estado_viaje","asignado");
                 editor.apply();
                 Intent intent2 = new Intent(context, MainMP.class);
                 context.startActivity(intent2);
@@ -383,10 +385,10 @@ public class fragment_viaje_iniciado extends Fragment {
             public void onClick(View v) {
                 mediaPlayer.start();
 
-                l_estado_viaje = "terminado";
+                l_estado_viaje = "asignado";
                 SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(context);
                 SharedPreferences.Editor editor = settings.edit();
-                editor.putString("estado_viaje","terminado");
+                editor.putString("estado_viaje","asignado");
                 editor.apply();
                 Intent intent2 = new Intent(context, MainQR.class);
                 context.startActivity(intent2);
@@ -400,7 +402,20 @@ public class fragment_viaje_iniciado extends Fragment {
             public void onClick(View v) {
                 mediaPlayer.start();
 
-                cargarRemiseria(context);
+                if(habilitada.equals("1"))
+                {
+                    l_estado_viaje = "asignado";
+                    SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(context);
+                    SharedPreferences.Editor editor = settings.edit();
+                    editor.putString("estado_viaje","asignado");
+                    editor.apply();
+                    iniciar_viaje();
+                }else{
+                    Toast.makeText(
+                            context,
+                            R.string.inhabilitada,
+                            Toast.LENGTH_LONG).show();
+                }
 
             }
         });
@@ -467,7 +482,8 @@ public class fragment_viaje_iniciado extends Fragment {
             public void onClick(View v) {
 
                 mediaPlayer.start();
-                cargarDatosRemiseria(context, v);
+                setClickToChat(v,telefono_base);
+                //cargarDatosRemiseria(context, v);
 
             }
         });
@@ -498,6 +514,7 @@ public class fragment_viaje_iniciado extends Fragment {
         tipo_empresa = settings.getString("tipo_empresa","");
         l_estado_viaje = settings.getString("estado_viaje","");
         l_id_viaje = settings.getString("id_viaje","");
+        Log.d("viaje parametro",l_id_viaje);
         l_impresion = settings.getString("impresion","");
         viajes_automaticos = settings.getString("viajes_automaticos", "");
         automatico = settings.getString("automatico", "");
@@ -718,6 +735,7 @@ public class fragment_viaje_iniciado extends Fragment {
                     SharedPreferences.Editor editor = settings.edit();
                     editor.putString("nocturno",l_nocturno);
 
+
                     if(l_nocturno.equals("0")) {
                         importe_bajada = object.getString("importe_bajada");
 
@@ -748,6 +766,7 @@ public class fragment_viaje_iniciado extends Fragment {
                     editor.putString("bajada","null");
 
                     editor.apply();
+                    cargarParametroTolerancia(context);
 
                     break;
 
@@ -2321,17 +2340,11 @@ public class fragment_viaje_iniciado extends Fragment {
                     JSONObject object = mensaje1.getJSONObject(0);
                     //Parsear objeto
 
-                    String habilitada = object.getString("HABILITADA");
+                    habilitada = object.getString("HABILITADA");
 
-                    if(habilitada.equals("1"))
-                    {
-                        cargarDatos_solicitados(context);
-                    }else{
-                        Toast.makeText(
-                                context,
-                                R.string.inhabilitada,
-                                Toast.LENGTH_LONG).show();
-                    }
+                    telefono_base = object.getString("TELEFONO_BASE");
+
+
                     break;
 
                 case "2":
@@ -2341,106 +2354,6 @@ public class fragment_viaje_iniciado extends Fragment {
             }
 
 
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-
-    }
-
-    public void cargarDatos_solicitados(final Context context) {
-
-        // Añadir parámetro a la URL del web service
-        String newURL = Constantes.GET_VIAJE_SOLICITADOS + "?conductor=" + ls_id_conductor;
-        Log.d(TAG,newURL);
-
-        // Realizar petición GET_BY_ID
-        VolleySingleton.getInstance(context).addToRequestQueue(
-                myRequest = new JsonObjectRequest(
-                        Request.Method.POST,
-                        newURL,
-                        null,
-                        new Response.Listener<JSONObject>() {
-
-                            @Override
-                            public void onResponse(JSONObject response) {
-                                // Procesar respuesta Json
-                                procesarRespuesta_Datos_solicitados(response, context);
-                            }
-                        },
-                        new Response.ErrorListener() {
-                            @Override
-                            public void onErrorResponse(VolleyError error) {
-                                Log.d(TAG, "Error Volley viaje: " + error.getMessage());
-
-                            }
-                        }
-                )
-        );
-        myRequest.setRetryPolicy(new DefaultRetryPolicy(
-                50000,
-                5,//DefaultRetryPolicy.DEFAULT_MAX_RETRIES
-                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
-
-    }
-
-    private void procesarRespuesta_Datos_solicitados(JSONObject response, Context context) {
-
-        try {
-            // Obtener atributo "mensaje"
-            String mensaje = response.getString("estado");
-            Fragment fragment = null;
-            switch (mensaje) {
-                case "1":
-                    JSONArray mensaje1 = response.getJSONArray("viaje");
-                    JSONObject object = mensaje1.getJSONObject(0);
-
-                    id_vehiculo = object.getString("id_movil");
-
-                    SharedPreferences settings1 = PreferenceManager.getDefaultSharedPreferences(context);
-
-                    SharedPreferences.Editor editor = settings1.edit();
-
-                    String ls_viaje, ls_remiseria, ls_telefono_queja, ls_telefono;
-
-
-                    ls_viaje = object.getString("id");
-
-                    editor.putString("id_viaje",ls_viaje);
-
-                    ls_remiseria = object.getString("remiseria");
-
-                    editor.putString("nombre_remiseria",ls_remiseria);
-
-                    ls_telefono_queja = object.getString("telefono_queja");
-
-                    editor.putString("telefono_queja",ls_telefono_queja);
-
-                    ls_telefono = object.getString("telefono");
-
-                    editor.putString("telefono_remiseria",ls_telefono);
-                    editor.putString("estado_viaje","asignado");
-                    editor.putString("salida_coordenadas",object.getString("salida_coordenadas"));
-                    editor.putString("destino_coordenadas",object.getString("destino_coordenadas"));
-                    editor.putString("id_movil",object.getString("id_movil"));
-                    l_estado_viaje = "en curso";
-
-
-                    editor.putString("estado_viaje","en curso");
-
-                    editor.apply();
-                    iniciar_viaje();
-
-                    break;
-
-                case "2":
-                    Toast.makeText(
-                            context,
-                            "No hay viajes asignados",
-                            Toast.LENGTH_LONG).show();
-
-                    break;
-
-            }
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -2527,10 +2440,12 @@ public class fragment_viaje_iniciado extends Fragment {
         latitud_salida = String.valueOf(getValor(latitud_salida));
         longitud_salida = String.valueOf(getValor(longitud_salida));
         SharedPreferences settings1 = PreferenceManager.getDefaultSharedPreferences(context);
-
+        l_id_viaje = settings1.getString("id_viaje","");
         SharedPreferences.Editor editor = settings1.edit();
         editor.putString("latitud_salida",latitud_salida);
         editor.putString("longitud_salida",longitud_salida);
+        l_estado_viaje = "en curso";
+        editor.putString("estado_viaje","en curso");
         editor.apply();
 
         latitud_destino = String.valueOf(getValor(latitud_destino));
@@ -2628,7 +2543,8 @@ public class fragment_viaje_iniciado extends Fragment {
 
             switch (estado) {
                 case "1":
-                    cargarParametroTolerancia(context);
+
+                    reiniciar();
 
                     break;
                 case "2":
@@ -2924,8 +2840,7 @@ public class fragment_viaje_iniciado extends Fragment {
 
                     editor.apply();
 
-                    reiniciar();
-
+                    cargarRemiseria(context);
                     break;
 
 
@@ -3186,7 +3101,7 @@ public class fragment_viaje_iniciado extends Fragment {
 
                     editor.apply();
 
-                    reiniciar();
+                    cargarDatos_solicitados(context);
 
 
                     break;
@@ -3202,6 +3117,89 @@ public class fragment_viaje_iniciado extends Fragment {
         } catch (JSONException e) {
             e.printStackTrace();
         }
+    }
+
+    public void cargarDatos_solicitados(final Context context) {
+
+        // Añadir parámetro a la URL del web service
+        String newURL = Constantes.GET_VIAJE_SOLICITADOS + "?conductor=" + ls_id_conductor;
+        Log.d(TAG,newURL);
+
+        // Realizar petición GET_BY_ID
+        VolleySingleton.getInstance(context).addToRequestQueue(
+                myRequest = new JsonObjectRequest(
+                        Request.Method.POST,
+                        newURL,
+                        null,
+                        new Response.Listener<JSONObject>() {
+
+                            @Override
+                            public void onResponse(JSONObject response) {
+                                // Procesar respuesta Json
+                                procesarRespuesta_Datos_solicitados(response, context);
+                            }
+                        },
+                        new Response.ErrorListener() {
+                            @Override
+                            public void onErrorResponse(VolleyError error) {
+                                Log.d(TAG, "Error Volley viaje: " + error.getMessage());
+
+                            }
+                        }
+                )
+        );
+        myRequest.setRetryPolicy(new DefaultRetryPolicy(
+                50000,
+                5,//DefaultRetryPolicy.DEFAULT_MAX_RETRIES
+                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+
+    }
+
+    private void procesarRespuesta_Datos_solicitados(JSONObject response, Context context) {
+
+        try {
+            // Obtener atributo "mensaje"
+            String mensaje = response.getString("estado");
+            Fragment fragment = null;
+            switch (mensaje) {
+                case "1":
+                    JSONArray mensaje1 = response.getJSONArray("viaje");
+                    JSONObject object = mensaje1.getJSONObject(0);
+
+                    id_vehiculo = object.getString("id_movil");
+
+                    SharedPreferences settings1 = PreferenceManager.getDefaultSharedPreferences(context);
+
+                    SharedPreferences.Editor editor = settings1.edit();
+
+                    String ls_viaje;
+
+
+                    ls_viaje = object.getString("id");
+
+                    editor.putString("id_viaje",ls_viaje);
+
+                    l_estado_viaje = "asignado";
+                    editor.putString("estado_viaje","asignado");
+
+                    editor.apply();
+                    reiniciar();
+
+                    break;
+
+                case "2":
+                    Toast.makeText(
+                            context,
+                            "No hay viajes asignados",
+                            Toast.LENGTH_LONG).show();
+
+                    break;
+
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
     }
 
 

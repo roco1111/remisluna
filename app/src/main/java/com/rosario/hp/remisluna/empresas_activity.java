@@ -39,7 +39,7 @@ public class empresas_activity extends AppCompatActivity {
         }
         Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(false);
         Objects.requireNonNull(getSupportActionBar()).setDisplayShowHomeEnabled(false);
-        Objects.requireNonNull(getSupportActionBar()).setTitle("Empresas");
+        Objects.requireNonNull(getSupportActionBar()).setTitle("Seleccione la Empresa");
     }
 
     @Override

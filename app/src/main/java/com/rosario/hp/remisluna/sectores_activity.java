@@ -39,7 +39,7 @@ public class sectores_activity extends AppCompatActivity {
         }
         Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(false);
         Objects.requireNonNull(getSupportActionBar()).setDisplayShowHomeEnabled(false);
-        Objects.requireNonNull(getSupportActionBar()).setTitle("Sectores");
+        Objects.requireNonNull(getSupportActionBar()).setTitle("Seleccione el sector");
     }
 
     @Override

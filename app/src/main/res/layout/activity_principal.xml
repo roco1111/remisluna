@@ -156,13 +156,14 @@
                     android:layout_below="@id/id_numeros"
                     android:layout_centerHorizontal="true"
                     android:layout_marginTop="@dimen/margin_top_menu2"
+
                     android:orientation="horizontal">
 
                     <android.widget.Button
                         android:id="@+id/buttonViaje"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-
+                        android:visibility="gone"
                         android:layout_centerHorizontal="true"
                         android:layout_marginTop="14dp"
                         android:background="@drawable/boton"
@@ -183,6 +184,7 @@
                     android:layout_below="@id/id_viajes"
                     android:layout_centerHorizontal="true"
                     android:layout_marginTop="@dimen/margin_start"
+                    android:visibility="gone"
                     android:orientation="horizontal">
 
                     <android.widget.Button

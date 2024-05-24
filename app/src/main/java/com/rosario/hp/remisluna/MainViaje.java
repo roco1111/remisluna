@@ -37,8 +37,6 @@ import com.android.volley.Response;
 import com.android.volley.error.VolleyError;
 import com.android.volley.request.JsonObjectRequest;
 import com.rosario.hp.remisluna.Entidades.ayuda;
-import com.rosario.hp.remisluna.Fragment.fragment_vacia;
-import com.rosario.hp.remisluna.Fragment.fragment_viaje;
 import com.rosario.hp.remisluna.Fragment.fragment_viaje_iniciado;
 import com.rosario.hp.remisluna.include.Constantes;
 import com.rosario.hp.remisluna.include.VolleySingleton;
@@ -131,6 +129,14 @@ public class MainViaje extends AppCompatActivity {
         i_pasadas = 0;
         ls_remiseria = settings.getString("remiseria","");
 
+        fragmentManager = getSupportFragmentManager();
+        Fragment fragment = new fragment_viaje_iniciado();
+
+
+        fragmentManager.beginTransaction()
+                .replace(R.id.main_content, fragment)
+                .commit();
+
         feriado(getApplicationContext());
 
     }
@@ -199,7 +205,7 @@ public class MainViaje extends AppCompatActivity {
         // Realizar petición GET_BY_ID
         VolleySingleton.getInstance(context).addToRequestQueue(
                 myRequest = new JsonObjectRequest(
-                        Request.Method.GET,
+                        Request.Method.POST,
                         newURL,
                         null,
                         new Response.Listener<JSONObject>() {
@@ -718,13 +724,6 @@ public class MainViaje extends AppCompatActivity {
 
 
                     editor.apply();
-                    fragmentManager = getSupportFragmentManager();
-                    Fragment fragment = new fragment_viaje_iniciado();
-
-
-                    fragmentManager.beginTransaction()
-                            .replace(R.id.main_content, fragment)
-                            .commit();
 
                     permiso_back();
                     break;
@@ -801,6 +800,8 @@ public class MainViaje extends AppCompatActivity {
 
                     editor.putString("id_viaje",ls_viaje);
 
+                    Log.d("viaje asignado main",ls_viaje);
+
                     ls_remiseria = object.getString("remiseria");
 
                     editor.putString("nombre_remiseria",ls_remiseria);
@@ -823,14 +824,6 @@ public class MainViaje extends AppCompatActivity {
                     editor.putString("viajes_automaticos_chofer",object.getString("viajes_automaticos"));
 
                     editor.apply();
-
-                    fragmentManager = getSupportFragmentManager();
-                    Fragment fragment = new fragment_viaje_iniciado();
-
-
-                    fragmentManager.beginTransaction()
-                            .replace(R.id.main_content, fragment)
-                            .commit();
 
                     habilitar_gps();
                     break;

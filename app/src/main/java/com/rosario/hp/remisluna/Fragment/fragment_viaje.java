@@ -1179,7 +1179,7 @@ public class fragment_viaje extends Fragment {
         // Realizar petición GET_BY_ID
         VolleySingleton.getInstance(context).addToRequestQueue(
                 myRequest = new JsonObjectRequest(
-                        Request.Method.GET,
+                        Request.Method.POST,
                         newURL,
                         null,
                         new Response.Listener<JSONObject>() {

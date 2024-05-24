@@ -4,14 +4,10 @@ import android.Manifest;
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.bluetooth.BluetoothAdapter;
-import android.bluetooth.BluetoothDevice;
 import android.content.ActivityNotFoundException;
-import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -420,12 +416,6 @@ public class fragment_principal extends Fragment {
         impresion = new Impresion();
         this.boton_turno.setText(act.getResources().getString(R.string.nuevo_turno));
 
-        if (viajes_automaticos.equals("0") || viajes_automaticos_chofer.equals("0")) {
-            this.boton_viaje.setVisibility(View.GONE);
-        } else {
-            this.boton_viaje.setVisibility(View.VISIBLE);
-        }
-
         if (movil_habilitado.equals("1") && chofer_habilitado.equals("1")) {
             this.boton_cuatro.setEnabled(true);
             this.boton_ocho.setEnabled(true);
@@ -743,7 +733,7 @@ public class fragment_principal extends Fragment {
         // Realizar petición GET_BY_ID
         VolleySingleton.getInstance(context).addToRequestQueue(
                 myRequest = new JsonObjectRequest(
-                        Request.Method.GET,
+                        Request.Method.POST,
                         newURL,
                         null,
                         new Response.Listener<JSONObject>() {
@@ -759,7 +749,7 @@ public class fragment_principal extends Fragment {
                         new Response.ErrorListener() {
                             @Override
                             public void onErrorResponse(VolleyError error) {
-                                Log.d(TAG, "Error Volley viaje: " + error.getMessage());
+                                Log.d(TAG, "Error Volley feriado: " + error.getMessage());
 
                             }
                         }
@@ -4352,7 +4342,7 @@ private void procesarRespuestaParametroTurno(JSONObject response, Context contex
                         new Response.ErrorListener() {
                             @Override
                             public void onErrorResponse(VolleyError error) {
-                                Log.d(TAG, "Error Volley viaje: " + error.getMessage());
+                                Log.d(TAG, "Error Volley vehiculo: " + error.getMessage());
 
                             }
                         }
@@ -4419,7 +4409,7 @@ private void procesarRespuestaParametroTurno(JSONObject response, Context contex
                         new Response.ErrorListener() {
                             @Override
                             public void onErrorResponse(VolleyError error) {
-                                Log.d(TAG, "Error Volley viaje: " + error.getMessage());
+                                Log.d(TAG, "Error Volley remiseria: " + error.getMessage());
 
                             }
                         }
@@ -4723,7 +4713,7 @@ private void procesarRespuestaParametroTurno(JSONObject response, Context contex
                         new Response.ErrorListener() {
                             @Override
                             public void onErrorResponse(VolleyError error) {
-                                Log.d(TAG, "Error Volley viaje: " + error.getMessage());
+                                Log.d(TAG, "Error Volley id parada: " + error.getMessage());
 
                             }
                         }
@@ -4848,6 +4838,7 @@ private void procesarRespuestaParametroTurno(JSONObject response, Context contex
                     SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(context);
                     SharedPreferences.Editor editor = settings.edit();
                     editor.putString("automatico", "1");
+                    editor.putString("estado_viaje","asignado");
                     editor.apply();
                     Intent intent2 = new Intent(context, MainViaje.class);
                     context.startActivity(intent2);

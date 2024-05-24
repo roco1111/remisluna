@@ -1,16 +1,23 @@
 package com.rosario.hp.remisluna.Fragment;
 
+import static com.facebook.FacebookSdk.getApplicationContext;
+
 import android.Manifest;
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.hardware.Camera;
 import android.hardware.camera2.CameraManager;
 import android.media.MediaPlayer;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import android.util.SparseArray;
@@ -25,6 +32,7 @@ import android.widget.Toast;
 
 import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentActivity;
 
 import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.Request;
@@ -49,6 +57,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 
+import com.google.android.material.snackbar.Snackbar;
 import com.rosario.hp.remisluna.Entidades.conductor_titular;
 import com.rosario.hp.remisluna.Entidades.solicitante;
 import com.rosario.hp.remisluna.MainActivity;
@@ -56,6 +65,7 @@ import com.rosario.hp.remisluna.MainMP;
 import com.rosario.hp.remisluna.MainQR;
 import com.rosario.hp.remisluna.MainViaje;
 import com.rosario.hp.remisluna.R;
+import com.rosario.hp.remisluna.empresas_activity;
 import com.rosario.hp.remisluna.include.Constantes;
 import com.rosario.hp.remisluna.include.VolleySingleton;
 
@@ -81,9 +91,11 @@ public class fragment_qr extends Fragment implements SurfaceHolder.Callback{
     Camera.Parameters params;
     private Activity act;
     private String ls_id_empresa;
+    private String ls_id_sector;
     private String ls_id_solicitante;
-    private Button boton_mp;
-    private Button boton_efectivo;
+
+    private Button boton_sin_qr;
+
     private String cantidad_ficha;
     private String cantidad_espera;
     private String importe_bajada;
@@ -94,6 +106,7 @@ public class fragment_qr extends Fragment implements SurfaceHolder.Callback{
     private String monto_ficha;
     private String monto_total;
     private String l_tarifa_cc;
+    private static final int REQUEST_CODE_QR_SCAN = 101;
 
     Camera camera;
     private CameraManager mCameraManager;
@@ -132,8 +145,7 @@ public class fragment_qr extends Fragment implements SurfaceHolder.Callback{
 
         View v = inflater.inflate(R.layout.activity_qr, container, false);
         cameraView = v.findViewById(R.id.camera_view);
-        this.boton_mp = v.findViewById(R.id.buttonmp);
-        this.boton_efectivo = v.findViewById(R.id.buttonEfectivo);
+        this.boton_sin_qr = v.findViewById(R.id.buttonsinqr);
 
         SurfaceHolder mHolder = cameraView.getHolder();
         mHolder.addCallback(this);
@@ -163,26 +175,14 @@ public class fragment_qr extends Fragment implements SurfaceHolder.Callback{
 
         initQR();
 
-        MediaPlayer mediaPlayer = MediaPlayer.create(getActivity(), R.raw.everblue);
+        MediaPlayer mediaPlayer = MediaPlayer.create(act, R.raw.everblue);
 
-        this.boton_mp.setOnClickListener(new View.OnClickListener() {
+        this.boton_sin_qr.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
 
                 mediaPlayer.start();
-                Intent intent2 = new Intent(context, MainMP.class);
-                context.startActivity(intent2);
-                act.finish();
-
-            }
-        });
-
-        this.boton_efectivo.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-
-                mediaPlayer.start();
-                Intent intent2 = new Intent(context, MainActivity.class);
+                Intent intent2 = new Intent(context, empresas_activity.class);
                 context.startActivity(intent2);
                 act.finish();
 
@@ -194,18 +194,17 @@ public class fragment_qr extends Fragment implements SurfaceHolder.Callback{
     }
 
 
-
     public void initQR() {
 
         // creo el detector qr
         BarcodeDetector barcodeDetector =
-                new BarcodeDetector.Builder(requireActivity())
+                new BarcodeDetector.Builder(act)
                         .setBarcodeFormats(Barcode.ALL_FORMATS)
                         .build();
 
         // creo la camara
         cameraSource = new CameraSource
-                .Builder(getActivity(), barcodeDetector)
+                .Builder(act, barcodeDetector)
                 .setRequestedPreviewSize(1600, 1024)
                 .setAutoFocusEnabled(true) //you should add this feature
                 .build();
@@ -217,7 +216,7 @@ public class fragment_qr extends Fragment implements SurfaceHolder.Callback{
             public void surfaceCreated(SurfaceHolder holder) {
 
                 // verifico si el usuario dio los permisos para la camara
-                if (ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.CAMERA)
+                if (ActivityCompat.checkSelfPermission(act, Manifest.permission.CAMERA)
                         != PackageManager.PERMISSION_GRANTED) {
 
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
@@ -281,31 +280,46 @@ public class fragment_qr extends Fragment implements SurfaceHolder.Callback{
                         tokenanterior = token;
                         Log.i("token", token);
 
-                        MediaPlayer mediaPlayer = MediaPlayer.create(getActivity(), R.raw.everblue);
+                        MediaPlayer mediaPlayer = MediaPlayer.create(act, R.raw.everblue);
+                        MediaPlayer mediaPlayer1 = MediaPlayer.create(act, R.raw.doorbell);
 
-                        mediaPlayer.start();
-
+                        int li_codigo;
                         String ls_codigo;
 
-                        ls_codigo = String.valueOf(Integer.parseInt(token.substring(0,10)));
+                        try
+                        {
+                            li_codigo = Integer.parseInt(token.substring(0,10));
+                            ls_codigo = String.valueOf(li_codigo);
 
-                        obtener_solicitante(ls_codigo, token);
 
-                        new Thread(new Runnable() {
-                            public void run() {
-                                try {
-                                    synchronized (this) {
-                                        wait(5000);
-                                        // limpiamos el token
-                                        tokenanterior = "";
+                            mediaPlayer.start();
+                            obtener_solicitante(ls_codigo, token);
+
+                            new Thread(new Runnable() {
+                                public void run() {
+                                    try {
+                                        synchronized (this) {
+                                            wait(5000);
+                                            // limpiamos el token
+                                            tokenanterior = "";
+                                        }
+                                    } catch (InterruptedException e) {
+                                        // TODO Auto-generated catch block
+                                        Log.e("Error", "Waiting didnt work!!");
+                                        e.printStackTrace();
                                     }
-                                } catch (InterruptedException e) {
-                                    // TODO Auto-generated catch block
-                                    Log.e("Error", "Waiting didnt work!!");
-                                    e.printStackTrace();
                                 }
-                            }
-                        }).start();
+                            }).start();
+                        }
+                        catch(NumberFormatException e)
+                        {
+
+
+                            mediaPlayer1.start();
+
+                            qr_invalido(context);
+
+                        }
 
                     }
                 }
@@ -314,13 +328,41 @@ public class fragment_qr extends Fragment implements SurfaceHolder.Callback{
 
     }
 
+    public void qr_invalido(final Context context)
+    {
+        Handler handler = new Handler(Looper.getMainLooper());
+        handler.post(
+                new Runnable()
+                {
+                    @Override
+                    public void run()
+                    {
+
+                        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(context);
+
+                        alertDialogBuilder.setTitle("QR Callisto");
+
+                        alertDialogBuilder
+                                .setMessage("QR Inválido")
+                                .setCancelable(false)
+                                .setPositiveButton("Aceptar",new DialogInterface.OnClickListener() {
+                                    public void onClick(DialogInterface dialog,int id) {
+
+                                    }
+                                }).create().show();
+
+                    }
+                }
+        );
+    }
+
     public void obtener_solicitante(String ls_id, final String qr) {
         // Petición GET
 
         String newURL = Constantes.GET_SOLICITANTE + "?solicitante=" + ls_id;
         Log.d(TAG, newURL);
         VolleySingleton.
-                getInstance(getActivity()).
+                getInstance(act).
                 addToRequestQueue(
                         new JsonObjectRequest(
                                 Request.Method.POST,
@@ -338,10 +380,20 @@ public class fragment_qr extends Fragment implements SurfaceHolder.Callback{
                                     @Override
                                     public void onErrorResponse(VolleyError error) {
                                         Log.d(TAG, "Error Volley: " + error.toString());
-                                        Toast.makeText(
-                                                context,
-                                                "Error al leer QR",
-                                                Toast.LENGTH_LONG).show();
+
+                                        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(context);
+
+                                        alertDialogBuilder.setTitle("QR Callisto");
+
+                                        alertDialogBuilder
+                                                .setMessage("Error al leer QR")
+                                                .setCancelable(false)
+                                                .setPositiveButton("Aceptar",new DialogInterface.OnClickListener() {
+                                                    public void onClick(DialogInterface dialog,int id) {
+
+                                                    }
+                                                }).create().show();
+
                                     }
                                 }
 
@@ -366,12 +418,22 @@ public class fragment_qr extends Fragment implements SurfaceHolder.Callback{
                         if(qr.equals(qr_ini)){
                             ls_id_solicitante =  object.getString("id");
                             ls_id_empresa =  object.getString("id_empresa");
+                            ls_id_sector =  object.getString("id_sector");
                             cargarViaje(getContext());
                         }else{
-                            Toast.makeText(
-                                    context,
-                                    "El código QR está vencido o no tiene ningún QR asignado",
-                                    Toast.LENGTH_LONG).show();
+
+                            AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(context);
+
+                            alertDialogBuilder.setTitle("QR Callisto");
+
+                            alertDialogBuilder
+                                    .setMessage("El código QR está vencido o  el empleado no tiene ningún QR asignado")
+                                    .setCancelable(false)
+                                    .setPositiveButton("Aceptar",new DialogInterface.OnClickListener() {
+                                        public void onClick(DialogInterface dialog,int id) {
+
+                                        }
+                                    }).create().show();
                         }
 
 
@@ -379,11 +441,18 @@ public class fragment_qr extends Fragment implements SurfaceHolder.Callback{
 
                     break;
                 case "2": // FALLIDO
+                    AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(context);
 
-                    Toast.makeText(
-                            context,
-                            "El QR no pertenece a ningún empleado",
-                            Toast.LENGTH_LONG).show();
+                    alertDialogBuilder.setTitle("QR Callisto");
+
+                    alertDialogBuilder
+                            .setMessage("El QR no pertenece a ningún empleado")
+                            .setCancelable(false)
+                            .setPositiveButton("Aceptar",new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog,int id) {
+
+                                }
+                            }).create().show();
 
                     break;
             }
@@ -579,6 +648,7 @@ public class fragment_qr extends Fragment implements SurfaceHolder.Callback{
         HashMap<String, String> map = new HashMap<>();// Mapeo previo
 
         map.put("id_viaje", l_id_viaje);
+        map.put("id_sector", ls_id_sector);
         map.put("solicitante", ls_id);
         map.put("importe_bajada_cc", importe_bajada);
         map.put("importe_ficha_cc", importe_ficha);
@@ -661,14 +731,22 @@ public class fragment_qr extends Fragment implements SurfaceHolder.Callback{
 
             switch (estado) {
                 case "1":
-                    Toast.makeText(
-                            context,
-                            mensaje,
-                            Toast.LENGTH_LONG).show();
+                    AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(context);
 
-                    Intent intent2 = new Intent(context, MainActivity.class);
-                    intent2.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                    context.startActivity(intent2);
+                    alertDialogBuilder.setTitle("QR Callisto");
+
+                    alertDialogBuilder
+                            .setMessage("El QR fue leido correctamente")
+                            .setCancelable(false)
+                            .setPositiveButton("Aceptar",new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog,int id) {
+                                    Intent intent2 = new Intent(context, MainActivity.class);
+                                    intent2.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                                    context.startActivity(intent2);
+                                }
+                            }).create().show();
+
+
 
                     break;
                 case "2":
