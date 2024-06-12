@@ -46,7 +46,6 @@
     </androidx.cardview.widget.CardView>
 
 
-
     <android.widget.Button
         android:id="@+id/buttonsinqr"
         android:layout_width="match_parent"

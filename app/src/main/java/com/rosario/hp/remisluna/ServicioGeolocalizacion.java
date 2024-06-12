@@ -50,11 +50,6 @@ import java.util.ArrayList;
 import java.util.Objects;
 
 
-/**
- *
- * @author mikesaurio
- *
- */
 public class ServicioGeolocalizacion extends Service implements Runnable {
     /**
      * Declaraci—n de variables
@@ -296,7 +291,7 @@ public class ServicioGeolocalizacion extends Service implements Runnable {
             */
 
             //distancia que me distingue si mido tiempo o ficha
-            if(distance > 1.1 && distance < 28) {//probar con 2.5
+            if(distance > 1 && distance < 28) {//probar con 2.5
                 l_tipo = 1;
             }else{
                 l_tipo = 2;
@@ -320,9 +315,6 @@ public class ServicioGeolocalizacion extends Service implements Runnable {
                         ficha_acumulada = ficha_acumulada + distance;
 
                     }
-                }else{
-                    l_ficha++;
-                    ficha_acumulada = ficha_acumulada + distance;
                 }
 
 
@@ -372,15 +364,18 @@ public class ServicioGeolocalizacion extends Service implements Runnable {
                 }
                 l_tiempo_limpieza += l_diferencia;
 
-                if(l_espera) {
-                    if(l_ficha > 0){
-                        l_ficha = 0;
-                        distancia_acumulada = distancia_acumulada - ficha_acumulada;
-                        ficha_acumulada = 0.00;}
-                }else{
+                if(l_contador > 30) {
+                    if (l_espera) {
+                        if (l_ficha > 0) {
+                            l_ficha = 0;
+                            distancia_acumulada = distancia_acumulada - ficha_acumulada;
+                            ficha_acumulada = 0.00;
+                        }
+                    } else {
 
-                    l_espera = true;
+                        l_espera = true;
 
+                    }
                 }
 
                 l_inicio = l_final;

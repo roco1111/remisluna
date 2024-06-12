@@ -41,6 +41,7 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.core.content.FileProvider;
 import androidx.fragment.app.Fragment;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.Request;
@@ -48,6 +49,7 @@ import com.android.volley.Response;
 import com.android.volley.error.VolleyError;
 import com.android.volley.request.JsonObjectRequest;
 
+import com.google.firebase.database.core.utilities.Tree;
 import com.itextpdf.text.BaseColor;
 import com.itextpdf.text.Chunk;
 import com.itextpdf.text.DocumentException;
@@ -102,6 +104,7 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
+import java.util.TreeMap;
 
 import static com.facebook.FacebookSdk.getApplicationContext;
 import static com.rosario.hp.remisluna.include.Utils.stringABytes;
@@ -206,6 +209,7 @@ public class fragment_principal extends Fragment {
     private String l_paradas;
     private String tipo_empresa;
     private String viajes_automaticos_chofer;
+    SwipeRefreshLayout swipeRefreshLayout;
 
 
     @Override
@@ -326,6 +330,7 @@ public class fragment_principal extends Fragment {
         View v = inflater.inflate(R.layout.activity_principal, container, false);
         context = getContext();
         act = getActivity();
+
         SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(context);
         ls_id_conductor = settings.getString("id", "");
         ls_id_turno = settings.getString("id_turno_chofer", "");
@@ -341,6 +346,10 @@ public class fragment_principal extends Fragment {
         l_turno_app = settings.getString("turnos_app", "");
         l_paradas = settings.getString("paradas", "");
         viajes_automaticos_chofer = settings.getString("viajes_automaticos_chofer", "");
+        l_hora_desde = settings.getString("tarifa_desde", "");
+        l_hora_hasta = settings.getString("tarifa_hasta", "");
+
+        swipeRefreshLayout = v.findViewById(R.id.swipeRefreshLayout);
 
         this.boton_uno = v.findViewById(R.id.imageButtonUno);
         this.boton_dos = v.findViewById(R.id.imageButtonDos);
@@ -705,6 +714,15 @@ public class fragment_principal extends Fragment {
                 context.startActivity(intent2);
             }
         });
+        swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                Log.d("swipe","swipe");
+
+                swipeRefreshLayout.setRefreshing(true);
+                feriado(context);
+            }
+        });
 
         feriado(context);
 
@@ -768,7 +786,7 @@ public class fragment_principal extends Fragment {
             // Obtener atributo "mensaje"
             ls_es_feriado= response.getString("feriado");
 
-            cargarParametroTurno(context);
+            procesarParametroTurno();
 
 
 
@@ -795,372 +813,102 @@ public class fragment_principal extends Fragment {
         return false;
     }
 
-public void cargarParametroTurno(final Context context) {
 
-    HashMap<String, String> map = new HashMap<>();// Mapeo previo
-
-    map.put("parametro", "17");
-    map.put("remiseria", ls_remiseria);
-
-    JSONObject jobject = new JSONObject(map);
+private void procesarParametroTurno( ) {
 
 
-    // Depurando objeto Json...
-    Log.d(TAG, jobject.toString());
+    if (l_turno_app.equals("0")) {
 
-    StringBuilder encodedParams = new StringBuilder();
-    try {
-        for (Map.Entry<String, String> entry : map.entrySet()) {
-            encodedParams.append(URLEncoder.encode(entry.getKey(), "utf-8"));
-            encodedParams.append('=');
-            encodedParams.append(URLEncoder.encode(entry.getValue(), "utf-8"));
-            encodedParams.append('&');
-        }
-    } catch (UnsupportedEncodingException uee) {
-        throw new RuntimeException("Encoding not supported: " + "utf-8", uee);
-    }
+        boton_turno.setEnabled(false);
 
-    encodedParams.setLength(Math.max(encodedParams.length() - 1, 0));
+        boton_dos.setEnabled(false);
+        boton_tres.setEnabled(false);
+        boton_dos.setBackground(act.getResources().getDrawable(R.drawable.dos_gris));
+        boton_uno.setBackground(act.getResources().getDrawable(R.drawable.uno_gris));
+        boton_tres.setBackground(act.getResources().getDrawable(R.drawable.tres_gris));
+        text_parcial_turno.setTextColor(act.getResources().getColor(R.color.colorGris));
+        text_final_turno.setTextColor(act.getResources().getColor(R.color.colorGris));
+        text_ultimos_finales.setTextColor(act.getResources().getColor(R.color.colorGris));
 
-    // Añadir parámetro a la URL del web service
-    String newURL = Constantes.GET_ID_PARAMETRO + "?" + encodedParams;
-    Log.d(TAG,newURL);
+    } else {
+        boton_turno.setEnabled(true);
 
-    // Realizar petición GET_BY_ID
-    VolleySingleton.getInstance(context).addToRequestQueue(
-            myRequest = new JsonObjectRequest(
-                    Request.Method.POST,
-                    newURL,
-                    null,
-                    new Response.Listener<JSONObject>() {
-
-                        @Override
-                        public void onResponse(JSONObject response) {
-                            // Procesar respuesta Json
-                            procesarRespuestaParametroTurno(response, context);
-                        }
-                    },
-                    new Response.ErrorListener() {
-                        @Override
-                        public void onErrorResponse(VolleyError error) {
-                            Log.d(TAG, "Error Volley parámetro: " + error.getMessage());
-
-                        }
-                    }
-            )
-    );
-    myRequest.setRetryPolicy(new DefaultRetryPolicy(
-            50000,
-            5,//DefaultRetryPolicy.DEFAULT_MAX_RETRIES
-            DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
-
-}
-
-private void procesarRespuestaParametroTurno(JSONObject response, Context context) {
-
-    try {
-        // Obtener atributo "mensaje"
-        String mensaje = response.getString("estado");
-
-        switch (mensaje) {
+        boton_dos.setEnabled(true);
+        switch (tipo_empresa) {
             case "1":
-                JSONArray datos_parametro = response.getJSONArray("parametro");
-
-                for (int i = 0; i < datos_parametro.length(); i++) {
-                    JSONObject object = datos_parametro.getJSONObject(i);
-
-                    l_turno_app = object.getString("valor");
-
-                }
-                if(l_turno_app.equals("0")){
-
-                    boton_turno.setEnabled(false);
-
-                    boton_dos.setEnabled(false);
-                    boton_tres.setEnabled(false);
-                    boton_dos.setBackground(act.getResources().getDrawable(R.drawable.dos_gris));
-                    boton_uno.setBackground(act.getResources().getDrawable(R.drawable.uno_gris));
-                    boton_tres.setBackground(act.getResources().getDrawable(R.drawable.tres_gris));
-                    text_parcial_turno.setTextColor(act.getResources().getColor(R.color.colorGris));
-                    text_final_turno.setTextColor(act.getResources().getColor(R.color.colorGris));
-                    text_ultimos_finales.setTextColor(act.getResources().getColor(R.color.colorGris));
-
-                }else{
-                    boton_turno.setEnabled(true);
-
-                    boton_dos.setEnabled(true);
-                    switch (tipo_empresa) {
-                        case "1":
-                            boton_dos.setBackground(act.getResources().getDrawable(R.drawable.selector_dos));
-                            boton_uno.setBackground(act.getResources().getDrawable(R.drawable.selector_uno));
-                            boton_tres.setBackground(act.getResources().getDrawable(R.drawable.selector_tres));
-                            text_final_turno.setTextColor(act.getResources().getColor(R.color.colorPrimary));
-                            text_ultimos_finales.setTextColor(act.getResources().getColor(R.color.colorPrimary));
-                            text_parcial_turno.setTextColor(act.getResources().getColor(R.color.colorPrimary));
-                            break;
-                        case "2":
-                            boton_dos.setBackground(act.getResources().getDrawable(R.drawable.selector_dos_moto));
-                            boton_uno.setBackground(act.getResources().getDrawable(R.drawable.selector_uno_moto));
-                            boton_tres.setBackground(act.getResources().getDrawable(R.drawable.selector_tres_moto));
-                            text_final_turno.setTextColor(act.getResources().getColor(R.color.colorMoto));
-                            text_ultimos_finales.setTextColor(act.getResources().getColor(R.color.colorMoto));
-                            text_parcial_turno.setTextColor(act.getResources().getColor(R.color.colorMoto));
-                            break;
-                        case "3":
-                            boton_dos.setBackground(act.getResources().getDrawable(R.drawable.selector_dos_taxi));
-                            boton_uno.setBackground(act.getResources().getDrawable(R.drawable.selector_uno_taxi));
-                            boton_tres.setBackground(act.getResources().getDrawable(R.drawable.selector_tres_taxi));
-                            text_final_turno.setTextColor(act.getResources().getColor(R.color.colorTaxi));
-                            text_ultimos_finales.setTextColor(act.getResources().getColor(R.color.colorTaxi));
-                            text_parcial_turno.setTextColor(act.getResources().getColor(R.color.colorTaxi));
-                            break;
-                    }
-
-                }
-                cargarParametroTarifaDesde(context);
-
+                boton_dos.setBackground(act.getResources().getDrawable(R.drawable.selector_dos));
+                boton_uno.setBackground(act.getResources().getDrawable(R.drawable.selector_uno));
+                boton_tres.setBackground(act.getResources().getDrawable(R.drawable.selector_tres));
+                text_final_turno.setTextColor(act.getResources().getColor(R.color.colorPrimary));
+                text_ultimos_finales.setTextColor(act.getResources().getColor(R.color.colorPrimary));
+                text_parcial_turno.setTextColor(act.getResources().getColor(R.color.colorPrimary));
                 break;
             case "2":
-                String mensaje2 = response.getString("mensaje");
-                Toast.makeText(
-                        context,
-                        mensaje2,
-                        Toast.LENGTH_LONG).show();
+                boton_dos.setBackground(act.getResources().getDrawable(R.drawable.selector_dos_moto));
+                boton_uno.setBackground(act.getResources().getDrawable(R.drawable.selector_uno_moto));
+                boton_tres.setBackground(act.getResources().getDrawable(R.drawable.selector_tres_moto));
+                text_final_turno.setTextColor(act.getResources().getColor(R.color.colorMoto));
+                text_ultimos_finales.setTextColor(act.getResources().getColor(R.color.colorMoto));
+                text_parcial_turno.setTextColor(act.getResources().getColor(R.color.colorMoto));
                 break;
-
+            case "3":
+                boton_dos.setBackground(act.getResources().getDrawable(R.drawable.selector_dos_taxi));
+                boton_uno.setBackground(act.getResources().getDrawable(R.drawable.selector_uno_taxi));
+                boton_tres.setBackground(act.getResources().getDrawable(R.drawable.selector_tres_taxi));
+                text_final_turno.setTextColor(act.getResources().getColor(R.color.colorTaxi));
+                text_ultimos_finales.setTextColor(act.getResources().getColor(R.color.colorTaxi));
+                text_parcial_turno.setTextColor(act.getResources().getColor(R.color.colorTaxi));
+                break;
         }
 
-
-    } catch (JSONException e) {
-        e.printStackTrace();
     }
+    c = Calendar.getInstance();
+    SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy HH:mm");
+    String getCurrentDateTime = sdf.format(c.getTime());
+    SimpleDateFormat shoy = new SimpleDateFormat("MM/dd/yyyy");
+    l_hoy = shoy.format(c.getTime());
+    String getMyTime = l_hoy + ' ' + l_hora_desde;
+
+    if (getCurrentDateTime.compareTo(getMyTime) > 0)
+    { l_nocturno = "1"; } else
+    {
+        getMyTime = l_hoy + ' ' + l_hora_hasta;
+        if (getCurrentDateTime.compareTo(getMyTime) < 0)
+        {
+            l_nocturno = "1";
+        }else{
+            int dia_semana;
+            dia_semana=c.get(Calendar.DAY_OF_WEEK);
+
+            if(dia_semana == Calendar.SUNDAY){
+                l_nocturno = "1";
+            }else{
+                if(ls_es_feriado.equals("si")){
+                    l_nocturno = "1";
+                }else{
+                    l_nocturno = "0";
+                }
+
+            }
+        }
+    }
+
+    if(l_nocturno.equals("0")){
+        texto_tarifa.setText(R.string.diurno);
+    }else{
+        texto_tarifa.setText(R.string.nocturno);
+    }
+
+    SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(context);
+    SharedPreferences.Editor editor = settings.edit();
+    editor.putString("nocturno",l_nocturno);
+    editor.apply();
+    cargarParadas(context);
 
 }
 
-    public void cargarParametroTarifaDesde(final Context context) {
-
-        HashMap<String, String> map = new HashMap<>();// Mapeo previo
-
-        map.put("parametro", "10");
-        map.put("remiseria", ls_remiseria);
-
-        JSONObject jobject = new JSONObject(map);
 
 
-        // Depurando objeto Json...
-        Log.d(TAG, jobject.toString());
-
-        StringBuilder encodedParams = new StringBuilder();
-        try {
-            for (Map.Entry<String, String> entry : map.entrySet()) {
-                encodedParams.append(URLEncoder.encode(entry.getKey(), "utf-8"));
-                encodedParams.append('=');
-                encodedParams.append(URLEncoder.encode(entry.getValue(), "utf-8"));
-                encodedParams.append('&');
-            }
-        } catch (UnsupportedEncodingException uee) {
-            throw new RuntimeException("Encoding not supported: " + "utf-8", uee);
-        }
-
-        encodedParams.setLength(Math.max(encodedParams.length() - 1, 0));
-
-        // Añadir parámetro a la URL del web service
-        String newURL = Constantes.GET_ID_PARAMETRO + "?" + encodedParams;
-
-        Log.d(TAG,newURL);
-
-        // Realizar petición GET_BY_ID
-        VolleySingleton.getInstance(context).addToRequestQueue(
-                myRequest = new JsonObjectRequest(
-                        Request.Method.POST,
-                        newURL,
-                        null,
-                        new Response.Listener<JSONObject>() {
-
-                            @Override
-                            public void onResponse(JSONObject response) {
-                                // Procesar respuesta Json
-                                procesarRespuestaParametroDesde(response, context);
-                            }
-                        },
-                        new Response.ErrorListener() {
-                            @Override
-                            public void onErrorResponse(VolleyError error) {
-                                Log.d(TAG, "Error Volley parametro: " + error.getMessage());
-
-                            }
-                        }
-                )
-        );
-        myRequest.setRetryPolicy(new DefaultRetryPolicy(
-                50000,
-                5,//DefaultRetryPolicy.DEFAULT_MAX_RETRIES
-                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
-
-    }
-
-    private void procesarRespuestaParametroDesde(JSONObject response, Context context) {
-
-        try {
-            // Obtener atributo "mensaje"
-            String mensaje = response.getString("estado");
-
-            switch (mensaje) {
-                case "1":
-                    JSONArray datos_parametro = response.getJSONArray("parametro");
-
-                    for(int i = 0; i < datos_parametro.length(); i++)
-                    {JSONObject object = datos_parametro.getJSONObject(i);
-
-                        l_hora_desde = object.getString("valor");
-
-                        cargarParametroTarifaHasta(context);
-
-
-                    }
-
-                    break;
-
-            }
-
-
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-
-    }
-
-    public void cargarParametroTarifaHasta(final Context context) {
-
-        HashMap<String, String> map = new HashMap<>();// Mapeo previo
-
-        map.put("parametro", "11");
-        map.put("remiseria", ls_remiseria);
-
-        JSONObject jobject = new JSONObject(map);
-
-
-        // Depurando objeto Json...
-        Log.d(TAG, jobject.toString());
-
-        StringBuilder encodedParams = new StringBuilder();
-        try {
-            for (Map.Entry<String, String> entry : map.entrySet()) {
-                encodedParams.append(URLEncoder.encode(entry.getKey(), "utf-8"));
-                encodedParams.append('=');
-                encodedParams.append(URLEncoder.encode(entry.getValue(), "utf-8"));
-                encodedParams.append('&');
-            }
-        } catch (UnsupportedEncodingException uee) {
-            throw new RuntimeException("Encoding not supported: " + "utf-8", uee);
-        }
-
-        encodedParams.setLength(Math.max(encodedParams.length() - 1, 0));
-
-        // Añadir parámetro a la URL del web service
-        String newURL = Constantes.GET_ID_PARAMETRO + "?" + encodedParams;
-
-        Log.d(TAG,newURL);
-
-        // Realizar petición GET_BY_ID
-        VolleySingleton.getInstance(context).addToRequestQueue(
-                myRequest = new JsonObjectRequest(
-                        Request.Method.POST,
-                        newURL,
-                        null,
-                        new Response.Listener<JSONObject>() {
-
-                            @Override
-                            public void onResponse(JSONObject response) {
-                                // Procesar respuesta Json
-                                procesarRespuestaParametroHasta(response, context);
-                            }
-                        },
-                        new Response.ErrorListener() {
-                            @Override
-                            public void onErrorResponse(VolleyError error) {
-                                Log.d(TAG, "Error Volley parametro: " + error.getMessage());
-
-                            }
-                        }
-                )
-        );
-        myRequest.setRetryPolicy(new DefaultRetryPolicy(
-                50000,
-                5,//DefaultRetryPolicy.DEFAULT_MAX_RETRIES
-                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
-
-    }
-
-    private void procesarRespuestaParametroHasta(JSONObject response, Context context) {
-
-        try {
-            // Obtener atributo "mensaje"
-            String mensaje = response.getString("estado");
-
-            switch (mensaje) {
-                case "1":
-                    JSONArray datos_parametro = response.getJSONArray("parametro");
-
-                    for(int i = 0; i < datos_parametro.length(); i++)
-                    {JSONObject object = datos_parametro.getJSONObject(i);
-
-                        l_hora_hasta = object.getString("valor");
-
-                        c = Calendar.getInstance();
-                        SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy HH:mm");
-                        String getCurrentDateTime = sdf.format(c.getTime());
-                        SimpleDateFormat shoy = new SimpleDateFormat("MM/dd/yyyy");
-                        l_hoy = shoy.format(c.getTime());
-                        String getMyTime = l_hoy + ' ' + l_hora_desde;
-
-                        if (getCurrentDateTime.compareTo(getMyTime) > 0)
-                        { l_nocturno = "1"; } else
-                        {
-                            getMyTime = l_hoy + ' ' + l_hora_hasta;
-                            if (getCurrentDateTime.compareTo(getMyTime) < 0)
-                            {
-                                l_nocturno = "1";
-                            }else{
-                                int dia_semana;
-                                dia_semana=c.get(Calendar.DAY_OF_WEEK);
-
-                                if(dia_semana == Calendar.SUNDAY){
-                                    l_nocturno = "1";
-                                }else{
-                                    if(ls_es_feriado.equals("si")){
-                                        l_nocturno = "1";
-                                    }else{
-                                        l_nocturno = "0";
-                                    }
-
-                                }
-                            }
-                        }
-
-                        if(l_nocturno.equals("0")){
-                            texto_tarifa.setText(R.string.diurno);
-                        }else{
-                            texto_tarifa.setText(R.string.nocturno);
-                        }
-
-                        SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(context);
-                        SharedPreferences.Editor editor = settings.edit();
-                        editor.putString("nocturno",l_nocturno);
-                        editor.apply();
-
-                    }
-                    cargarParadas(context);
-                    break;
-
-            }
-
-
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-
-    }
 
 
     public void datos_turno(final Context context) {
@@ -1680,7 +1428,7 @@ private void procesarRespuestaParametroTurno(JSONObject response, Context contex
                 ) {
                     @Override
                     public Map<String, String> getHeaders() {
-                        Map<String, String> headers = new HashMap<>();
+                        Map<String, String> headers = new TreeMap<>();
                         headers.put("Content-Type", "application/json; charset=utf-8");
                         return headers;
                     }
@@ -1769,7 +1517,7 @@ private void procesarRespuestaParametroTurno(JSONObject response, Context contex
                 ) {
                     @Override
                     public Map<String, String> getHeaders() {
-                        Map<String, String> headers = new HashMap<>();
+                        Map<String, String> headers = new TreeMap<>();
                         headers.put("Content-Type", "application/json; charset=utf-8");
                         return headers;
                     }
@@ -1827,7 +1575,7 @@ private void procesarRespuestaParametroTurno(JSONObject response, Context contex
 
     private void verificar_movil_turno(final Context context){
 
-        HashMap<String, String> map = new HashMap<>();// Mapeo previo
+        TreeMap<String, String> map = new TreeMap<>();// Mapeo previo
 
         map.put("conductor", ls_id_conductor);
         map.put("remiseria", ls_remiseria);
@@ -1880,7 +1628,7 @@ private void procesarRespuestaParametroTurno(JSONObject response, Context contex
                 ) {
                     @Override
                     public Map<String, String> getHeaders() {
-                        Map<String, String> headers = new HashMap<>();
+                        Map<String, String> headers = new TreeMap<>();
                         headers.put("Content-Type", "application/json; charset=utf-8");
                         return headers;
                     }
@@ -1937,7 +1685,7 @@ private void procesarRespuestaParametroTurno(JSONObject response, Context contex
 
     public void obtenerNroTurno(final Context context) {
 
-        HashMap<String, String> map = new HashMap<>();// Mapeo previo
+        TreeMap<String, String> map = new TreeMap<>();// Mapeo previo
 
         map.put("parametro", "15");
         map.put("remiseria", ls_remiseria);
@@ -2046,7 +1794,7 @@ private void procesarRespuestaParametroTurno(JSONObject response, Context contex
     private void actualizar_nro_turno(final Context context){
 
 
-        HashMap<String, String> map = new HashMap<>();// Mapeo previo
+        TreeMap<String, String> map = new TreeMap<>();// Mapeo previo
 
         map.put("parametro", "15");
         map.put("remiseria", ls_remiseria);
@@ -2097,7 +1845,7 @@ private void procesarRespuestaParametroTurno(JSONObject response, Context contex
                 ) {
                     @Override
                     public Map<String, String> getHeaders() {
-                        Map<String, String> headers = new HashMap<>();
+                        Map<String, String> headers = new TreeMap<>();
                         headers.put("Content-Type", "application/json; charset=utf-8");
                         return headers;
                     }
@@ -2164,7 +1912,7 @@ private void procesarRespuestaParametroTurno(JSONObject response, Context contex
                 ) {
                     @Override
                     public Map<String, String> getHeaders() {
-                        Map<String, String> headers = new HashMap<>();
+                        Map<String, String> headers = new TreeMap<>();
                         headers.put("Content-Type", "application/json; charset=utf-8");
                         return headers;
                     }
@@ -2302,7 +2050,7 @@ private void procesarRespuestaParametroTurno(JSONObject response, Context contex
     private void actualizar_turno(final Context context){
 
 
-        HashMap<String, String> map = new HashMap<>();// Mapeo previo
+        TreeMap<String, String> map = new TreeMap<>();// Mapeo previo
 
         map.put("id", ls_id_turno);
         map.put("nro_turno", l_turno_parametro);
@@ -2352,7 +2100,7 @@ private void procesarRespuestaParametroTurno(JSONObject response, Context contex
                 ) {
                     @Override
                     public Map<String, String> getHeaders() {
-                        Map<String, String> headers = new HashMap<>();
+                        Map<String, String> headers = new TreeMap<>();
                         headers.put("Content-Type", "application/json; charset=utf-8");
                         return headers;
                     }
@@ -2502,7 +2250,7 @@ private void procesarRespuestaParametroTurno(JSONObject response, Context contex
                             @Override
                             public void onErrorResponse(VolleyError error) {
                                 Log.d(TAG, "Error Volley parametro: " + error.getMessage());
-
+                                swipeRefreshLayout.setRefreshing(false);
                             }
                         }
                 )
@@ -2587,7 +2335,7 @@ private void procesarRespuestaParametroTurno(JSONObject response, Context contex
                             @Override
                             public void onErrorResponse(VolleyError error) {
                                 Log.d(TAG, "Error Volley parametro: " + error.getMessage());
-
+                                swipeRefreshLayout.setRefreshing(false);
                             }
                         }
                 )
@@ -2652,7 +2400,7 @@ private void procesarRespuestaParametroTurno(JSONObject response, Context contex
                             @Override
                             public void onErrorResponse(VolleyError error) {
                                 Log.d(TAG, "Error Volley turno: " + error.getMessage());
-
+                                swipeRefreshLayout.setRefreshing(false);
                             }
                         }
                 )
@@ -2690,6 +2438,7 @@ private void procesarRespuestaParametroTurno(JSONObject response, Context contex
                         this.buttonParadas.setEnabled(true);
                         this.boton_uno.setEnabled(true);
                         this.repetirTicket.setVisibility(View.VISIBLE);
+                        this.boton_turno.setVisibility(View.VISIBLE);
 
                         switch (tipo_empresa) {
                             case "1":
@@ -2820,6 +2569,7 @@ private void procesarRespuestaParametroTurno(JSONObject response, Context contex
                     break;
 
             }
+            swipeRefreshLayout.setRefreshing(false);
 
 
         } catch (JSONException e) {
@@ -4530,7 +4280,7 @@ private void procesarRespuestaParametroTurno(JSONObject response, Context contex
 
     private void guardar_parada(String parada, final Context context){
 
-        HashMap<String, String> map = new HashMap<>();// Mapeo previo
+        TreeMap<String, String> map = new TreeMap<>();// Mapeo previo
 
         map.put("parada", parada);
         map.put("id", id_movil);
@@ -4583,7 +4333,7 @@ private void procesarRespuestaParametroTurno(JSONObject response, Context contex
                 ) {
                     @Override
                     public Map<String, String> getHeaders() {
-                        Map<String, String> headers = new HashMap<>();
+                        Map<String, String> headers = new TreeMap<>();
                         headers.put("Content-Type", "application/json; charset=utf-8");
                         return headers;
                     }
@@ -4649,7 +4399,7 @@ private void procesarRespuestaParametroTurno(JSONObject response, Context contex
                 ) {
                     @Override
                     public Map<String, String> getHeaders() {
-                        Map<String, String> headers = new HashMap<>();
+                        Map<String, String> headers = new TreeMap<>();
                         headers.put("Content-Type", "application/json; charset=utf-8");
                         return headers;
                     }
@@ -4759,7 +4509,7 @@ private void procesarRespuestaParametroTurno(JSONObject response, Context contex
 
     private void borrar_parada(final Context context){
 
-        HashMap<String, String> map = new HashMap<>();// Mapeo previo
+        TreeMap<String, String> map = new TreeMap<>();// Mapeo previo
         String l_parada = "0";
 
         map.put("parada", l_parada);
@@ -4813,7 +4563,7 @@ private void procesarRespuestaParametroTurno(JSONObject response, Context contex
                 ) {
                     @Override
                     public Map<String, String> getHeaders() {
-                        Map<String, String> headers = new HashMap<>();
+                        Map<String, String> headers = new TreeMap<>();
                         headers.put("Content-Type", "application/json; charset=utf-8");
                         return headers;
                     }

@@ -12,7 +12,11 @@
 
     android:orientation="vertical">
 
+    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+        android:id="@+id/swipeRefreshLayout"
+        android:layout_width="match_parent"
 
+        android:layout_height="match_parent">
 
 
     <ScrollView
@@ -171,7 +175,6 @@
                         android:text="@string/nuevo_viaje"
                         android:textColor="@color/colorPrimaryText"
                         android:textSize="@dimen/tamanio_texto"
-
                         tools:ignore="RtlHardcoded" />
 
 
@@ -184,7 +187,7 @@
                     android:layout_below="@id/id_viajes"
                     android:layout_centerHorizontal="true"
                     android:layout_marginTop="@dimen/margin_start"
-                    android:visibility="gone"
+
                     android:orientation="horizontal">
 
                     <android.widget.Button
@@ -196,6 +199,7 @@
                         android:background="@drawable/boton_chico"
                         android:backgroundTint="@color/colorPrimary"
                         android:text="@string/nuevo_turno"
+                        android:visibility="gone"
                         android:textColor="@color/colorPrimaryText"
                         android:textSize="@dimen/tamanio_texto"
                         tools:ignore="RtlHardcoded" />
@@ -209,6 +213,7 @@
                         android:background="@drawable/boton_chico"
                         android:backgroundTint="@color/suspender"
                         android:text="@string/reporte_ticket"
+                        android:visibility="gone"
                         android:textColor="@color/colorPrimaryText"
                         android:textSize="@dimen/tamanio_parrafo"
                         tools:ignore="RtlHardcoded" />
@@ -480,4 +485,5 @@
 
         </RelativeLayout>
     </ScrollView>
+    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 </RelativeLayout>

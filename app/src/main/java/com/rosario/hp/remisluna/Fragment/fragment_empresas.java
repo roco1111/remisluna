@@ -170,6 +170,14 @@ public class fragment_empresas extends Fragment {
 
                         emp.setId_tipo_empresa(tipo_empresa);
 
+                        String cant = object.getString("sectores");
+
+                        emp.setSectores(cant);
+
+                        String id_sector = object.getString("id_sector");
+
+                        emp.setId_sector(id_sector);
+
                         datos.add(emp);
 
                     }

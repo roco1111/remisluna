@@ -1,0 +1,200 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    android:background="@color/black"
+    android:orientation="vertical">
+
+
+    <RelativeLayout
+        android:id="@+id/id_numeros"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/margin_boton"
+        android:orientation="vertical">
+
+        <RelativeLayout
+            android:id="@+id/id_datos_superior"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/margin_boton"
+
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/gps"
+                android:layout_width="wrap_content"
+                android:layout_height="@dimen/icono_chico"
+                android:layout_alignParentStart="true"
+                android:text="@string/gps"
+                android:textAlignment="center"
+                android:textColor="@color/colorPrimary"
+                android:textSize="@dimen/tamanio_parrafo"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/dato_viaje"
+                android:layout_width="wrap_content"
+                android:layout_height="@dimen/tamanio_subtitulo"
+                android:layout_alignParentStart="true"
+                android:text="@string/gps"
+                android:textAlignment="center"
+                android:textColor="@color/colorPrimary"
+                android:textSize="@dimen/tamanio_parrafo"
+                android:textStyle="bold"
+                android:visibility="invisible" />
+
+            <TextView
+                android:id="@+id/tarifa"
+                android:layout_width="wrap_content"
+                android:layout_height="@dimen/tamanio_subtitulo"
+                android:layout_alignParentEnd="true"
+                android:text="@string/tarifa"
+                android:textAlignment="center"
+                android:textColor="@color/colorPrimary"
+                android:textSize="@dimen/tamanio_parrafo"
+                android:textStyle="bold" />
+        </RelativeLayout>
+
+
+    <TextView
+        android:id="@+id/precio"
+        android:layout_width="wrap_content"
+        android:layout_height="@dimen/tamanio_campo_numero"
+        android:layout_below="@id/id_datos_superior"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="@dimen/margin_top_menu"
+        android:autoSizeTextType="uniform"
+        android:fontFamily="@font/digital"
+        android:text="@string/cero_pesos"
+        android:textAlignment="center"
+        android:textColor="@color/colorPrimary"
+        android:textSize="@dimen/tamanio_numero"
+        android:textStyle="bold" />
+
+    <RelativeLayout
+        android:id="@+id/id_datos_titulo"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/precio"
+        android:layout_marginTop="@dimen/margin_top"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/titulo_espera"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentStart="true"
+            android:layout_marginBottom="4dp"
+
+            android:text="@string/espera"
+            android:textAlignment="center"
+            android:textColor="@color/colorPrimary"
+            android:textSize="@dimen/tamanio_texto"
+            android:textStyle="bold" />
+        <TextView
+            android:id="@+id/titulo_ficha"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_marginBottom="4dp"
+
+            android:text="@string/fichas"
+            android:textAlignment="center"
+            android:textColor="@color/colorPrimary"
+            android:textSize="@dimen/tamanio_texto"
+            android:textStyle="bold" />
+    </RelativeLayout>
+    </RelativeLayout>
+        <RelativeLayout
+            android:id="@+id/id_datos_inferior"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/id_datos_titulo"
+            android:layout_marginTop="@dimen/margin_top_texto"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/tiempo"
+                android:layout_width="wrap_content"
+                android:layout_height="@dimen/tamanio_numero_tiempo"
+                android:layout_alignParentStart="true"
+                android:layout_marginTop="8dp"
+                android:layout_marginBottom="4dp"
+                android:fontFamily="@font/digital"
+                android:text="@string/cero_tiempo"
+                android:textAlignment="center"
+                android:textColor="@color/colorPrimary"
+                android:textSize="@dimen/tamanio_texto_tiempo"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/ficha_espera"
+                android:layout_width="wrap_content"
+                android:layout_height="@dimen/tamanio_numero_tiempo"
+
+                android:layout_marginStart="@dimen/fab_margin"
+                android:layout_marginTop="8dp"
+                android:layout_marginBottom="4dp"
+                android:layout_toEndOf="@id/tiempo"
+                android:fontFamily="@font/digital"
+                android:text="@string/cero_pesos"
+                android:textAlignment="center"
+                android:textColor="@color/colorPrimary"
+                android:textSize="@dimen/tamanio_texto_tiempo"
+                android:textStyle="bold" />
+
+            <LinearLayout
+                android:id="@+id/id_wa"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/margin_top_menu2"
+
+                android:layout_toEndOf="@id/ficha_espera"
+                android:orientation="vertical">
+
+                <Button
+                    android:id="@+id/imageWa"
+                    android:layout_width="@dimen/alto_imagen_wa"
+                    android:layout_height="@dimen/alto_imagen_wa"
+                    android:background="@android:color/transparent"
+                    android:drawableTop="@drawable/wa"
+                    tools:ignore="RtlHardcoded" />
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/kms"
+                android:layout_width="wrap_content"
+                android:layout_height="@dimen/tamanio_numero_tiempo"
+                android:layout_marginTop="8dp"
+                android:layout_marginBottom="4dp"
+                android:layout_toStartOf="@id/monto_ficha"
+                android:fontFamily="@font/digital"
+                android:text="@string/cero_distancia"
+                android:textAlignment="center"
+                android:textColor="@color/colorPrimary"
+                android:textSize="@dimen/tamanio_texto_tiempo"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/monto_ficha"
+                android:layout_width="wrap_content"
+                android:layout_height="@dimen/tamanio_numero_tiempo"
+                android:layout_alignParentEnd="true"
+                android:layout_marginStart="@dimen/fab_margin"
+                android:layout_marginTop="8dp"
+                android:layout_marginBottom="4dp"
+                android:fontFamily="@font/digital"
+                android:text="@string/cero_pesos"
+                android:textAlignment="center"
+                android:textColor="@color/colorPrimary"
+                android:textSize="@dimen/tamanio_texto_tiempo"
+                android:textStyle="bold" />
+        </RelativeLayout>
+
+</LinearLayout>

@@ -37,7 +37,9 @@ import com.android.volley.Response;
 import com.android.volley.error.VolleyError;
 import com.android.volley.request.JsonObjectRequest;
 import com.rosario.hp.remisluna.Entidades.ayuda;
+import com.rosario.hp.remisluna.Fragment.fragment_vacia;
 import com.rosario.hp.remisluna.Fragment.fragment_viaje_iniciado;
+import com.rosario.hp.remisluna.Fragment.fragment_viaje_vacia;
 import com.rosario.hp.remisluna.include.Constantes;
 import com.rosario.hp.remisluna.include.VolleySingleton;
 
@@ -130,7 +132,8 @@ public class MainViaje extends AppCompatActivity {
         ls_remiseria = settings.getString("remiseria","");
 
         fragmentManager = getSupportFragmentManager();
-        Fragment fragment = new fragment_viaje_iniciado();
+
+        Fragment fragment = new fragment_viaje_vacia();
 
 
         fragmentManager.beginTransaction()
@@ -244,7 +247,7 @@ public class MainViaje extends AppCompatActivity {
             editor.putString("feriado",response.getString("feriado"));
             editor.apply();
 
-            cargarParametro(context);
+            cargarRemiseria(context);
 
 
         } catch (JSONException e) {
@@ -252,35 +255,77 @@ public class MainViaje extends AppCompatActivity {
         }
     }
 
-    public void cargarParametro(final Context context) {
-
-        HashMap<String, String> map = new HashMap<>();// Mapeo previo
-
-        map.put("parametro", "9");
-        map.put("remiseria", ls_remiseria);
-
-        JSONObject jobject = new JSONObject(map);
-
-
-        // Depurando objeto Json...
-        Log.d(TAG, jobject.toString());
-
-        StringBuilder encodedParams = new StringBuilder();
-        try {
-            for (Map.Entry<String, String> entry : map.entrySet()) {
-                encodedParams.append(URLEncoder.encode(entry.getKey(), "utf-8"));
-                encodedParams.append('=');
-                encodedParams.append(URLEncoder.encode(entry.getValue(), "utf-8"));
-                encodedParams.append('&');
-            }
-        } catch (UnsupportedEncodingException uee) {
-            throw new RuntimeException("Encoding not supported: " + "utf-8", uee);
-        }
-
-        encodedParams.setLength(Math.max(encodedParams.length() - 1, 0));
+    public void cargarRemiseria(final Context context) {
 
         // Añadir parámetro a la URL del web service
-        String newURL = Constantes.GET_ID_PARAMETRO + "?" + encodedParams;
+        String newURL = Constantes.GET_REMISERIA + "?remiseria=" + ls_remiseria;
+        Log.d(TAG,newURL);
+
+        // Realizar petición GET_BY_ID
+        VolleySingleton.getInstance(context).addToRequestQueue(
+                myRequest = new JsonObjectRequest(
+                        Request.Method.POST,
+                        newURL,
+                        null,
+                        new Response.Listener<JSONObject>() {
+
+                            @Override
+                            public void onResponse(JSONObject response) {
+                                // Procesar respuesta Json
+                                procesarRespuesta_remiserias(response, context);
+                            }
+                        },
+                        error -> Log.d(TAG, "Error Volley viaje: " + error.getMessage())
+                )
+        );
+        myRequest.setRetryPolicy(new DefaultRetryPolicy(
+                50000,
+                5,//DefaultRetryPolicy.DEFAULT_MAX_RETRIES
+                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+
+    }
+
+    private void procesarRespuesta_remiserias(JSONObject response, Context context) {
+
+        try {
+            // Obtener atributo "mensaje"
+            String mensaje = response.getString("estado");
+
+            switch (mensaje) {
+                case "1":
+                    // Obtener objeto "cliente"
+                    JSONArray mensaje1 = response.getJSONArray("remiseria");
+
+                    JSONObject object = mensaje1.getJSONObject(0);
+                    //Parsear objeto
+
+                    SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(context);
+                    SharedPreferences.Editor editor = settings.edit();
+                    editor.putString("habilitada",object.getString("HABILITADA"));
+                    editor.putString("telefono_base",object.getString("TELEFONO_BASE"));
+                    editor.apply();
+
+                    cargarParametro(context);
+
+
+                    break;
+
+                case "2":
+
+                    break;
+
+            }
+
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    public void cargarParametro(final Context context) {
+
+        String newURL = Constantes.GET_PARAMETRO_REMISERIA + "?remiseria=" + ls_remiseria;
         Log.d(TAG,newURL);
 
         // Realizar petición GET_BY_ID
@@ -318,21 +363,46 @@ public class MainViaje extends AppCompatActivity {
         try {
             // Obtener atributo "mensaje"
             String mensaje = response.getString("estado");
+            String id_parametro;
 
             switch (mensaje) {
                 case "1":
                     JSONArray datos_parametro = response.getJSONArray("parametro");
-
+                    SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(context);
+                    SharedPreferences.Editor editor = settings.edit();
                     for(int i = 0; i < datos_parametro.length(); i++) {
                         JSONObject object = datos_parametro.getJSONObject(i);
 
-                        SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(context);
-                        SharedPreferences.Editor editor = settings.edit();
-                        editor.putString("porcentaje", object.getString("valor"));
-                        editor.apply();
-                    }
+                        id_parametro = object.getString("cod_parametro");
 
-                    cargarParametroTarifaDesde(context);
+                        switch (id_parametro){
+                        case "9":
+                            editor.putString("porcentaje", object.getString("valor"));
+                            break;
+                        case "10":
+                            editor.putString("tarifa_desde",object.getString("valor"));
+                            break;
+                        case "11":
+                            editor.putString("tarifa_hasta",object.getString("valor"));
+                            break;
+                        case "12":
+                            editor.putLong("tiempo_espera",Long.parseLong(object.getString("valor")) * 1000);
+                            break;
+                        case "13":
+                            editor.putLong("tiempo_espera",Integer.parseInt(object.getString("valor")));
+                            break;
+                        case "17":
+                            editor.putString("turno_app",object.getString("valor"));
+                            break;
+                        case "18":
+                            editor.putString("impresion",object.getString("valor"));
+                            break;
+                        }
+
+                    }
+                    editor.apply();
+
+                    cargarDatos(context);
 
                     break;
                 case "2":
@@ -350,291 +420,6 @@ public class MainViaje extends AppCompatActivity {
 
     }
 
-    public void cargarParametroTarifaDesde(final Context context) {
-
-        HashMap<String, String> map = new HashMap<>();// Mapeo previo
-
-        map.put("parametro", "10");
-        map.put("remiseria", ls_remiseria);
-
-        JSONObject jobject = new JSONObject(map);
-
-
-        // Depurando objeto Json...
-        Log.d(TAG, jobject.toString());
-
-        StringBuilder encodedParams = new StringBuilder();
-        try {
-            for (Map.Entry<String, String> entry : map.entrySet()) {
-                encodedParams.append(URLEncoder.encode(entry.getKey(), "utf-8"));
-                encodedParams.append('=');
-                encodedParams.append(URLEncoder.encode(entry.getValue(), "utf-8"));
-                encodedParams.append('&');
-            }
-        } catch (UnsupportedEncodingException uee) {
-            throw new RuntimeException("Encoding not supported: " + "utf-8", uee);
-        }
-
-        encodedParams.setLength(Math.max(encodedParams.length() - 1, 0));
-
-        // Añadir parámetro a la URL del web service
-        String newURL = Constantes.GET_ID_PARAMETRO + "?" + encodedParams;
-
-        Log.d(TAG,newURL);
-
-        // Realizar petición GET_BY_ID
-        VolleySingleton.getInstance(context).addToRequestQueue(
-                myRequest = new JsonObjectRequest(
-                        Request.Method.POST,
-                        newURL,
-                        null,
-                        new Response.Listener<JSONObject>() {
-
-                            @Override
-                            public void onResponse(JSONObject response) {
-                                // Procesar respuesta Json
-                                procesarRespuestaParametroDesde(response, context);
-                            }
-                        },
-                        new Response.ErrorListener() {
-                            @Override
-                            public void onErrorResponse(VolleyError error) {
-                                Log.d(TAG, "Error Volley parametro: " + error.getMessage());
-
-                            }
-                        }
-                )
-        );
-        myRequest.setRetryPolicy(new DefaultRetryPolicy(
-                50000,
-                5,//DefaultRetryPolicy.DEFAULT_MAX_RETRIES
-                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
-
-    }
-
-    private void procesarRespuestaParametroDesde(JSONObject response, Context context) {
-
-        try {
-            // Obtener atributo "mensaje"
-            String mensaje = response.getString("estado");
-
-            switch (mensaje) {
-                case "1":
-                    JSONArray datos_parametro = response.getJSONArray("parametro");
-
-                    for(int i = 0; i < datos_parametro.length(); i++)
-                    {JSONObject object = datos_parametro.getJSONObject(i);
-
-                        SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(context);
-                        SharedPreferences.Editor editor = settings.edit();
-                        editor.putString("tarifa_desde",object.getString("valor"));
-                        editor.apply();
-
-                        cargarParametroTarifaHasta(context);
-
-                    }
-
-                    break;
-
-            }
-
-
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-
-    }
-
-    public void cargarParametroTarifaHasta(final Context context) {
-
-        HashMap<String, String> map = new HashMap<>();// Mapeo previo
-
-        map.put("parametro", "11");
-        map.put("remiseria", ls_remiseria);
-
-        JSONObject jobject = new JSONObject(map);
-
-
-        // Depurando objeto Json...
-        Log.d(TAG, jobject.toString());
-
-        StringBuilder encodedParams = new StringBuilder();
-        try {
-            for (Map.Entry<String, String> entry : map.entrySet()) {
-                encodedParams.append(URLEncoder.encode(entry.getKey(), "utf-8"));
-                encodedParams.append('=');
-                encodedParams.append(URLEncoder.encode(entry.getValue(), "utf-8"));
-                encodedParams.append('&');
-            }
-        } catch (UnsupportedEncodingException uee) {
-            throw new RuntimeException("Encoding not supported: " + "utf-8", uee);
-        }
-
-        encodedParams.setLength(Math.max(encodedParams.length() - 1, 0));
-
-        // Añadir parámetro a la URL del web service
-        String newURL = Constantes.GET_ID_PARAMETRO + "?" + encodedParams;
-
-        Log.d(TAG,newURL);
-
-        // Realizar petición GET_BY_ID
-        VolleySingleton.getInstance(context).addToRequestQueue(
-                myRequest = new JsonObjectRequest(
-                        Request.Method.POST,
-                        newURL,
-                        null,
-                        new Response.Listener<JSONObject>() {
-
-                            @Override
-                            public void onResponse(JSONObject response) {
-                                // Procesar respuesta Json
-                                procesarRespuestaParametroHasta(response, context);
-                            }
-                        },
-                        new Response.ErrorListener() {
-                            @Override
-                            public void onErrorResponse(VolleyError error) {
-                                Log.d(TAG, "Error Volley parametro: " + error.getMessage());
-
-                            }
-                        }
-                )
-        );
-        myRequest.setRetryPolicy(new DefaultRetryPolicy(
-                50000,
-                5,//DefaultRetryPolicy.DEFAULT_MAX_RETRIES
-                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
-
-    }
-
-    private void procesarRespuestaParametroHasta(JSONObject response, Context context) {
-
-        try {
-            // Obtener atributo "mensaje"
-            String mensaje = response.getString("estado");
-
-            switch (mensaje) {
-                case "1":
-                    JSONArray datos_parametro = response.getJSONArray("parametro");
-
-                    for(int i = 0; i < datos_parametro.length(); i++)
-                    {JSONObject object = datos_parametro.getJSONObject(i);
-                        SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(context);
-                        SharedPreferences.Editor editor = settings.edit();
-                        editor.putString("tarifa_hasta",object.getString("valor"));
-
-
-                    }
-                    cargarParametroImpresora(context);
-                    break;
-
-            }
-
-
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-
-    }
-
-    public void cargarParametroImpresora(final Context context) {
-
-        HashMap<String, String> map = new HashMap<>();// Mapeo previo
-
-        map.put("parametro", "18");
-        map.put("remiseria", ls_remiseria);
-
-        JSONObject jobject = new JSONObject(map);
-
-
-        // Depurando objeto Json...
-        Log.d(TAG, jobject.toString());
-
-        StringBuilder encodedParams = new StringBuilder();
-        try {
-            for (Map.Entry<String, String> entry : map.entrySet()) {
-                encodedParams.append(URLEncoder.encode(entry.getKey(), "utf-8"));
-                encodedParams.append('=');
-                encodedParams.append(URLEncoder.encode(entry.getValue(), "utf-8"));
-                encodedParams.append('&');
-            }
-        } catch (UnsupportedEncodingException uee) {
-            throw new RuntimeException("Encoding not supported: " + "utf-8", uee);
-        }
-
-        encodedParams.setLength(Math.max(encodedParams.length() - 1, 0));
-
-        // Añadir parámetro a la URL del web service
-        String newURL = Constantes.GET_ID_PARAMETRO + "?" + encodedParams;
-        Log.d(TAG,newURL);
-
-        // Realizar petición GET_BY_ID
-        VolleySingleton.getInstance(context).addToRequestQueue(
-                myRequest = new JsonObjectRequest(
-                        Request.Method.POST,
-                        newURL,
-                        null,
-                        new Response.Listener<JSONObject>() {
-
-                            @Override
-                            public void onResponse(JSONObject response) {
-                                // Procesar respuesta Json
-                                procesarRespuestaParametroimpresion(response, context);
-                            }
-                        },
-                        new Response.ErrorListener() {
-                            @Override
-                            public void onErrorResponse(VolleyError error) {
-                                Log.d(TAG, "Error Volley tarifa desde: " + error.getMessage());
-
-                            }
-                        }
-                )
-        );
-        myRequest.setRetryPolicy(new DefaultRetryPolicy(
-                50000,
-                5,//DefaultRetryPolicy.DEFAULT_MAX_RETRIES
-                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
-
-    }
-
-    private void procesarRespuestaParametroimpresion(JSONObject response, Context context) {
-
-        try {
-            // Obtener atributo "mensaje"
-            String mensaje = response.getString("estado");
-
-            switch (mensaje) {
-                case "1":
-                    JSONArray datos_parametro = response.getJSONArray("parametro");
-
-                    for(int i = 0; i < datos_parametro.length(); i++)
-                    {JSONObject object = datos_parametro.getJSONObject(i);
-
-                        SharedPreferences settings1 = PreferenceManager.getDefaultSharedPreferences(context);
-
-                        SharedPreferences.Editor editor = settings1.edit();
-
-
-                        editor.putString("impresion",object.getString("valor"));
-
-                        editor.apply();
-
-                        cargarDatos(context);
-
-                    }
-
-                    break;
-                case "2":
-                    break;
-
-            }
-
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-
-    }
 
     public void cargarDatos(final Context context) {
 
@@ -724,6 +509,13 @@ public class MainViaje extends AppCompatActivity {
 
 
                     editor.apply();
+                    fragmentManager = getSupportFragmentManager();
+                    Fragment fragment = new fragment_viaje_iniciado();
+
+
+                    fragmentManager.beginTransaction()
+                            .replace(R.id.main_content, fragment)
+                            .commit();
 
                     permiso_back();
                     break;
@@ -824,6 +616,14 @@ public class MainViaje extends AppCompatActivity {
                     editor.putString("viajes_automaticos_chofer",object.getString("viajes_automaticos"));
 
                     editor.apply();
+
+                    fragmentManager = getSupportFragmentManager();
+                    Fragment fragment = new fragment_viaje_iniciado();
+
+
+                    fragmentManager.beginTransaction()
+                            .replace(R.id.main_content, fragment)
+                            .commit();
 
                     habilitar_gps();
                     break;

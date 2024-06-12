@@ -55,6 +55,7 @@ public class Constantes {
     public static final String GET_ID_AYUDA = "https://" + IP + PUERTO_HOST + "/obtener_ayuda.php";
 
     public static final String GET_ID_PARAMETRO = "https://" + IP + PUERTO_HOST + "/obtener_parametro.php";
+    public static final String GET_PARAMETRO_REMISERIA = "https://" + IP + PUERTO_HOST + "/obtener_parametros_remiseria.php";
     public static final String UPDATE_PARAMETRO = "https://" + IP + PUERTO_HOST + "/actualizar_parametro.php";
 
     public static final String GET_TARIFAS = "https://" + IP + PUERTO_HOST + "/obtener_ultima_tarifa.php";

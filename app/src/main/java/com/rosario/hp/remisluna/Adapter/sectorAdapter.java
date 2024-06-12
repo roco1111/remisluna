@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.media.MediaPlayer;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -60,6 +61,7 @@ public class sectorAdapter extends RecyclerView.Adapter<sectorAdapter.HolderSect
     private String monto_total;
     private String l_tarifa_cc;
     private String l_sector;
+    private String ls_remiseria;
 
 
 
@@ -100,10 +102,7 @@ public class sectorAdapter extends RecyclerView.Adapter<sectorAdapter.HolderSect
 
         public void onClick(View v) {
 
-
             listener.onItemClick(v, getAdapterPosition());
-            Intent intent = new Intent(v.getContext(), sectores_activity.class);
-            v.getContext().startActivity(intent);
         }
 
     }
@@ -114,16 +113,20 @@ public class sectorAdapter extends RecyclerView.Adapter<sectorAdapter.HolderSect
     }
     @Override
     public void onItemClick(View view, int position) {
+        MediaPlayer mediaPlayer = MediaPlayer.create(act, R.raw.everblue);
+        mediaPlayer.start();
         SharedPreferences settings1 = PreferenceManager.getDefaultSharedPreferences(context);
 
         l_sector = sectores.get(position).getId();
         l_id_viaje = settings1.getString("id_viaje","");
         ls_empresa = settings1.getString("id_empresa", "");
         l_nocturno = settings1.getString("nocturno","");
+        ls_remiseria     = settings1.getString("remiseria","");
         cargarViaje(context);
 
 
     }
+
 
     public void cargarViaje(final Context context) {
 
@@ -177,7 +180,7 @@ public class sectorAdapter extends RecyclerView.Adapter<sectorAdapter.HolderSect
                     cantidad_espera = object.getString("fichas_espera");
                     cantidad_ficha = object.getString("fichas");
 
-                    cargarTarifa(context);
+                    cargarTarifaqr(context);
                     break;
 
                 case "2":
@@ -197,10 +200,118 @@ public class sectorAdapter extends RecyclerView.Adapter<sectorAdapter.HolderSect
 
     }
 
-    public void cargarTarifa(final Context context) {
+    public void cargarTarifaqr(final Context context) {
 
         // Añadir parámetro a la URL del web service
         String newURL = Constantes.GET_TARIFA_CC + "?id_empresa=" + ls_empresa ;
+        Log.d(TAG,newURL);
+
+        // Realizar petición GET_BY_ID
+        VolleySingleton.getInstance(context).addToRequestQueue(
+                myRequest = new JsonObjectRequest(
+                        Request.Method.POST,
+                        newURL,
+                        null,
+                        new Response.Listener<JSONObject>() {
+
+                            @Override
+                            public void onResponse(JSONObject response) {
+                                // Procesar respuesta Json
+
+                                procesarRespuestaTarifaqr(response, context);
+
+                            }
+                        },
+                        new Response.ErrorListener() {
+                            @Override
+                            public void onErrorResponse(VolleyError error) {
+                                Log.d(TAG, "Error Volley viaje: " + error.getMessage());
+
+                            }
+                        }
+                )
+        );
+        myRequest.setRetryPolicy(new DefaultRetryPolicy(
+                50000,
+                5,//DefaultRetryPolicy.DEFAULT_MAX_RETRIES
+                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+
+    }
+
+    private void procesarRespuestaTarifaqr(JSONObject response, Context context) {
+
+        try {
+            // Obtener atributo "mensaje"
+            String mensaje = response.getString("estado");
+
+            switch (mensaje) {
+                case "1":
+                    JSONArray mensaje1 = response.getJSONArray("tarifa");
+
+                    JSONObject object = mensaje1.getJSONObject(0);
+                    //Parsear objeto
+
+                    if(l_nocturno.equals("0")) {
+                        importe_bajada = object.getString("importe_bajada");
+                        importe_ficha = object.getString("importe_ficha");
+                        importe_espera = object.getString("importe_espera");
+                    }else{
+                        importe_bajada = object.getString("importe_bajada_nocturno");
+                        importe_ficha = object.getString("importe_ficha_nocturno");
+                        importe_espera = object.getString("importe_espera_nocturno");
+                    }
+
+                    Double valor_ficha ;
+
+                    valor_ficha = Double.parseDouble(importe_ficha);
+
+                    Double cant_fichas;
+
+                    cant_fichas = Double.parseDouble(cantidad_ficha);
+
+                    Double ldb_monto_ficha = valor_ficha * cant_fichas;
+
+
+                    Double valor_ficha_espera = 0.00 ;
+
+                    valor_ficha_espera = Double.parseDouble(importe_espera);
+
+                    Double cant_fichas_espera;
+
+                    cant_fichas_espera = Double.parseDouble(cantidad_espera);
+
+                    Double ldb_monto_ficha_espera = valor_ficha_espera * cant_fichas_espera;
+
+                    Double ldb_bajada = Double.parseDouble(importe_bajada);
+
+                    Double total = ldb_bajada + ldb_monto_ficha + ldb_monto_ficha_espera;
+
+                    monto_espera = String.valueOf(ldb_monto_ficha_espera);
+                    monto_ficha = String.valueOf(ldb_monto_ficha);
+                    monto_total = String.valueOf(total);
+
+                    l_tarifa_cc = object.getString("id");
+
+                    viaje_automatico_qr(context);
+
+                    break;
+                case "2":
+                    cargarTarifa(context);
+                    break;
+            }
+
+
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    public void cargarTarifa(final Context context) {
+
+        // Añadir parámetro a la URL del web service
+        String newURL = Constantes.GET_TARIFAS + "?id_remiseria=" + ls_remiseria ;
         Log.d(TAG,newURL);
 
         // Realizar petición GET_BY_ID
@@ -292,7 +403,9 @@ public class sectorAdapter extends RecyclerView.Adapter<sectorAdapter.HolderSect
                     viaje_automatico_qr(context);
 
                     break;
+                case "2":
 
+                    break;
             }
 
 

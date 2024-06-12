@@ -9,6 +9,8 @@ public class empresa {
     String nombre;
     String direccion;
     String localidad;
+    String sectores;
+    String id_sector;
 
     public String getId() {
         return id;
@@ -24,6 +26,22 @@ public class empresa {
 
     public void setNombre(String nombre) {
         this.nombre = nombre;
+    }
+
+    public String getSectores() {
+        return sectores;
+    }
+
+    public void setSectores(String sectores) {
+        this.sectores = sectores;
+    }
+
+    public String getId_sector() {
+        return id_sector;
+    }
+
+    public void setId_sector(String id_sector) {
+        this.id_sector = id_sector;
     }
 
     public String getDireccion() {
