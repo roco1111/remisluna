@@ -173,17 +173,17 @@ public class MainActivity extends AppCompatActivity {
                         newURL,
                         null,
                         new Response.Listener<JSONObject>() {
-
                             @Override
                             public void onResponse(JSONObject response) {
                                 // Procesar respuesta Json
                                 procesarRespuestaServicioHabilitado(response, context);
                             }
                         },
+
                         new Response.ErrorListener() {
                             @Override
                             public void onErrorResponse(VolleyError error) {
-                                Log.d(TAG, "Error Volley parámetro: " + error.getMessage());
+                                Log.d(TAG, "Error Volley servicio: " + error.getMessage());
 
                             }
                         }
@@ -223,7 +223,7 @@ public class MainActivity extends AppCompatActivity {
                     editor.putString("servicio_empresarial",l_habilitado);
                     editor.apply();
 
-                    cargarParametro(context);
+                    cargarDatos(context);
 
                     break;
                 case "2":
@@ -235,97 +235,6 @@ public class MainActivity extends AppCompatActivity {
                     break;
 
             }
-
-
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-
-    }
-    public void cargarParametro(final Context context) {
-
-        String newURL = Constantes.GET_PARAMETRO_REMISERIA + "?remiseria=" + ls_remiseria;
-        Log.d(TAG,newURL);
-
-        // Realizar petición GET_BY_ID
-        VolleySingleton.getInstance(context).addToRequestQueue(
-                myRequest = new JsonObjectRequest(
-                        Request.Method.POST,
-                        newURL,
-                        null,
-                        new Response.Listener<JSONObject>() {
-
-                            @Override
-                            public void onResponse(JSONObject response) {
-                                // Procesar respuesta Json
-                                procesarRespuestaParametro(response, context);
-                            }
-                        },
-                        new Response.ErrorListener() {
-                            @Override
-                            public void onErrorResponse(VolleyError error) {
-                                Log.d(TAG, "Error Volley parámetro: " + error.getMessage());
-
-                            }
-                        }
-                )
-        );
-        myRequest.setRetryPolicy(new DefaultRetryPolicy(
-                50000,
-                5,//DefaultRetryPolicy.DEFAULT_MAX_RETRIES
-                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
-
-    }
-
-    private void procesarRespuestaParametro(JSONObject response, Context context) {
-
-        try {
-            // Obtener atributo "mensaje"
-            String mensaje = response.getString("estado");
-            String id_parametro;
-
-            switch (mensaje) {
-                case "1":
-                    JSONArray datos_parametro = response.getJSONArray("parametro");
-                    SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(context);
-                    SharedPreferences.Editor editor = settings.edit();
-                    for(int i = 0; i < datos_parametro.length(); i++) {
-                        JSONObject object = datos_parametro.getJSONObject(i);
-
-                        id_parametro = object.getString("cod_parametro");
-
-                        switch (id_parametro){
-                            case "10":
-                                editor.putString("tarifa_desde",object.getString("valor"));
-                                break;
-                            case "11":
-                                editor.putString("tarifa_hasta",object.getString("valor"));
-                                break;
-                            case "17":
-                                editor.putString("turno_app",object.getString("valor"));
-                                break;
-                            case "18":
-                                editor.putString("impresion",object.getString("valor"));
-                                break;
-                            case "20":
-                                editor.putString("paradas",object.getString("valor"));
-                                break;
-
-                        }
-
-                    }
-                    editor.apply();
-
-                    cargarDatos(context);
-
-                    break;
-                case "2":
-                    break;
-
-
-            }
-
-            // run_espera();
 
 
         } catch (JSONException e) {
@@ -355,17 +264,12 @@ public class MainActivity extends AppCompatActivity {
                                 procesarRespuesta(response, context);
                             }
                         },
+
                         new Response.ErrorListener() {
                             @Override
                             public void onErrorResponse(VolleyError error) {
                                 Log.d(TAG, "Error Volley turno: " + error.getMessage());
-                                /*
-                                Fragment fragment = new fragment_principal();
 
-                                fragmentManager.beginTransaction()
-                                        .replace(R.id.main_content, fragment)
-                                        .commit();
-                            */
                             }
                         }
                 )
@@ -396,6 +300,17 @@ public class MainActivity extends AppCompatActivity {
                     editor.putString("viajes_automaticos",object.getString("viajes_automaticos"));
                     editor.putString("viajes_automaticos_chofer",object.getString("viajes_automaticos_chofer"));
                     editor.putString("tipo_empresa",object.getString("tipo"));
+                    editor.putString("tipo_rendicion",object.getString("tipo_rendicion"));
+                    editor.putString("valor_dia_rendicion",object.getString("valor_dia_rendicion"));
+                    editor.putString("valor_noche_rendicion",object.getString("valor_noche_rendicion"));
+                    editor.putString("valor_feriado_rendicion",object.getString("valor_feriado_rendicion"));
+                    editor.putString("tarifa_desde",object.getString("tarifa_desde"));
+                    editor.putString("tarifa_hasta",object.getString("tarifa_hasta"));
+                    editor.putString("turno_app",object.getString("turno_app"));
+                    editor.putString("impresion",object.getString("impresion"));
+                    editor.putString("paradas",object.getString("paradas"));
+                    editor.putString("mercado_pago",object.getString("mercado_pago"));
+                    editor.putString("telefono_base",object.getString("telefono_base"));
                     editor.apply();
 
                     cargarViajes(context);
@@ -465,15 +380,10 @@ public class MainActivity extends AppCompatActivity {
                             @Override
                             public void onErrorResponse(VolleyError error) {
                                 Log.d(TAG, "Error Volley viaje curso: " + error.getMessage());
-                                /*
-                                Fragment fragment = new fragment_principal();
 
-                                fragmentManager.beginTransaction()
-                                        .replace(R.id.main_content, fragment)
-                                        .commit();
-                            */
                             }
                         }
+
                 )
         );
         myRequest.setRetryPolicy(new DefaultRetryPolicy(
@@ -615,6 +525,7 @@ public class MainActivity extends AppCompatActivity {
                     editor.putString("id_viaje",ls_viaje);
                     editor.putString("estado_conductor",object.getString("estado_conductor"));
                     editor.putString("estado_vehiculo",object.getString("estado_vehiculo"));
+                    editor.putString("saldo_vehiculo",object.getString("saldo_vehiculo"));
                     editor.apply();
 
                     locationEnd();
@@ -710,13 +621,6 @@ public class MainActivity extends AppCompatActivity {
 
                     editor.putString("tipo_empresa",ls_tipo_empresa);
                     editor.apply();
-                    /*
-                    Fragment fragment = new fragment_principal();
-
-                    fragmentManager.beginTransaction()
-                            .replace(R.id.main_content, fragment)
-                            .commit();
-                    */
 
                     habilitar_gps();
 

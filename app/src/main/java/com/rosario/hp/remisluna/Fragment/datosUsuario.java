@@ -174,7 +174,7 @@ public class datosUsuario extends Fragment {
 
         };
         SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getContext());
-        ls_id_conductor     = settings.getString("id","");
+        ls_id_conductor = settings.getString("id","");
 
 
     }

@@ -40,6 +40,9 @@ public class Constantes {
 
     public static final String GET_VEHICULO = "https://" + IP + PUERTO_HOST + "/obtener_vehiculo.php";
     public static final String GET_ID_VEHICULO = "https://" + IP + PUERTO_HOST + "/obtener_id_vehiculo.php";
+    public static final String UPDATE_SALDO_VEHICULO = "https://" + IP + PUERTO_HOST + "/actualizar_saldo_vehiculo.php";
+
+    public static final String AGREGAR_CTA_CTE_MOVIL = "https://" + IP + PUERTO_HOST + "/agregar_cta_cte_movil.php";
 
     public static final String ALTA_TURNO = "https://" + IP + PUERTO_HOST + "/agregar_turno.php";
     public static final String FIN_TURNO = "https://" + IP + PUERTO_HOST + "/terminar_turno.php";
@@ -78,6 +81,8 @@ public class Constantes {
     public static final String GET_SECTORES_EMPRESAS = "https://" + IP + PUERTO_HOST + "/obtener_sectores_empresa.php";
 
     public static final String GET_SOLICITANTE = "https://" + IP + PUERTO_HOST + "/obtener_solicitante.php";
+
+    public static final String GET_CTA_CTE = "https://" + IP + PUERTO_HOST + "/obtener_cta_cte.php";
 
     public static final String VERIFICAR_IMPRESORA = "https://" + IP + PUERTO_HOST + "/verificar_impresora.php";
 

@@ -303,115 +303,33 @@ public class MainViaje extends AppCompatActivity {
                     SharedPreferences.Editor editor = settings.edit();
                     editor.putString("habilitada",object.getString("HABILITADA"));
                     editor.putString("telefono_base",object.getString("TELEFONO_BASE"));
-                    editor.apply();
+                    editor.putString("porcentaje", object.getString("porcentaje"));
+                    editor.putString("tarifa_desde",object.getString("tarifa_desde"));
+                    editor.putString("tarifa_hasta",object.getString("tarifa_hasta"));
+                    editor.putInt("metros_ficha", Integer.parseInt(object.getString("metros_ficha")));
+                    editor.putLong("tiempo_espera",Long.parseLong(object.getString("tiempo_espera")) * 1000);
+                    editor.putString("turno_app",object.getString("turno_app"));
+                    editor.putString("impresion",object.getString("impresion"));
+                    editor.putString("mercado_pago",object.getString("mercado_pago"));
+                    editor.putString("tipo_rendicion",object.getString("tipo_rendicion"));
+                    editor.putString("valor_dia_rendicion",object.getString("valor_dia_rendicion"));
+                    editor.putString("valor_noche_rendicion",object.getString("valor_noche_rendicion"));
+                    editor.putString("valor_feriado_rendicion",object.getString("valor_feriado_rendicion"));
+                    Long l_tolerancia_tope = Long.parseLong(object.getString("tiempo_tolerancia")) * 60000;
 
-                    cargarParametro(context);
-
-
-                    break;
-
-                case "2":
-
-                    break;
-
-            }
-
-
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-
-    }
-
-    public void cargarParametro(final Context context) {
-
-        String newURL = Constantes.GET_PARAMETRO_REMISERIA + "?remiseria=" + ls_remiseria;
-        Log.d(TAG,newURL);
-
-        // Realizar petición GET_BY_ID
-        VolleySingleton.getInstance(context).addToRequestQueue(
-                myRequest = new JsonObjectRequest(
-                        Request.Method.POST,
-                        newURL,
-                        null,
-                        new Response.Listener<JSONObject>() {
-
-                            @Override
-                            public void onResponse(JSONObject response) {
-                                // Procesar respuesta Json
-                                procesarRespuestaParametro(response, context);
-                            }
-                        },
-                        new Response.ErrorListener() {
-                            @Override
-                            public void onErrorResponse(VolleyError error) {
-                                Log.d(TAG, "Error Volley parámetro: " + error.getMessage());
-
-                            }
-                        }
-                )
-        );
-        myRequest.setRetryPolicy(new DefaultRetryPolicy(
-                50000,
-                5,//DefaultRetryPolicy.DEFAULT_MAX_RETRIES
-                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
-
-    }
-
-    private void procesarRespuestaParametro(JSONObject response, Context context) {
-
-        try {
-            // Obtener atributo "mensaje"
-            String mensaje = response.getString("estado");
-            String id_parametro;
-
-            switch (mensaje) {
-                case "1":
-                    JSONArray datos_parametro = response.getJSONArray("parametro");
-                    SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(context);
-                    SharedPreferences.Editor editor = settings.edit();
-                    for(int i = 0; i < datos_parametro.length(); i++) {
-                        JSONObject object = datos_parametro.getJSONObject(i);
-
-                        id_parametro = object.getString("cod_parametro");
-
-                        switch (id_parametro){
-                        case "9":
-                            editor.putString("porcentaje", object.getString("valor"));
-                            break;
-                        case "10":
-                            editor.putString("tarifa_desde",object.getString("valor"));
-                            break;
-                        case "11":
-                            editor.putString("tarifa_hasta",object.getString("valor"));
-                            break;
-                        case "12":
-                            editor.putLong("tiempo_espera",Long.parseLong(object.getString("valor")) * 1000);
-                            break;
-                        case "13":
-                            editor.putLong("tiempo_espera",Integer.parseInt(object.getString("valor")));
-                            break;
-                        case "17":
-                            editor.putString("turno_app",object.getString("valor"));
-                            break;
-                        case "18":
-                            editor.putString("impresion",object.getString("valor"));
-                            break;
-                        }
-
-                    }
+                    editor.putLong("tolerancia_tope",l_tolerancia_tope);
                     editor.apply();
 
                     cargarDatos(context);
 
-                    break;
-                case "2":
+
                     break;
 
+                case "2":
+
+                    break;
 
             }
-
-            // run_espera();
 
 
         } catch (JSONException e) {
@@ -614,6 +532,9 @@ public class MainViaje extends AppCompatActivity {
                     editor.putString("solicitante",object.getString("solicitante"));
                     editor.putString("porc_titular",object.getString("porc_titular"));
                     editor.putString("viajes_automaticos_chofer",object.getString("viajes_automaticos"));
+                    editor.putString("saldo_vehiculo",object.getString("saldo_vehiculo"));
+                    editor.putString("chapa",object.getString("chapa"));
+                    editor.putString("nro_movil",object.getString("movil"));
 
                     editor.apply();
 

@@ -8,11 +8,17 @@ import java.util.Timer;
 import java.util.TimerTask;
  
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.preference.PreferenceManager;
 
 import android.util.Log;
@@ -90,7 +96,11 @@ public class SplashScreenActivity extends Activity {
 
                 }else{
 
-                    actualizar_token(String.valueOf(id_firebase));
+                    if(verificar_internet()) {
+                        actualizar_token(String.valueOf(id_firebase));
+                    }else{
+                        sin_internet();
+                        }
 
               }
                 // Close the activity so the user won't able to go back this
@@ -104,6 +114,40 @@ public class SplashScreenActivity extends Activity {
         timer.schedule(task, SPLASH_SCREEN_DELAY);
     }
 
+    public void sin_internet()
+    {
+        Handler handler = new Handler(Looper.getMainLooper());
+        handler.post(
+                new Runnable() {
+                    @Override
+                    public void run() {
+                        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(act);
+
+                        alertDialogBuilder.setTitle("Parece que no hay internet");
+
+                        alertDialogBuilder
+                                .setMessage("Compruebe su conexión a internet para seguir utilizando la app")
+                                .setCancelable(false)
+                                .setPositiveButton("Cerrar",new DialogInterface.OnClickListener() {
+                                    public void onClick(DialogInterface dialog,int id) {
+
+                                        act.finish();
+                                        finishAffinity ();
+                                        System.exit(0);
+                                    }
+                                })
+                                .setNegativeButton("Continuar",new DialogInterface.OnClickListener(){
+                                    public void onClick(DialogInterface dialog,int id) {
+                                        Intent intent2 = new Intent(act, SplashScreenActivity.class);
+                                        intent2.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                                        act.startActivity(intent2);
+                                    }
+                                })
+                                .create().show();
+                    }
+                }
+        );
+    }
     public void crearAccesoDirectoAlInstalar(Activity actividad)
     {
         SharedPreferences preferenciasapp;
@@ -145,6 +189,19 @@ public class SplashScreenActivity extends Activity {
         // Check if user is signed in (non-null) and update UI accordingly.
         currentUser = mAuth.getCurrentUser();
 
+    }
+
+    private Boolean verificar_internet(){
+        ConnectivityManager connectivityManager = (ConnectivityManager) act.getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
+
+        if (networkInfo != null && networkInfo.isConnected()) {
+            // Si hay conexión a Internet en este momento
+            return true;
+        } else {
+            // No hay conexión a Internet en este momento
+            return false;
+        }
     }
 
     private void actualizar_token(String token){

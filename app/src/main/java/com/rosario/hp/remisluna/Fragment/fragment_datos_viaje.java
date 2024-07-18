@@ -412,7 +412,7 @@ public class fragment_datos_viaje extends Fragment{
             cell.setHorizontalAlignment(PdfPCell.ALIGN_LEFT);
             tabla_enc.addCell(cell);
 
-            cell = new PdfPCell(new Phrase("Tel. Remisería: " + telefono_remiseria,font));
+            cell = new PdfPCell(new Phrase("Tel. Empresa: " + telefono_remiseria,font));
             cell.setBorder(Rectangle.NO_BORDER);
             cell.setHorizontalAlignment(PdfPCell.ALIGN_LEFT);
             tabla_enc.addCell(cell);

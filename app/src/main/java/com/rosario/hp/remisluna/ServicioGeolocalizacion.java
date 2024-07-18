@@ -90,6 +90,7 @@ public class ServicioGeolocalizacion extends Service implements Runnable {
     private Integer l_ficha = 0;
     private boolean l_espera;
     private Integer l_contador = 0;
+    private String tipo_empresa;
 
 
     @Override
@@ -114,7 +115,12 @@ public class ServicioGeolocalizacion extends Service implements Runnable {
         longitud_inicial = 0;
         SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
         ls_id_conductor     = settings.getString("id","");
-        l_tolerancia_tope = settings.getLong("tolerancia_tope",0L);
+        tipo_empresa = settings.getString("tipo_empresa","");
+        if(tipo_empresa.equals("1")) {
+            l_tolerancia_tope = settings.getLong("tolerancia_tope", 0L);
+        }else{
+            l_tolerancia_tope = 0L;
+        }
         l_tiempo_espera = settings.getLong("tiempo_espera",0L);
         l_metros_ficha = settings.getInt("metros_ficha",0);
         salida_coordenada = settings.getString("salida_coordenada","");
@@ -281,14 +287,6 @@ public class ServicioGeolocalizacion extends Service implements Runnable {
 
             latitud_inicial = latitud;
             longitud_inicial = longitud;
-
-            /*
-            if(distance > 28){
-                Log.d("DISTANCIA grande",String.valueOf(distance));
-                l_inicio = System.currentTimeMillis();
-                return;
-            }
-            */
 
             //distancia que me distingue si mido tiempo o ficha
             if(distance > 1 && distance < 28) {//probar con 2.5

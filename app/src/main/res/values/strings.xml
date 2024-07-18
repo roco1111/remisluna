@@ -122,6 +122,7 @@
     <string name="reporte_impresora">I: Habilitar Ticket</string>
     <string name="reporte_ticket">Ticket</string>
     <string name="reporte_fin_turno">7: Paradas</string>
+    <string name="reporte_cta_cte">Cta Cte Móvil</string>
     <string name="reporte_viajes">Historial Viajes</string>
     <string name="reporte_viaje">9:Refresco Pantalla</string>
     <string name="refresco">Refresco Pantalla</string>

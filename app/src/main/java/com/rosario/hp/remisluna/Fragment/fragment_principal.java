@@ -2,15 +2,18 @@ package com.rosario.hp.remisluna.Fragment;
 
 import android.Manifest;
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.bluetooth.BluetoothAdapter;
 import android.content.ActivityNotFoundException;
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.content.res.ColorStateList;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.location.Address;
@@ -18,12 +21,15 @@ import android.location.Geocoder;
 import android.location.Location;
 import android.location.LocationManager;
 import android.media.MediaPlayer;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.IBinder;
+import android.os.Looper;
 import android.preference.PreferenceManager;
 import android.provider.Settings;
 import android.util.Log;
@@ -36,10 +42,10 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.appcompat.app.AlertDialog;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.core.content.FileProvider;
+import androidx.core.content.res.ResourcesCompat;
 import androidx.fragment.app.Fragment;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
@@ -68,11 +74,14 @@ import com.rosario.hp.remisluna.Entidades.turno;
 import com.rosario.hp.remisluna.Entidades.viaje;
 import com.rosario.hp.remisluna.Impresion;
 import com.rosario.hp.remisluna.MainActivity;
+import com.rosario.hp.remisluna.MainCtaCte;
 import com.rosario.hp.remisluna.MainQR;
 import com.rosario.hp.remisluna.MainViaje;
 
 import com.rosario.hp.remisluna.R;
 
+import com.rosario.hp.remisluna.SplashScreenActivity;
+import com.rosario.hp.remisluna.activity_preferencias;
 import com.rosario.hp.remisluna.empresas_activity;
 import com.rosario.hp.remisluna.include.Constantes;
 import com.rosario.hp.remisluna.include.PrinterCommands;
@@ -99,8 +108,6 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.HashMap;
-
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
@@ -113,12 +120,12 @@ public class fragment_principal extends Fragment {
 
     private static final String TAG = fragment_principal.class.getSimpleName();
     private JsonObjectRequest myRequest;
-    private final static int REQUEST_ENABLE_BT = 1;
     private ImageButton boton_uno;
     private ImageButton boton_dos;
     private ImageButton boton_tres;
     private ImageButton boton_cuatro;
     private ImageButton boton_ocho;
+    private ImageButton boton_cta_cte;
 
     private ImageButton boton_whatsapp;
     private Button boton_impresora;
@@ -169,6 +176,7 @@ public class fragment_principal extends Fragment {
     private TextView text_reportes;
     private TextView text_viaje_x_viaje;
     private TextView text_historial;
+    private TextView text_cta_cte;
 
     private Impresion impresion;
     private ArrayList<turno> datos;
@@ -209,8 +217,9 @@ public class fragment_principal extends Fragment {
     private String l_paradas;
     private String tipo_empresa;
     private String viajes_automaticos_chofer;
+    private String tipo_rendicion;
+    private String saldo_vehiculo;
     SwipeRefreshLayout swipeRefreshLayout;
-
 
     @Override
     public void onStart() {
@@ -348,6 +357,14 @@ public class fragment_principal extends Fragment {
         viajes_automaticos_chofer = settings.getString("viajes_automaticos_chofer", "");
         l_hora_desde = settings.getString("tarifa_desde", "");
         l_hora_hasta = settings.getString("tarifa_hasta", "");
+        saldo_vehiculo = settings.getString("saldo_vehiculo", "");
+        tipo_rendicion = settings.getString("tipo_rendicion", "0");
+
+        telefono_base = settings.getString("telefono_base", "");
+
+        c = Calendar.getInstance();
+        SimpleDateFormat shoy = new SimpleDateFormat("MM/dd/yyyy");
+        l_hoy = shoy.format(c.getTime());
 
         swipeRefreshLayout = v.findViewById(R.id.swipeRefreshLayout);
 
@@ -363,9 +380,11 @@ public class fragment_principal extends Fragment {
         this.boton_viaje = v.findViewById(R.id.buttonViaje);
         this.buttonParadas = v.findViewById(R.id.buttonParadas);
         this.repetirTicket = v.findViewById(R.id.buttonTicket);
+        this.boton_cta_cte = v.findViewById(R.id.imagecta_cte);
         this.txt_parada = v.findViewById(R.id.parada);
         this.text_parcial_turno = v.findViewById(R.id.text_parcial_turno);
         this.text_final_turno = v.findViewById(R.id.text_final_turno);
+        this.text_cta_cte = v.findViewById(R.id.text_cta_cte);
         text_ultimos_finales = v.findViewById(R.id.text_ultimos_finales);
         text_reportes = v.findViewById(R.id.text_reportes);
         text_viaje_x_viaje = v.findViewById(R.id.text_viaje_x_viaje);
@@ -393,7 +412,15 @@ public class fragment_principal extends Fragment {
             gps.setTextColor(act.getResources().getColor(R.color.alarma));
         }
 
-        if (red_habilitada()) {
+        if(tipo_rendicion.equals("2")){
+            boton_cta_cte.setVisibility(View.VISIBLE);
+            text_cta_cte.setVisibility(View.VISIBLE);
+        }else{
+            boton_cta_cte.setVisibility(View.GONE);
+            text_cta_cte.setVisibility(View.GONE);
+        }
+
+        if (verificar_internet()) {
             switch (tipo_empresa) {
                 case "1":
                     red.setTextColor(act.getResources().getColor(R.color.colorPrimary));
@@ -428,6 +455,7 @@ public class fragment_principal extends Fragment {
         if (movil_habilitado.equals("1") && chofer_habilitado.equals("1")) {
             this.boton_cuatro.setEnabled(true);
             this.boton_ocho.setEnabled(true);
+            this.boton_cta_cte.setEnabled(true);
             this.boton_viaje.setEnabled(true);
             this.buttonParadas.setEnabled(true);
 
@@ -441,8 +469,19 @@ public class fragment_principal extends Fragment {
                     text_reportes.setTextColor(act.getResources().getColor(R.color.colorPrimary));
                     text_viaje_x_viaje.setTextColor(act.getResources().getColor(R.color.colorPrimary));
                     text_historial.setTextColor(act.getResources().getColor(R.color.colorPrimary));
+                    text_cta_cte.setTextColor(act.getResources().getColor(R.color.colorPrimary));
                     this.boton_cuatro.setBackground(act.getResources().getDrawable(R.drawable.selector_cuatro));
                     this.boton_ocho.setBackground(act.getResources().getDrawable(R.drawable.selector_ocho));
+                    this.boton_cta_cte.setBackground(act.getResources().getDrawable(R.drawable.selector_cta_cte));
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                        boton_turno.setBackgroundTintList( ColorStateList.valueOf(ResourcesCompat.getColor(act.getResources(),
+                                R.color.colorPrimary, act.getTheme())));
+                    }
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                        boton_viaje.setBackgroundTintList( ColorStateList.valueOf(ResourcesCompat.getColor(act.getResources(),
+                                R.color.colorPrimary, act.getTheme())));
+                    }
+
                     break;
                 case "2":
                     this.turno.setTextColor(act.getResources().getColor(R.color.colorMoto));
@@ -453,8 +492,18 @@ public class fragment_principal extends Fragment {
                     text_reportes.setTextColor(act.getResources().getColor(R.color.colorMoto));
                     text_viaje_x_viaje.setTextColor(act.getResources().getColor(R.color.colorMoto));
                     text_historial.setTextColor(act.getResources().getColor(R.color.colorMoto));
+                    text_cta_cte.setTextColor(act.getResources().getColor(R.color.colorMoto));
                     this.boton_cuatro.setBackground(act.getResources().getDrawable(R.drawable.selector_cuatro_moto));
                     this.boton_ocho.setBackground(act.getResources().getDrawable(R.drawable.selector_ocho_moto));
+                    this.boton_cta_cte.setBackground(act.getResources().getDrawable(R.drawable.selector_cta_cte_moto));
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                        boton_turno.setBackgroundTintList( ColorStateList.valueOf(ResourcesCompat.getColor(act.getResources(),
+                                R.color.colorMoto, act.getTheme())));
+                    }
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                        boton_viaje.setBackgroundTintList( ColorStateList.valueOf(ResourcesCompat.getColor(act.getResources(),
+                                R.color.colorMoto, act.getTheme())));
+                    }
                     break;
                 case "3":
                     this.turno.setTextColor(act.getResources().getColor(R.color.colorTaxi));
@@ -465,8 +514,17 @@ public class fragment_principal extends Fragment {
                     text_reportes.setTextColor(act.getResources().getColor(R.color.colorTaxi));
                     text_viaje_x_viaje.setTextColor(act.getResources().getColor(R.color.colorTaxi));
                     text_historial.setTextColor(act.getResources().getColor(R.color.colorTaxi));
+                    text_cta_cte.setTextColor(act.getResources().getColor(R.color.colorTaxi));
                     this.boton_cuatro.setBackground(act.getResources().getDrawable(R.drawable.selector_cuatro_taxi));
-                    this.boton_ocho.setBackground(act.getResources().getDrawable(R.drawable.selector_ocho_taxi));
+                    this.boton_cta_cte.setBackground(act.getResources().getDrawable(R.drawable.selector_cta_cte_taxi));
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                        boton_turno.setBackgroundTintList( ColorStateList.valueOf(ResourcesCompat.getColor(act.getResources(),
+                                R.color.colorTaxi, act.getTheme())));
+                    }
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                        boton_viaje.setBackgroundTintList( ColorStateList.valueOf(ResourcesCompat.getColor(act.getResources(),
+                                R.color.colorTaxi, act.getTheme())));
+                    }
                     break;
             }
 
@@ -474,32 +532,31 @@ public class fragment_principal extends Fragment {
         } else {
             this.boton_cuatro.setEnabled(false);
             this.boton_ocho.setEnabled(false);
+            this.boton_cta_cte.setEnabled(false);
             this.boton_viaje.setEnabled(false);
             this.buttonParadas.setEnabled(false);
             this.boton_cuatro.setBackground(act.getResources().getDrawable(R.drawable.cuatro_gris));
             this.boton_ocho.setBackground(act.getResources().getDrawable(R.drawable.ocho_gris));
+            this.boton_cta_cte.setBackground(act.getResources().getDrawable(R.drawable.cta_cte_gris));
             text_viaje_x_viaje.setTextColor(act.getResources().getColor(R.color.colorGris));
             text_historial.setTextColor(act.getResources().getColor(R.color.colorGris));
             text_reportes.setTextColor(act.getResources().getColor(R.color.colorGris));
+            text_cta_cte.setTextColor(act.getResources().getColor(R.color.colorGris));
 
         }
 
         if (l_turno_app.equals("1")) {
-            this.turno.setVisibility(View.VISIBLE);
+
             if (ls_id_turno.equals("0")) {
 
                 this.boton_viaje.setEnabled(false);
 
-
             } else {
                 this.boton_viaje.setEnabled(true);
-
-
             }
         } else {
             this.turno.setVisibility(View.INVISIBLE);
             this.boton_viaje.setEnabled(true);
-
 
         }
 
@@ -522,7 +579,6 @@ public class fragment_principal extends Fragment {
         }
         if (l_turno_app.equals("0")) {
 
-            boton_turno.setVisibility(View.GONE);
 
             repetirTicket.setBackground(act.getResources().getDrawable(R.drawable.boton));
             boton_dos.setEnabled(false);
@@ -536,8 +592,6 @@ public class fragment_principal extends Fragment {
             text_ultimos_finales.setTextColor(act.getResources().getColor(R.color.colorGris));
 
         } else {
-
-            boton_turno.setVisibility(View.VISIBLE);
 
             repetirTicket.setBackground(act.getResources().getDrawable(R.drawable.boton_chico));
             boton_dos.setEnabled(true);
@@ -577,10 +631,37 @@ public class fragment_principal extends Fragment {
         this.boton_viaje.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                if (verificar_internet()) {
+                    mediaPlayer.start();
+                    String l_mensaje_rendicion;
+                    if(tipo_rendicion.equals("2")){
+                        if(saldo_vehiculo.equals("0.00")){
+                            l_mensaje_rendicion = "No tiene Saldo para iniciar el viaje";
+                        }else{
+                            l_mensaje_rendicion = "";
+                        }
+                    }else{
+                        l_mensaje_rendicion = "";
+                    }
+                    if(l_mensaje_rendicion.equals("")) {
+                        viaje_automatico(context);
+                    }else{
+                        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(context);
 
-                mediaPlayer.start();
-                viaje_automatico(context);
+                        alertDialogBuilder.setTitle("Callisto");
 
+                        alertDialogBuilder
+                                .setMessage(l_mensaje_rendicion)
+                                .setCancelable(false)
+                                .setPositiveButton("Aceptar",new DialogInterface.OnClickListener() {
+                                    public void onClick(DialogInterface dialog,int id) {
+
+                                    }
+                                }).create().show();
+                    }
+                }else{
+                    sin_internet();
+                }
             }
         });
 
@@ -588,9 +669,27 @@ public class fragment_principal extends Fragment {
         this.boton_whatsapp.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                if (verificar_internet()) {
+                    mediaPlayer.start();
+                    setClickToChat(v,telefono_base);
+                }else{
+                    sin_internet();
+                }
 
-                mediaPlayer.start();
-                cargarDatosRemiseria(context, v);
+            }
+        });
+
+        this.boton_cta_cte.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (verificar_internet()) {
+                    mediaPlayer.start();
+                    Intent intent2 = new Intent(context, MainCtaCte.class);
+                    intent2.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    context.startActivity(intent2);
+                }else{
+                    sin_internet();
+                }
 
             }
         });
@@ -609,32 +708,42 @@ public class fragment_principal extends Fragment {
         this.boton_uno.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mediaPlayer.start();
+                if (verificar_internet()) {
+                    mediaPlayer.start();
 
-                datos_turno(context);
-
+                    datos_turno(context);
+                }else{
+                    sin_internet();
+                }
             }
         });
 
         this.boton_dos.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mediaPlayer.start();
+                if (verificar_internet()) {
+                    mediaPlayer.start();
 
-                lb_ultimo = true;
-                ultimo_turno(context);
-
+                    lb_ultimo = true;
+                    ultimo_turno(context);
+                }else{
+                    sin_internet();
+                }
             }
         });
 
         this.boton_turno.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mediaPlayer.start();
-                if(ls_id_turno.equals("0")) {
-                    verificar_movil_turno(context);
+                if (verificar_internet()) {
+                    mediaPlayer.start();
+                    if(ls_id_turno.equals("0")) {
+                        verificar_movil_turno(context);
+                    }else{
+                        cerrar_turno(context);
+                    }
                 }else{
-                    cerrar_turno(context);
+                    sin_internet();
                 }
             }
         });
@@ -642,21 +751,26 @@ public class fragment_principal extends Fragment {
         this.boton_tres.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mediaPlayer.start();
+                if (verificar_internet()) {
+                    mediaPlayer.start();
 
-                cargarDatos(context);
-
+                    cargarDatos(context);
+                }else{
+                    sin_internet();
+                }
             }
         });
 
         this.boton_cuatro.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                if (verificar_internet()) {
+                    mediaPlayer.start();
 
-                mediaPlayer.start();
-
-                datos_ultimos_viajes(context);
-
+                    datos_ultimos_viajes(context);
+                }else{
+                    sin_internet();
+                }
             }
         });
 
@@ -685,33 +799,43 @@ public class fragment_principal extends Fragment {
         this.repetirTicket.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mediaPlayer.start();
+                if (verificar_internet()) {
+                    mediaPlayer.start();
 
-                boton_repetirTicket(context);
-
+                    boton_repetirTicket(context);
+                }else{
+                    sin_internet();
+                }
             }
         });
 
         this.buttonParadas.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mediaPlayer.start();
-                cargarIdVehiculo(context);
-
+                if (verificar_internet()) {
+                    mediaPlayer.start();
+                    cargarIdVehiculo(context);
+                }else{
+                    sin_internet();
+                }
             }
         });
 
         this.boton_ocho.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mediaPlayer.start();
-                Intent intent2;
-                if(l_turno_app.equals("0")){
-                    intent2 = new Intent(context, viajes_activity.class);
-                }else {
-                    intent2 = new Intent(context, turnos_activity.class);
+                if (verificar_internet()) {
+                    mediaPlayer.start();
+                    Intent intent2;
+                    if(l_turno_app.equals("0")){
+                        intent2 = new Intent(context, viajes_activity.class);
+                    }else {
+                        intent2 = new Intent(context, turnos_activity.class);
+                    }
+                    context.startActivity(intent2);
+                }else{
+                    sin_internet();
                 }
-                context.startActivity(intent2);
             }
         });
         swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
@@ -720,14 +844,74 @@ public class fragment_principal extends Fragment {
                 Log.d("swipe","swipe");
 
                 swipeRefreshLayout.setRefreshing(true);
-                feriado(context);
+
+                if(verificar_internet()) {
+                    switch (tipo_empresa) {
+                        case "1":
+                            red.setTextColor(act.getResources().getColor(R.color.colorPrimary));
+                            break;
+                        case "2":
+                            red.setTextColor(act.getResources().getColor(R.color.colorMoto));
+                            break;
+                        case "3":
+                            red.setTextColor(act.getResources().getColor(R.color.colorTaxi));
+                            break;
+                    }
+                    feriado(context);
+                } else{
+                    swipeRefreshLayout.setRefreshing(false);
+                    red.setTextColor(act.getResources().getColor(R.color.alarma));
+                }
+
+
             }
         });
 
-        feriado(context);
+        if(verificar_internet()) {
+            feriado(context);
+        }
 
 
         return v;
+    }
+
+    private Boolean verificar_internet(){
+        ConnectivityManager connectivityManager = (ConnectivityManager) act.getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
+
+        if (networkInfo != null && networkInfo.isConnected()) {
+            // Si hay conexión a Internet en este momento
+            return true;
+        } else {
+            // No hay conexión a Internet en este momento
+            return false;
+        }
+    }
+
+    public void sin_internet()
+    {
+        Handler handler = new Handler(Looper.getMainLooper());
+        handler.post(
+                new Runnable() {
+                    @Override
+                    public void run() {
+                        android.app.AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(act);
+
+                        alertDialogBuilder.setTitle("Parece que no hay internet");
+
+                        alertDialogBuilder
+                                .setMessage("Compruebe su conexión a internet para seguir utilizando la app")
+                                .setCancelable(false)
+                                .setPositiveButton("Aceptar",new DialogInterface.OnClickListener() {
+                                    public void onClick(DialogInterface dialog,int id) {
+                                        red.setTextColor(act.getResources().getColor(R.color.alarma));
+                                    }
+                                })
+
+                                .create().show();
+                    }
+                }
+        );
     }
 
     private void habilitar_gps(){
@@ -787,7 +971,9 @@ public class fragment_principal extends Fragment {
             ls_es_feriado= response.getString("feriado");
 
             procesarParametroTurno();
-
+            if (!l_paradas.equals("0")) {
+                cargarParadas(context);
+            }
 
 
         } catch (JSONException e) {
@@ -816,94 +1002,101 @@ public class fragment_principal extends Fragment {
 
 private void procesarParametroTurno( ) {
 
+    Handler handler = new Handler(Looper.getMainLooper());
+    handler.post(
+            new Runnable() {
+                @Override
+                public void run() {
+                    if (l_turno_app.equals("0")) {
 
-    if (l_turno_app.equals("0")) {
+                        boton_turno.setEnabled(false);
 
-        boton_turno.setEnabled(false);
+                        boton_dos.setEnabled(false);
+                        boton_tres.setEnabled(false);
+                        boton_dos.setBackground(act.getResources().getDrawable(R.drawable.dos_gris));
+                        boton_uno.setBackground(act.getResources().getDrawable(R.drawable.uno_gris));
+                        boton_tres.setBackground(act.getResources().getDrawable(R.drawable.tres_gris));
+                        text_parcial_turno.setTextColor(act.getResources().getColor(R.color.colorGris));
+                        text_final_turno.setTextColor(act.getResources().getColor(R.color.colorGris));
+                        text_ultimos_finales.setTextColor(act.getResources().getColor(R.color.colorGris));
 
-        boton_dos.setEnabled(false);
-        boton_tres.setEnabled(false);
-        boton_dos.setBackground(act.getResources().getDrawable(R.drawable.dos_gris));
-        boton_uno.setBackground(act.getResources().getDrawable(R.drawable.uno_gris));
-        boton_tres.setBackground(act.getResources().getDrawable(R.drawable.tres_gris));
-        text_parcial_turno.setTextColor(act.getResources().getColor(R.color.colorGris));
-        text_final_turno.setTextColor(act.getResources().getColor(R.color.colorGris));
-        text_ultimos_finales.setTextColor(act.getResources().getColor(R.color.colorGris));
+                    } else {
+                        boton_turno.setEnabled(true);
 
-    } else {
-        boton_turno.setEnabled(true);
+                        boton_dos.setEnabled(true);
+                        switch (tipo_empresa) {
+                            case "1":
+                                boton_dos.setBackground(act.getResources().getDrawable(R.drawable.selector_dos));
+                                boton_uno.setBackground(act.getResources().getDrawable(R.drawable.selector_uno));
+                                boton_tres.setBackground(act.getResources().getDrawable(R.drawable.selector_tres));
+                                text_final_turno.setTextColor(act.getResources().getColor(R.color.colorPrimary));
+                                text_ultimos_finales.setTextColor(act.getResources().getColor(R.color.colorPrimary));
+                                text_parcial_turno.setTextColor(act.getResources().getColor(R.color.colorPrimary));
+                                break;
+                            case "2":
+                                boton_dos.setBackground(act.getResources().getDrawable(R.drawable.selector_dos_moto));
+                                boton_uno.setBackground(act.getResources().getDrawable(R.drawable.selector_uno_moto));
+                                boton_tres.setBackground(act.getResources().getDrawable(R.drawable.selector_tres_moto));
+                                text_final_turno.setTextColor(act.getResources().getColor(R.color.colorMoto));
+                                text_ultimos_finales.setTextColor(act.getResources().getColor(R.color.colorMoto));
+                                text_parcial_turno.setTextColor(act.getResources().getColor(R.color.colorMoto));
+                                break;
+                            case "3":
+                                boton_dos.setBackground(act.getResources().getDrawable(R.drawable.selector_dos_taxi));
+                                boton_uno.setBackground(act.getResources().getDrawable(R.drawable.selector_uno_taxi));
+                                boton_tres.setBackground(act.getResources().getDrawable(R.drawable.selector_tres_taxi));
+                                text_final_turno.setTextColor(act.getResources().getColor(R.color.colorTaxi));
+                                text_ultimos_finales.setTextColor(act.getResources().getColor(R.color.colorTaxi));
+                                text_parcial_turno.setTextColor(act.getResources().getColor(R.color.colorTaxi));
+                                break;
+                        }
 
-        boton_dos.setEnabled(true);
-        switch (tipo_empresa) {
-            case "1":
-                boton_dos.setBackground(act.getResources().getDrawable(R.drawable.selector_dos));
-                boton_uno.setBackground(act.getResources().getDrawable(R.drawable.selector_uno));
-                boton_tres.setBackground(act.getResources().getDrawable(R.drawable.selector_tres));
-                text_final_turno.setTextColor(act.getResources().getColor(R.color.colorPrimary));
-                text_ultimos_finales.setTextColor(act.getResources().getColor(R.color.colorPrimary));
-                text_parcial_turno.setTextColor(act.getResources().getColor(R.color.colorPrimary));
-                break;
-            case "2":
-                boton_dos.setBackground(act.getResources().getDrawable(R.drawable.selector_dos_moto));
-                boton_uno.setBackground(act.getResources().getDrawable(R.drawable.selector_uno_moto));
-                boton_tres.setBackground(act.getResources().getDrawable(R.drawable.selector_tres_moto));
-                text_final_turno.setTextColor(act.getResources().getColor(R.color.colorMoto));
-                text_ultimos_finales.setTextColor(act.getResources().getColor(R.color.colorMoto));
-                text_parcial_turno.setTextColor(act.getResources().getColor(R.color.colorMoto));
-                break;
-            case "3":
-                boton_dos.setBackground(act.getResources().getDrawable(R.drawable.selector_dos_taxi));
-                boton_uno.setBackground(act.getResources().getDrawable(R.drawable.selector_uno_taxi));
-                boton_tres.setBackground(act.getResources().getDrawable(R.drawable.selector_tres_taxi));
-                text_final_turno.setTextColor(act.getResources().getColor(R.color.colorTaxi));
-                text_ultimos_finales.setTextColor(act.getResources().getColor(R.color.colorTaxi));
-                text_parcial_turno.setTextColor(act.getResources().getColor(R.color.colorTaxi));
-                break;
-        }
+                    }
+                    c = Calendar.getInstance();
+                    SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy HH:mm");
+                    String getCurrentDateTime = sdf.format(c.getTime());
+                    SimpleDateFormat shoy = new SimpleDateFormat("MM/dd/yyyy");
+                    l_hoy = shoy.format(c.getTime());
+                    String getMyTime = l_hoy + ' ' + l_hora_desde;
 
-    }
-    c = Calendar.getInstance();
-    SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy HH:mm");
-    String getCurrentDateTime = sdf.format(c.getTime());
-    SimpleDateFormat shoy = new SimpleDateFormat("MM/dd/yyyy");
-    l_hoy = shoy.format(c.getTime());
-    String getMyTime = l_hoy + ' ' + l_hora_desde;
+                    if (getCurrentDateTime.compareTo(getMyTime) > 0) {
+                        l_nocturno = "1";
+                    } else {
+                        getMyTime = l_hoy + ' ' + l_hora_hasta;
+                        if (getCurrentDateTime.compareTo(getMyTime) < 0) {
+                            l_nocturno = "1";
+                        } else {
+                            int dia_semana;
+                            dia_semana = c.get(Calendar.DAY_OF_WEEK);
 
-    if (getCurrentDateTime.compareTo(getMyTime) > 0)
-    { l_nocturno = "1"; } else
-    {
-        getMyTime = l_hoy + ' ' + l_hora_hasta;
-        if (getCurrentDateTime.compareTo(getMyTime) < 0)
-        {
-            l_nocturno = "1";
-        }else{
-            int dia_semana;
-            dia_semana=c.get(Calendar.DAY_OF_WEEK);
+                            if (dia_semana == Calendar.SUNDAY) {
+                                l_nocturno = "1";
+                            } else {
+                                if (ls_es_feriado.equals("si")) {
+                                    l_nocturno = "1";
+                                } else {
+                                    l_nocturno = "0";
+                                }
 
-            if(dia_semana == Calendar.SUNDAY){
-                l_nocturno = "1";
-            }else{
-                if(ls_es_feriado.equals("si")){
-                    l_nocturno = "1";
-                }else{
-                    l_nocturno = "0";
+                            }
+                        }
+                    }
+
+                    if (l_nocturno.equals("0")) {
+                        texto_tarifa.setText(R.string.diurno);
+                    } else {
+                        texto_tarifa.setText(R.string.nocturno);
+                    }
+
+                    SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(context);
+                    SharedPreferences.Editor editor = settings.edit();
+                    editor.putString("nocturno", l_nocturno);
+                    editor.apply();
+                    datos_turno_inicial(context);
+
                 }
-
             }
-        }
-    }
-
-    if(l_nocturno.equals("0")){
-        texto_tarifa.setText(R.string.diurno);
-    }else{
-        texto_tarifa.setText(R.string.nocturno);
-    }
-
-    SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(context);
-    SharedPreferences.Editor editor = settings.edit();
-    editor.putString("nocturno",l_nocturno);
-    editor.apply();
-    cargarParadas(context);
+    );
 
 }
 
@@ -974,6 +1167,7 @@ private void procesarParametroTurno( ) {
                     {
 
                         this.boton_ocho.setEnabled(true);
+                        this.boton_cta_cte.setEnabled(true);
                         this.boton_cuatro.setEnabled(true);
                         this.boton_viaje.setEnabled(true);
                         this.buttonParadas.setEnabled(true);
@@ -981,20 +1175,26 @@ private void procesarParametroTurno( ) {
                             case "1":
                                 this.boton_ocho.setBackground(act.getResources().getDrawable(R.drawable.selector_ocho));
                                 this.boton_cuatro.setBackground(act.getResources().getDrawable(R.drawable.selector_cuatro));
+                                this.boton_cta_cte.setBackground(act.getResources().getDrawable(R.drawable.selector_cta_cte));
                                 this.text_viaje_x_viaje.setTextColor(act.getResources().getColor(R.color.colorPrimary));
                                 this.text_historial.setTextColor(act.getResources().getColor(R.color.colorPrimary));
+                                this.text_cta_cte.setTextColor(act.getResources().getColor(R.color.colorPrimary));
                                 break;
                             case "2":
                                 this.boton_ocho.setBackground(act.getResources().getDrawable(R.drawable.selector_ocho_moto));
+                                this.boton_cta_cte.setBackground(act.getResources().getDrawable(R.drawable.selector_cta_cte_moto));
                                 this.boton_cuatro.setBackground(act.getResources().getDrawable(R.drawable.selector_cuatro_moto));
                                 this.text_viaje_x_viaje.setTextColor(act.getResources().getColor(R.color.colorMoto));
                                 this.text_historial.setTextColor(act.getResources().getColor(R.color.colorMoto));
+                                this.text_cta_cte.setTextColor(act.getResources().getColor(R.color.colorMoto));
                                 break;
                             case "3":
                                 this.boton_ocho.setBackground(act.getResources().getDrawable(R.drawable.selector_ocho_taxi));
+                                this.boton_cta_cte.setBackground(act.getResources().getDrawable(R.drawable.selector_cta_cte_taxi));
                                 this.boton_cuatro.setBackground(act.getResources().getDrawable(R.drawable.selector_cuatro_taxi));
                                 this.text_viaje_x_viaje.setTextColor(act.getResources().getColor(R.color.colorTaxi));
                                 this.text_historial.setTextColor(act.getResources().getColor(R.color.colorTaxi));
+                                this.text_cta_cte.setTextColor(act.getResources().getColor(R.color.colorTaxi));
                                 break;
                         }
 
@@ -1011,7 +1211,8 @@ private void procesarParametroTurno( ) {
                             boton_tres.setEnabled(false);
                             boton_tres.setBackground(act.getResources().getDrawable(R.drawable.tres_gris));
                             text_ultimos_finales.setTextColor(act.getResources().getColor(R.color.colorGris));
-
+                            boton_cta_cte.setBackground(act.getResources().getDrawable(R.drawable.cta_cte_gris));
+                            text_cta_cte.setTextColor(act.getResources().getColor(R.color.colorGris));
                         }else{
                             boton_turno.setEnabled(false);
                             boton_dos.setEnabled(true);
@@ -1054,6 +1255,7 @@ private void procesarParametroTurno( ) {
                         this.boton_tres.setEnabled(false);
                         this.boton_cuatro.setEnabled(false);
                         this.boton_ocho.setEnabled(false);
+                        this.boton_cta_cte.setEnabled(false);
                         this.boton_viaje.setEnabled(false);
                         this.buttonParadas.setEnabled(false);
                         this.boton_uno.setBackground(act.getResources().getDrawable(R.drawable.uno_gris));
@@ -1061,11 +1263,13 @@ private void procesarParametroTurno( ) {
                         this.boton_tres.setBackground(act.getResources().getDrawable(R.drawable.tres_gris));
                         this.boton_cuatro.setBackground(act.getResources().getDrawable(R.drawable.cuatro_gris));
                         this.boton_ocho.setBackground(act.getResources().getDrawable(R.drawable.ocho_gris));
+                        this.boton_cta_cte.setBackground(act.getResources().getDrawable(R.drawable.cta_cte_gris));
                         text_parcial_turno.setTextColor(act.getResources().getColor(R.color.colorGris));
                         text_final_turno.setTextColor(act.getResources().getColor(R.color.colorGris));
                         this.text_ultimos_finales.setTextColor(act.getResources().getColor(R.color.colorGris));
                         text_viaje_x_viaje.setTextColor(act.getResources().getColor(R.color.colorGris));
                         text_historial.setTextColor(act.getResources().getColor(R.color.colorGris));
+                        text_cta_cte.setTextColor(act.getResources().getColor(R.color.colorGris));
 
 
                     }
@@ -2368,7 +2572,7 @@ private void procesarParametroTurno( ) {
 
 
             }
-            datos_turno_inicial(context);
+
 
         } catch (JSONException e) {
             e.printStackTrace();
@@ -2427,6 +2631,7 @@ private void procesarParametroTurno( ) {
                     SharedPreferences.Editor editor = settings1.edit();
 
                     String habilitada = object.getString("habilitada");
+                    saldo_vehiculo = object.getString("saldo_movil");
 
                     if(habilitada.equals("1") && movil_habilitado.equals("1") && chofer_habilitado.equals("1") )
                     {
@@ -2437,26 +2642,33 @@ private void procesarParametroTurno( ) {
                         }
                         this.buttonParadas.setEnabled(true);
                         this.boton_uno.setEnabled(true);
+                        this.boton_cta_cte.setEnabled(true);
                         this.repetirTicket.setVisibility(View.VISIBLE);
                         this.boton_turno.setVisibility(View.VISIBLE);
 
                         switch (tipo_empresa) {
                             case "1":
                                 this.boton_ocho.setBackground(act.getResources().getDrawable(R.drawable.selector_ocho));
+                                this.boton_cta_cte.setBackground(act.getResources().getDrawable(R.drawable.selector_cta_cte));
                                 this.boton_cuatro.setBackground(act.getResources().getDrawable(R.drawable.selector_cuatro));
                                 this.text_historial.setTextColor(act.getResources().getColor(R.color.colorPrimary));
+                                this.text_cta_cte.setTextColor(act.getResources().getColor(R.color.colorPrimary));
                                 text_viaje_x_viaje.setTextColor(act.getResources().getColor(R.color.colorPrimary));
                                 break;
                             case "2":
                                 this.boton_ocho.setBackground(act.getResources().getDrawable(R.drawable.selector_ocho_moto));
+                                this.boton_cta_cte.setBackground(act.getResources().getDrawable(R.drawable.selector_cta_cte_moto));
                                 this.boton_cuatro.setBackground(act.getResources().getDrawable(R.drawable.selector_cuatro_moto));
                                 this.text_historial.setTextColor(act.getResources().getColor(R.color.colorMoto));
+                                this.text_cta_cte.setTextColor(act.getResources().getColor(R.color.colorMoto));
                                 text_viaje_x_viaje.setTextColor(act.getResources().getColor(R.color.colorMoto));
                                 break;
                             case "3":
                                 this.boton_ocho.setBackground(act.getResources().getDrawable(R.drawable.selector_ocho_taxi));
+                                this.boton_cta_cte.setBackground(act.getResources().getDrawable(R.drawable.selector_cta_cte_taxi));
                                 this.boton_cuatro.setBackground(act.getResources().getDrawable(R.drawable.selector_cuatro_taxi));
                                 this.text_historial.setTextColor(act.getResources().getColor(R.color.colorTaxi));
+                                this.text_cta_cte.setTextColor(act.getResources().getColor(R.color.colorTaxi));
                                 text_viaje_x_viaje.setTextColor(act.getResources().getColor(R.color.colorTaxi));
                                 break;
                         }
@@ -2534,6 +2746,7 @@ private void procesarParametroTurno( ) {
                         this.boton_tres.setEnabled(false);
                         this.boton_cuatro.setEnabled(false);
                         this.boton_ocho.setEnabled(false);
+                        this.boton_cta_cte.setEnabled(false);
                         this.boton_viaje.setVisibility(View.GONE);
                         this.buttonParadas.setEnabled(false);
                         this.boton_turno.setEnabled(false);
@@ -2546,9 +2759,11 @@ private void procesarParametroTurno( ) {
                         this.boton_tres.setBackground(act.getResources().getDrawable(R.drawable.tres_gris));
                         this.boton_cuatro.setBackground(act.getResources().getDrawable(R.drawable.cuatro_gris));
                         this.boton_ocho.setBackground(act.getResources().getDrawable(R.drawable.ocho_gris));
+                        this.boton_cta_cte.setBackground(act.getResources().getDrawable(R.drawable.cta_cte_gris));
                         this.text_ultimos_finales.setTextColor(act.getResources().getColor(R.color.colorGris));
                         text_viaje_x_viaje.setTextColor(act.getResources().getColor(R.color.colorGris));
                         text_historial.setTextColor(act.getResources().getColor(R.color.colorGris));
+                        text_cta_cte.setTextColor(act.getResources().getColor(R.color.colorGris));
 
 
                     }
@@ -2731,7 +2946,7 @@ private void procesarParametroTurno( ) {
                 //print normal text
                 printCustom(nombre_remiseria, 2, 1);
                 printNewLine();
-                printCustom("Tel. Remisería: " + telefono_remiseria, 1, 1);
+                printCustom("Tel. Empresa: " + telefono_remiseria, 1, 1);
 
                 printNewLine();
                 printText(stringABytes(act.getResources().getString(R.string.ticket_recaudacion))); // total 32 char in a single line
@@ -2833,7 +3048,7 @@ private void procesarParametroTurno( ) {
             cell.setHorizontalAlignment(PdfPCell.ALIGN_LEFT);
             tabla_enc.addCell(cell);
 
-            cell = new PdfPCell(new Phrase("Tel. Remisería: " + telefono_remiseria,font));
+            cell = new PdfPCell(new Phrase("Tel. Empresa: " + telefono_remiseria,font));
             cell.setBorder(Rectangle.NO_BORDER);
             cell.setHorizontalAlignment(PdfPCell.ALIGN_LEFT);
             tabla_enc.addCell(cell);
@@ -3429,7 +3644,7 @@ private void procesarParametroTurno( ) {
                 //print normal text
                 printCustom(nombre_remiseria, 2, 1);
                 printNewLine();
-                printCustom("Tel. Remisería: " + telefono_remiseria, 1, 1);
+                printCustom("Tel. Empresa: " + telefono_remiseria, 1, 1);
 
                 printNewLine();
                 printUnicode();
@@ -3534,7 +3749,7 @@ private void procesarParametroTurno( ) {
             cell.setHorizontalAlignment(PdfPCell.ALIGN_LEFT);
             tabla_enc.addCell(cell);
 
-            cell = new PdfPCell(new Phrase("Tel. Remisería: " + telefono_remiseria,font));
+            cell = new PdfPCell(new Phrase("Tel. Empresa: " + telefono_remiseria,font));
             cell.setBorder(Rectangle.NO_BORDER);
             cell.setHorizontalAlignment(PdfPCell.ALIGN_LEFT);
             tabla_enc.addCell(cell);
@@ -3911,7 +4126,7 @@ private void procesarParametroTurno( ) {
             cell.setHorizontalAlignment(PdfPCell.ALIGN_LEFT);
             tabla_enc.addCell(cell);
 
-            cell = new PdfPCell(new Phrase("Tel. Remisería: " + telefono_remiseria,font));
+            cell = new PdfPCell(new Phrase("Tel. Empresa: " + telefono_remiseria,font));
             cell.setBorder(Rectangle.NO_BORDER);
             cell.setHorizontalAlignment(PdfPCell.ALIGN_LEFT);
             tabla_enc.addCell(cell);
@@ -4121,74 +4336,6 @@ private void procesarParametroTurno( ) {
 
                     id_movil = object.getString("id");
                     actualizar_coordenadas_paradas( context);
-                    break;
-
-                case "2":
-
-                    break;
-
-            }
-
-
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-
-    }
-
-    public void cargarDatosRemiseria(final Context context, final View v) {
-
-        // Añadir parámetro a la URL del web service
-        String newURL = Constantes.GET_REMISERIA + "?remiseria=" + ls_remiseria;
-        Log.d(TAG,newURL);
-
-        // Realizar petición GET_BY_ID
-        VolleySingleton.getInstance(context).addToRequestQueue(
-                myRequest = new JsonObjectRequest(
-                        Request.Method.POST,
-                        newURL,
-                        null,
-                        new Response.Listener<JSONObject>() {
-
-                            @Override
-                            public void onResponse(JSONObject response) {
-                                // Procesar respuesta Json
-                                procesarRespuesta_remiseria(response, v);
-                            }
-                        },
-                        new Response.ErrorListener() {
-                            @Override
-                            public void onErrorResponse(VolleyError error) {
-                                Log.d(TAG, "Error Volley remiseria: " + error.getMessage());
-
-                            }
-                        }
-                )
-        );
-        myRequest.setRetryPolicy(new DefaultRetryPolicy(
-                50000,
-                5,//DefaultRetryPolicy.DEFAULT_MAX_RETRIES
-                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
-
-    }
-
-    private void procesarRespuesta_remiseria(JSONObject response, View v) {
-
-        try {
-            // Obtener atributo "mensaje"
-            String mensaje = response.getString("estado");
-
-            switch (mensaje) {
-                case "1":
-                    // Obtener objeto "cliente"
-                    JSONArray mensaje1 = response.getJSONArray("remiseria");
-
-                    JSONObject object = mensaje1.getJSONObject(0);
-                    //Parsear objeto
-
-                    telefono_base = object.getString("TELEFONO_BASE");
-                    setClickToChat(v,telefono_base);
-
                     break;
 
                 case "2":
@@ -4422,8 +4569,11 @@ private void procesarParametroTurno( ) {
 
             switch (estado) {
                 case "1":
-
-                    cargarIdVehiculoParada(context);
+                    if (l_paradas.equals("0")) {
+                        comenzar_viaje();
+                    }else{
+                        cargarIdVehiculoParada(context);
+                    }
 
                     break;
                 case "2":
@@ -4495,11 +4645,8 @@ private void procesarParametroTurno( ) {
                     break;
 
                 case "2":
-
                     break;
-
             }
-
 
         } catch (JSONException e) {
             e.printStackTrace();
@@ -4585,15 +4732,7 @@ private void procesarParametroTurno( ) {
 
             switch (estado) {
                 case "1":
-                    SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(context);
-                    SharedPreferences.Editor editor = settings.edit();
-                    editor.putString("automatico", "1");
-                    editor.putString("estado_viaje","asignado");
-                    editor.apply();
-                    Intent intent2 = new Intent(context, MainViaje.class);
-                    context.startActivity(intent2);
-                    ((MainActivity)context).locationEnd();
-                    act.finish();
+                    comenzar_viaje() ;
                     break;
                 case "2":
                     // Mostrar mensaje
@@ -4607,6 +4746,18 @@ private void procesarParametroTurno( ) {
         } catch (JSONException e) {
             e.printStackTrace();
         }
+    }
+
+    private void comenzar_viaje(){
+        SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(context);
+        SharedPreferences.Editor editor = settings.edit();
+        editor.putString("automatico", "1");
+        editor.putString("estado_viaje","asignado");
+        editor.apply();
+        Intent intent2 = new Intent(context, MainViaje.class);
+        context.startActivity(intent2);
+        ((MainActivity)context).locationEnd();
+        act.finish();
     }
 
 

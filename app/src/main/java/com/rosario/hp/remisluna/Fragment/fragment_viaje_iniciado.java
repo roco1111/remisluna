@@ -5,17 +5,20 @@ import static com.rosario.hp.remisluna.include.Utils.stringABytes;
 import android.Manifest;
 import android.app.Activity;
 import android.app.ActivityManager;
+import android.app.AlertDialog;
 import android.bluetooth.BluetoothAdapter;
 import android.content.ActivityNotFoundException;
 import android.content.BroadcastReceiver;
 
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.content.res.ColorStateList;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.location.Address;
@@ -41,12 +44,15 @@ import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
+import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.RequiresApi;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.core.content.FileProvider;
+import androidx.core.content.res.ResourcesCompat;
 import androidx.fragment.app.Fragment;
 
 import com.android.volley.DefaultRetryPolicy;
@@ -97,7 +103,6 @@ import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.TreeMap;
@@ -182,7 +187,6 @@ public class fragment_viaje_iniciado extends Fragment {
 
     private Button boton_whatsapp;
     private Button boton_mapa;
-    private String telefono_base;
     private Boolean lb_servicio = false;
     private Button inicio;
     private Button boton_efectivo;
@@ -217,6 +221,7 @@ public class fragment_viaje_iniciado extends Fragment {
     private String fichas_ultimo;
     private String bajada_ultimo;
     private String chapa;
+    private String nro_movil;
     private String patente;
     private Impresion impresion;
     private String l_impresion;
@@ -228,6 +233,7 @@ public class fragment_viaje_iniciado extends Fragment {
     private File dir;
     private String nombre_remiseria;
     private String telefono_queja;
+    private String telefono_base;
     private String localidad_abreviada;
     private String telefono_remiseria;
     private String path;
@@ -236,7 +242,14 @@ public class fragment_viaje_iniciado extends Fragment {
     private String viajes_automaticos_chofer;
     private String servicios_empresariales;
     private String habilitada;
-
+    private String mercado_pago;
+    private String tipo_rendicion;
+    private String valor_dia_rendicion;
+    private String valor_noche_rendicion;
+    private String valor_feriado_rendicion;
+    private String saldo_vehiculo;
+    private String l_tipo_tarifa = "0";//1 diurno normal, 2 nocturno normal, 3 diurno feriado, 4 nocturno feriado
+    private String descuento;
 
     @Override
     public void onPause() {
@@ -473,7 +486,32 @@ public class fragment_viaje_iniciado extends Fragment {
             public void onClick(View v) {
 
                 mediaPlayer.start();
-                viaje_automatico(context);
+                String l_mensaje_rendicion;
+                if(tipo_rendicion.equals("2")){
+                    if(saldo_vehiculo.equals("0.00")){
+                        l_mensaje_rendicion = "No tiene Saldo para iniciar el viaje";
+                    }else{
+                        l_mensaje_rendicion = "";
+                    }
+                }else{
+                    l_mensaje_rendicion = "";
+                }
+                if(l_mensaje_rendicion.equals("")) {
+                    viaje_automatico(context);
+                }else{
+                    AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(context);
+
+                    alertDialogBuilder.setTitle("Callisto");
+
+                    alertDialogBuilder
+                            .setMessage(l_mensaje_rendicion)
+                            .setCancelable(false)
+                            .setPositiveButton("Aceptar",new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog,int id) {
+
+                                }
+                            }).create().show();
+                }
 
             }
         });
@@ -484,7 +522,7 @@ public class fragment_viaje_iniciado extends Fragment {
 
                 mediaPlayer.start();
                 setClickToChat(v,telefono_base);
-                //cargarDatosRemiseria(context, v);
+
 
             }
         });
@@ -502,6 +540,7 @@ public class fragment_viaje_iniciado extends Fragment {
         return v;
     }
 
+
     private void reiniciar(){
         SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(context);
         ls_id_conductor     = settings.getString("id","");
@@ -511,8 +550,12 @@ public class fragment_viaje_iniciado extends Fragment {
         l_hora_desde = settings.getString("tarifa_desde","");
         l_hora_hasta= settings.getString("tarifa_hasta","");
         ls_es_feriado = settings.getString("feriado","");
-        l_tolerancia_tope = settings.getLong("tolerancia_tope",0L);
         tipo_empresa = settings.getString("tipo_empresa","");
+        if(tipo_empresa.equals("1")) {
+            l_tolerancia_tope = settings.getLong("tolerancia_tope", 0L);
+        }else{
+            l_tolerancia_tope = 0L;
+        }
         l_estado_viaje = settings.getString("estado_viaje","");
         l_id_viaje = settings.getString("id_viaje","");
         Log.d("viaje parametro",l_id_viaje);
@@ -522,6 +565,15 @@ public class fragment_viaje_iniciado extends Fragment {
         viajes_automaticos_chofer = settings.getString("viajes_automaticos_chofer", "");
         servicios_empresariales = settings.getString("servicio_empresarial", "0");
         habilitada = settings.getString("habilitada","");
+        mercado_pago = settings.getString("mercado_pago","");
+        tipo_rendicion = settings.getString("tipo_rendicion","");
+        valor_dia_rendicion = settings.getString("valor_dia_rendicion","");
+        valor_noche_rendicion = settings.getString("valor_noche_rendicion","");
+        valor_feriado_rendicion = settings.getString("valor_feriado_rendicion","");
+        telefono_base = settings.getString("telefono_base","");
+        saldo_vehiculo = settings.getString("saldo_vehiculo","");
+        chapa = settings.getString("chapa","");
+        nro_movil = settings.getString("nro_movil","");
 
         sdf = new SimpleDateFormat("MM/dd/yyyy HH:mm");
         lb_viaje_terminado = false;
@@ -551,6 +603,18 @@ public class fragment_viaje_iniciado extends Fragment {
                 id_botones_terminar.setVisibility(View.GONE);
                 id_botones_en_curso.setVisibility(View.GONE);
                 id_botones_pagos.setVisibility(View.VISIBLE);
+                if(servicios_empresariales.equals("0")){
+                    boton_cta_cte.setVisibility(View.GONE);
+                }else{
+                    boton_cta_cte.setVisibility(View.VISIBLE);
+                }
+
+                if(mercado_pago.equals("0")){
+                    boton_mercado_pago.setVisibility(View.GONE);
+                }else{
+                    boton_mercado_pago.setVisibility(View.VISIBLE);
+                }
+
                 break;
         }
 
@@ -572,6 +636,35 @@ public class fragment_viaje_iniciado extends Fragment {
                 monto_ficha.setTextColor(act.getResources().getColor(R.color.colorPrimary));
                 titulo_ficha.setTextColor(act.getResources().getColor(R.color.colorPrimary));
                 titulo_espera.setTextColor(act.getResources().getColor(R.color.colorPrimary));
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                    inicio.setBackgroundTintList( ColorStateList.valueOf(ResourcesCompat.getColor(act.getResources(),
+                            R.color.colorPrimary, act.getTheme())));
+                }
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                    boton_viaje.setBackgroundTintList( ColorStateList.valueOf(ResourcesCompat.getColor(act.getResources(),
+                            R.color.colorPrimary, act.getTheme())));
+                }
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                    boton_mercado_pago.setBackgroundTintList( ColorStateList.valueOf(ResourcesCompat.getColor(act.getResources(),
+                            R.color.colorPrimary, act.getTheme())));
+                }
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                    boton_mapa.setBackgroundTintList( ColorStateList.valueOf(ResourcesCompat.getColor(act.getResources(),
+                            R.color.colorPrimary, act.getTheme())));
+                }
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                    boton_efectivo.setBackgroundTintList( ColorStateList.valueOf(ResourcesCompat.getColor(act.getResources(),
+                            R.color.colorPrimary, act.getTheme())));
+                }
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                    buttonmenu.setBackgroundTintList( ColorStateList.valueOf(ResourcesCompat.getColor(act.getResources(),
+                            R.color.colorPrimary, act.getTheme())));
+                }
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                    terminar_viaje.setBackgroundTintList( ColorStateList.valueOf(ResourcesCompat.getColor(act.getResources(),
+                            R.color.colorPrimary, act.getTheme())));
+                }
+
                 break;
             case "2":
                 id_viaje.setTextColor(act.getResources().getColor(R.color.colorMoto));
@@ -590,6 +683,35 @@ public class fragment_viaje_iniciado extends Fragment {
                 monto_ficha.setTextColor(act.getResources().getColor(R.color.colorMoto));
                 titulo_ficha.setTextColor(act.getResources().getColor(R.color.colorMoto));
                 titulo_espera.setTextColor(act.getResources().getColor(R.color.colorMoto));
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                    inicio.setBackgroundTintList( ColorStateList.valueOf(ResourcesCompat.getColor(act.getResources(),
+                            R.color.colorMoto, act.getTheme())));
+                }
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                    boton_viaje.setBackgroundTintList( ColorStateList.valueOf(ResourcesCompat.getColor(act.getResources(),
+                            R.color.colorMoto, act.getTheme())));
+                }
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                    boton_mercado_pago.setBackgroundTintList( ColorStateList.valueOf(ResourcesCompat.getColor(act.getResources(),
+                            R.color.colorMoto, act.getTheme())));
+                }
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                    boton_mapa.setBackgroundTintList( ColorStateList.valueOf(ResourcesCompat.getColor(act.getResources(),
+                            R.color.colorMoto, act.getTheme())));
+                }
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                    boton_efectivo.setBackgroundTintList( ColorStateList.valueOf(ResourcesCompat.getColor(act.getResources(),
+                            R.color.colorMoto, act.getTheme())));
+                }
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                    buttonmenu.setBackgroundTintList( ColorStateList.valueOf(ResourcesCompat.getColor(act.getResources(),
+                            R.color.colorMoto, act.getTheme())));
+                }
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                    terminar_viaje.setBackgroundTintList( ColorStateList.valueOf(ResourcesCompat.getColor(act.getResources(),
+                            R.color.colorMoto, act.getTheme())));
+                }
+                l_tolerancia_tope = 0L;
                 break;
             case "3":
                 id_viaje.setTextColor(act.getResources().getColor(R.color.colorTaxi));
@@ -608,6 +730,35 @@ public class fragment_viaje_iniciado extends Fragment {
                 monto_ficha.setTextColor(act.getResources().getColor(R.color.colorTaxi));
                 titulo_ficha.setTextColor(act.getResources().getColor(R.color.colorTaxi));
                 titulo_espera.setTextColor(act.getResources().getColor(R.color.colorTaxi));
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                    inicio.setBackgroundTintList( ColorStateList.valueOf(ResourcesCompat.getColor(act.getResources(),
+                            R.color.colorTaxi, act.getTheme())));
+                }
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                    boton_viaje.setBackgroundTintList( ColorStateList.valueOf(ResourcesCompat.getColor(act.getResources(),
+                            R.color.colorTaxi, act.getTheme())));
+                }
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                    boton_mercado_pago.setBackgroundTintList( ColorStateList.valueOf(ResourcesCompat.getColor(act.getResources(),
+                            R.color.colorTaxi, act.getTheme())));
+                }
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                    boton_mapa.setBackgroundTintList( ColorStateList.valueOf(ResourcesCompat.getColor(act.getResources(),
+                            R.color.colorTaxi, act.getTheme())));
+                }
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                    boton_efectivo.setBackgroundTintList( ColorStateList.valueOf(ResourcesCompat.getColor(act.getResources(),
+                            R.color.colorTaxi, act.getTheme())));
+                }
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                    buttonmenu.setBackgroundTintList( ColorStateList.valueOf(ResourcesCompat.getColor(act.getResources(),
+                            R.color.colorTaxi, act.getTheme())));
+                }
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                    terminar_viaje.setBackgroundTintList( ColorStateList.valueOf(ResourcesCompat.getColor(act.getResources(),
+                            R.color.colorTaxi, act.getTheme())));
+                }
+                l_tolerancia_tope = 0L;
                 break;
         }
 
@@ -637,12 +788,8 @@ public class fragment_viaje_iniciado extends Fragment {
                 cargarTarifaInicial(context);
 
                 break;
-            
         }
-
-
     }
-
 
     private boolean isMyServiceRunning(Class<?> serviceClass) {
         ActivityManager manager = (ActivityManager) getActivity().getSystemService(Context.ACTIVITY_SERVICE);
@@ -667,13 +814,10 @@ public class fragment_viaje_iniciado extends Fragment {
                         newURL,
                         null,
                         new Response.Listener<JSONObject>() {
-
                             @Override
                             public void onResponse(JSONObject response) {
                                 // Procesar respuesta Json
-                                if(!lb_viaje_terminado) {
-                                    procesarRespuestaTarifaInicial(response, context);
-                                }
+                                procesarRespuestaTarifaInicial(response, context);
                             }
                         },
                         new Response.ErrorListener() {
@@ -683,6 +827,7 @@ public class fragment_viaje_iniciado extends Fragment {
 
                             }
                         }
+
                 )
         );
         myRequest.setRetryPolicy(new DefaultRetryPolicy(
@@ -705,55 +850,102 @@ public class fragment_viaje_iniciado extends Fragment {
                     JSONObject object = mensaje1.getJSONObject(0);
                     //Parsear objeto
 
-                    String l_nocturno;
-
                     String getCurrentDateTime = sdf.format(c.getTime());
 
+                    int dia_semana;
+                    String l_nocturno = "0";
+                    dia_semana=c.get(Calendar.DAY_OF_WEEK);
+
                     if (getCurrentDateTime.compareTo(getMyTime_desde) > 0)
-                    { l_nocturno = "1"; } else
-                    {
-                        if (getCurrentDateTime.compareTo(getMyTime_hasta) < 0)
-                        {
+                    { l_nocturno = "1"; }
+                    else {
+                        if (getCurrentDateTime.compareTo(getMyTime_hasta) < 0) {
                             l_nocturno = "1";
-                        }else{
-                            int dia_semana;
-                            dia_semana=c.get(Calendar.DAY_OF_WEEK);
-
-                            if(dia_semana == Calendar.SUNDAY){
-                                l_nocturno = "1";
-                            }else{
-                                if(ls_es_feriado.equals("si")){
-                                    l_nocturno = "1";
-                                }else{
-                                    l_nocturno = "0";
-                                }
-
-                            }
+                        } else {
+                            l_nocturno = "0";
                         }
+
+                    }
+                    if(l_nocturno.equals("0") && dia_semana >= 2 && dia_semana <= 7 && !ls_es_feriado.equals("si")){
+                        l_tipo_tarifa = "1";
+                    }else if(l_nocturno.equals("1") && dia_semana >= 2 && dia_semana <= 5 && !ls_es_feriado.equals("si")){
+                        l_tipo_tarifa = "2";
+                    }else if(l_nocturno.equals("0") &&
+                            (dia_semana == 1 || ls_es_feriado.equals("si"))){
+                        l_tipo_tarifa = "3";
+                    }else if(l_nocturno.equals("1") && (dia_semana == 1 || dia_semana == 6 || dia_semana == 7 || ls_es_feriado.equals("si"))){
+                        l_tipo_tarifa = "4";
+                    }
+
+                    switch (l_tipo_tarifa){
+                        case "1":
+                            importe_bajada = object.getString("importe_bajada");
+                            importe_ficha = object.getString("importe_ficha");
+                            importe_espera = object.getString("importe_espera");
+                            texto_tarifa.setText(R.string.diurno);
+
+                            break;
+                        case "2":
+                            importe_bajada = object.getString("importe_bajada_nocturno");
+                            importe_ficha = object.getString("importe_ficha_nocturno");
+                            importe_espera = object.getString("importe_espera_nocturno");
+                            texto_tarifa.setText(R.string.nocturno);
+
+                            break;
+                        case "3":
+                            if(object.getString("importe_bajada_feriado").equals("0.00"))
+                            {
+                                importe_bajada = object.getString("importe_bajada_nocturno");
+                            }else {
+                                importe_bajada = object.getString("importe_bajada_feriado");
+                            }
+                            if(object.getString("importe_ficha_feriado").equals("0.00"))
+                            {
+                                importe_ficha = object.getString("importe_ficha_nocturno");
+                            }else {
+                                importe_ficha = object.getString("importe_ficha_feriado");
+                            }
+                            if(object.getString("importe_espera_feriado").equals("0.00"))
+                            {
+                                importe_espera = object.getString("importe_espera_nocturno");
+                            }else {
+                                importe_espera = object.getString("importe_espera_feriado");
+                            }
+                            texto_tarifa.setText(R.string.diurno);
+
+                            break;
+                        case "4":
+                            if(object.getString("importe_bajada_nocturno_feriado").equals("0.00"))
+                            {
+                                importe_bajada = object.getString("importe_bajada_nocturno");
+                            }else {
+                                importe_bajada = object.getString("importe_bajada_nocturno_feriado");
+                            }
+                            if(object.getString("importe_ficha_nocturno_feriado").equals("0.00"))
+                            {
+                                importe_ficha = object.getString("importe_ficha_nocturno");
+                            }else {
+                                importe_ficha = object.getString("importe_ficha_nocturno_feriado");
+                            }
+                            if(object.getString("importe_espera_nocturno_feriado").equals("0.00"))
+                            {
+                                importe_espera = object.getString("importe_espera_nocturno");
+                            }else {
+                                importe_espera = object.getString("importe_espera_nocturno_feriado");
+                            }
+                            texto_tarifa.setText(R.string.nocturno);
+
+                            break;
                     }
 
 
                     SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(context);
                     SharedPreferences.Editor editor = settings.edit();
+                    editor.putString("tipo_tarifa",l_tipo_tarifa);
+                    editor.putString("importe_bajada",importe_bajada);
+                    editor.putString("importe_bajada_nocturno",importe_ficha);
+                    editor.putString("importe_ficha",importe_espera);
                     editor.putString("nocturno",l_nocturno);
-
-
-                    if(l_nocturno.equals("0")) {
-                        importe_bajada = object.getString("importe_bajada");
-
-                        texto_tarifa.setText(R.string.diurno);
-                    }else{
-                        importe_bajada = object.getString("importe_bajada_nocturno");
-
-                        texto_tarifa.setText(R.string.nocturno);
-                    }
-                    editor.putString("importe_bajada",object.getString("importe_bajada"));
-                    editor.putString("importe_bajada_nocturno",object.getString("importe_bajada_nocturno"));
-                    editor.putString("importe_ficha",object.getString("importe_ficha"));
-                    editor.putString("importe_ficha_nocturno",object.getString("importe_ficha_nocturno"));
-                    editor.putString("importe_espera",object.getString("importe_espera"));
-                    editor.putString("importe_espera_nocturno",object.getString("importe_espera_nocturno"));
-
                     importe.setText(importe_bajada);
 
 
@@ -768,12 +960,10 @@ public class fragment_viaje_iniciado extends Fragment {
                     editor.putString("bajada","null");
 
                     editor.apply();
-                    cargarParametroTolerancia(context);
 
                     break;
 
             }
-
 
 
         } catch (JSONException e) {
@@ -871,53 +1061,94 @@ public class fragment_viaje_iniciado extends Fragment {
                     JSONObject object = mensaje1.getJSONObject(0);
                     //Parsear objeto
 
-                    String l_nocturno;
+                    String l_tipo_tarifa = "0";//1 diurno normal, 2 nocturno normal, 3 diurno feriado, 4 nocturno feriado
 
                     String getCurrentDateTime = sdf.format(c.getTime());
 
+                    int dia_semana;
+                    String l_nocturno = "0";
+                    dia_semana=c.get(Calendar.DAY_OF_WEEK);
+
                     if (getCurrentDateTime.compareTo(getMyTime_desde) > 0)
-                    { l_nocturno = "1"; } else
-                    {
-                        if (getCurrentDateTime.compareTo(getMyTime_hasta) < 0)
-                        {
+                    { l_nocturno = "1"; }
+                    else {
+                        if (getCurrentDateTime.compareTo(getMyTime_hasta) < 0) {
                             l_nocturno = "1";
-                        }else{
-                            int dia_semana;
-                            dia_semana=c.get(Calendar.DAY_OF_WEEK);
-
-                            if(dia_semana == Calendar.SUNDAY){
-                                l_nocturno = "1";
-                            }else{
-                                if(ls_es_feriado.equals("si")){
-                                    l_nocturno = "1";
-                                }else{
-                                    l_nocturno = "0";
-                                }
-
-                            }
+                        } else {
+                            l_nocturno = "0";
                         }
+                        l_nocturno = "0";
                     }
 
-                    if(l_nocturno.equals("0")){
-                        texto_tarifa.setText(R.string.diurno);
-                    }else{
-                        texto_tarifa.setText(R.string.nocturno);
+                    if(l_nocturno.equals("0") && dia_semana >= 2 && dia_semana <= 7 && !ls_es_feriado.equals("si")){
+                        l_tipo_tarifa = "1";
+                    }else if(l_nocturno.equals("1") && dia_semana >= 2 && dia_semana <= 5 && !ls_es_feriado.equals("si")){
+                        l_tipo_tarifa = "2";
+                    }else if(l_nocturno.equals("0") && (dia_semana == 1 || ls_es_feriado.equals("si"))){
+                        l_tipo_tarifa = "3";
+                    }else if(l_nocturno.equals("1") && (dia_semana == 1 || dia_semana == 6 || dia_semana == 7 || ls_es_feriado.equals("si"))){
+                        l_tipo_tarifa = "4";
                     }
 
-                    SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(context);
-                    SharedPreferences.Editor editor = settings.edit();
-                    editor.putString("nocturno",l_nocturno);
-                    editor.apply();
-                    if(l_nocturno.equals("0")) {
-                        importe_bajada = object.getString("importe_bajada");
-                        importe_ficha = object.getString("importe_ficha");
-                        importe_espera = object.getString("importe_espera");
-                        texto_tarifa.setText(R.string.diurno);
-                    }else{
-                        importe_bajada = object.getString("importe_bajada_nocturno");
-                        importe_ficha = object.getString("importe_ficha_nocturno");
-                        importe_espera = object.getString("importe_espera_nocturno");
-                        texto_tarifa.setText(R.string.nocturno);
+                    switch (l_tipo_tarifa){
+                        case "1":
+                            importe_bajada = object.getString("importe_bajada");
+                            importe_ficha = object.getString("importe_ficha");
+                            importe_espera = object.getString("importe_espera");
+                            texto_tarifa.setText(R.string.diurno);
+
+                            break;
+                        case "2":
+                            importe_bajada = object.getString("importe_bajada_nocturno");
+                            importe_ficha = object.getString("importe_ficha_nocturno");
+                            importe_espera = object.getString("importe_espera_nocturno");
+                            texto_tarifa.setText(R.string.nocturno);
+
+                            break;
+                        case "3":
+                            if(object.getString("importe_bajada_feriado").equals("0.00"))
+                            {
+                                importe_bajada = object.getString("importe_bajada_nocturno");
+                            }else {
+                                importe_bajada = object.getString("importe_bajada_feriado");
+                            }
+                            if(object.getString("importe_ficha_feriado").equals("0.00"))
+                            {
+                                importe_ficha = object.getString("importe_ficha_nocturno");
+                            }else {
+                                importe_ficha = object.getString("importe_ficha_feriado");
+                            }
+                            if(object.getString("importe_espera_feriado").equals("0.00"))
+                            {
+                                importe_espera = object.getString("importe_espera_nocturno");
+                            }else {
+                                importe_espera = object.getString("importe_espera_feriado");
+                            }
+                            texto_tarifa.setText(R.string.diurno);
+
+                            break;
+                        case "4":
+                            if(object.getString("importe_bajada_nocturno_feriado").equals("0.00"))
+                            {
+                                importe_bajada = object.getString("importe_bajada_nocturno");
+                            }else {
+                                importe_bajada = object.getString("importe_bajada_nocturno_feriado");
+                            }
+                            if(object.getString("importe_ficha_nocturno_feriado").equals("0.00"))
+                            {
+                                importe_ficha = object.getString("importe_ficha_nocturno");
+                            }else {
+                                importe_ficha = object.getString("importe_ficha_nocturno_feriado");
+                            }
+                            if(object.getString("importe_espera_nocturno_feriado").equals("0.00"))
+                            {
+                                importe_espera = object.getString("importe_espera_nocturno");
+                            }else {
+                                importe_espera = object.getString("importe_espera_nocturno_feriado");
+                            }
+                            texto_tarifa.setText(R.string.nocturno);
+
+                            break;
                     }
 
                     Double valor_ficha = 0.00 ;
@@ -966,7 +1197,18 @@ public class fragment_viaje_iniciado extends Fragment {
                             tiempo_acumulado = Long.parseLong(tokens[4]);
                             tiempo_viaje.setText( ls_tiempo);
                             valor_ficha = 0.00;
-                            tiempo_viaje.setTextColor(act.getResources().getColor(R.color.colorPrimary));
+                            switch (tipo_empresa) {
+                                case "1":
+                                    tiempo_viaje.setTextColor(act.getResources().getColor(R.color.colorPrimary));
+                                    break;
+                                case "2":
+                                    tiempo_viaje.setTextColor(act.getResources().getColor(R.color.colorMoto));
+                                    break;
+                                case "3":
+                                    tiempo_viaje.setTextColor(act.getResources().getColor(R.color.colorTaxi));
+                                    break;
+                            }
+
                             break;
                         case "5"://termino tolerancia
                             tiempo_viaje.setText( "00:00");
@@ -980,7 +1222,17 @@ public class fragment_viaje_iniciado extends Fragment {
                             }
 
                             tipo_espera = 1;
-                            tiempo_viaje.setTextColor(act.getResources().getColor(R.color.colorPrimary));
+                            switch (tipo_empresa) {
+                                case "1":
+                                    tiempo_viaje.setTextColor(act.getResources().getColor(R.color.colorPrimary));
+                                    break;
+                                case "2":
+                                    tiempo_viaje.setTextColor(act.getResources().getColor(R.color.colorMoto));
+                                    break;
+                                case "3":
+                                    tiempo_viaje.setTextColor(act.getResources().getColor(R.color.colorTaxi));
+                                    break;
+                            }
                             break;
                     }
 
@@ -1247,26 +1499,15 @@ public class fragment_viaje_iniciado extends Fragment {
         destino.setText(settings.getString("destino",""));
         id_vehiculo = settings.getString("id_movil","");
         ldb_porcentaje_titular = Double.parseDouble(settings.getString("porc_titular",""));
+        importe_bajada = settings.getString("importe_bajada","");
+        importe_ficha = settings.getString("importe_ficha","");
+        importe_espera = settings.getString("importe_espera","");
 
         String l_nocturno;
         l_nocturno     = settings.getString("nocturno","");
         if(l_nocturno.equals("0")) {
-            if(settings.getString("bajada","").equals("null") || settings.getString("bajada","").equals("0.000")) {
-                importe_bajada = settings.getString("importe_bajada","");
-            }else{
-                importe_bajada =settings.getString("bajada","");
-            }
-            importe_ficha = settings.getString("importe_ficha","");
-            importe_espera = settings.getString("importe_espera","");
             texto_tarifa.setText(R.string.diurno);
         }else{
-            if(settings.getString("bajada","").equals("null")|| settings.getString("bajada","").equals("0.000")) {
-                importe_bajada = settings.getString("importe_bajada_nocturno","");
-            }else{
-                importe_bajada =settings.getString("bajada","");
-            }
-            importe_ficha = settings.getString("importe_ficha_nocturno","");
-            importe_espera = settings.getString("importe_espera_nocturno","");
             texto_tarifa.setText(R.string.nocturno);
         }
         movil = settings.getString("movil","");
@@ -1290,7 +1531,17 @@ public class fragment_viaje_iniciado extends Fragment {
             if(tipo_espera == 0){
                 tiempo_viaje.setTextColor(act.getResources().getColor(R.color.suspender));
             }else{
-                tiempo_viaje.setTextColor(act.getResources().getColor(R.color.colorPrimary));
+                switch (tipo_empresa) {
+                    case "1":
+                        tiempo_viaje.setTextColor(act.getResources().getColor(R.color.colorPrimary));
+                        break;
+                    case "2":
+                        tiempo_viaje.setTextColor(act.getResources().getColor(R.color.colorMoto));
+                        break;
+                    case "3":
+                        tiempo_viaje.setTextColor(act.getResources().getColor(R.color.colorTaxi));
+                        break;
+                }
             }
 
         }
@@ -1331,7 +1582,6 @@ public class fragment_viaje_iniciado extends Fragment {
         Iniciar_servicio_tiempo = new Iniciar_servicio_tiempo();
         Iniciar_servicio_tiempo.execute();
 
-
     }
 
     private class Iniciar_servicio_tiempo extends AsyncTask<Void, Integer, Integer> {
@@ -1344,9 +1594,7 @@ public class fragment_viaje_iniciado extends Fragment {
             }else{
                 context.startService(new Intent(act,ServicioGeolocalizacion.class));
             }
-            //act.startService(new Intent(act,ServicioGeolocalizacionFused.class));
-            //Iniciar_servicio_metros = new Iniciar_servicio_metros();
-            //Iniciar_servicio_metros.execute();
+
             return 0;
         }
 
@@ -1609,7 +1857,7 @@ public class fragment_viaje_iniciado extends Fragment {
 
     public void obtenerRecibo(final Context context) {
 
-        HashMap<String, String> map = new HashMap<>();// Mapeo previo
+        TreeMap<String, String> map = new TreeMap<>();// Mapeo previo
 
         map.put("parametro", "8");
         map.put("remiseria", ls_remiseria);
@@ -1720,7 +1968,7 @@ public class fragment_viaje_iniciado extends Fragment {
     private void actualizar_recibo(final Context context){
 
 
-        HashMap<String, String> map = new HashMap<>();// Mapeo previo
+        TreeMap<String, String> map = new TreeMap<>();// Mapeo previo
 
         map.put("parametro", "8");
         map.put("remiseria", ls_remiseria);
@@ -1771,7 +2019,7 @@ public class fragment_viaje_iniciado extends Fragment {
                 ) {
                     @Override
                     public Map<String, String> getHeaders() {
-                        Map<String, String> headers = new HashMap<>();
+                        Map<String, String> headers = new TreeMap<>();
                         headers.put("Content-Type", "application/json; charset=utf-8");
                         return headers;
                     }
@@ -1816,15 +2064,41 @@ public class fragment_viaje_iniciado extends Fragment {
 
         distancia = String.valueOf(cuadras / 10);
 
-        Double descuento, descuento_titular;
-        Double total, subtotal;
+        Double descuento_titular = 0.00;
+        Double total = 0.00;
+        String l_estado_liq_titular = "0";
 
-        descuento = precio_total * (l_porcentaje / 100);//porcentaje remiseria
-        subtotal = precio_total - descuento;
+        switch (tipo_rendicion)
+        {
+            case "0":
+                descuento_titular = 0.00;
+                total = precio_total;
+                l_estado_liq_titular = "0";
+                break;
 
-        descuento_titular = subtotal * (ldb_porcentaje_titular / 100);//porcentaje titular
-        total = subtotal - descuento_titular;
+            case "1":
+                descuento_titular = precio_total * (ldb_porcentaje_titular / 100);//porcentaje titular
+                total = precio_total - descuento_titular;
+                l_estado_liq_titular = "1";
+                break;
+            case "2":
+                String valor_rendicion = "0.00";
+                l_estado_liq_titular = "1";
 
+                if(l_tipo_tarifa.equals("1")){//diurno normal
+                    valor_rendicion = valor_dia_rendicion;
+                }else if(l_tipo_tarifa.equals("2")){//nocturno normal
+                    valor_rendicion = valor_noche_rendicion;
+                }else if(l_tipo_tarifa.equals("3")){//diurno feriado
+                    valor_rendicion = valor_feriado_rendicion;
+                }else if(l_tipo_tarifa.equals("4")){//nocturno feriado
+                    valor_rendicion = valor_feriado_rendicion;
+                }
+                descuento_titular = Double.parseDouble(valor_rendicion);
+                total = precio_total - descuento_titular;
+                break;
+        }
+        descuento = String.valueOf(descuento_titular);
         Double precio_km;
 
         if(!distancia.equals("0")) {
@@ -1834,7 +2108,7 @@ public class fragment_viaje_iniciado extends Fragment {
         }
 
 
-        HashMap<String, String> map = new HashMap<>();// Mapeo previo
+        TreeMap<String, String> map = new TreeMap<>();// Mapeo previo
 
         map.put("id", ls_viaje);
         map.put("latitud", l_latitud_destino);
@@ -1842,7 +2116,7 @@ public class fragment_viaje_iniciado extends Fragment {
         map.put("distancia", distancia);
         map.put("precio", String.valueOf(precio_total));
         map.put("importe_espera", String.valueOf(precio_espera));
-        map.put("descuento", String.valueOf(descuento));
+        map.put("descuento", "0");
         map.put("total", String.valueOf(total));
         map.put("bajada", String.valueOf(importe_bajada));
         map.put("tiempo_tolerancia", String.valueOf(tiempo_tolerancia));
@@ -1854,6 +2128,7 @@ public class fragment_viaje_iniciado extends Fragment {
         map.put("nro_recibo", l_nro_recibo);
         map.put("importe_titular", String.valueOf(descuento_titular));
         map.put("precio_km", String.valueOf(precio_km));
+        map.put("estado_liquidacion", l_estado_liq_titular);
 
         JSONObject jobject = new JSONObject(map);
 
@@ -1902,7 +2177,7 @@ public class fragment_viaje_iniciado extends Fragment {
                 ) {
                     @Override
                     public Map<String, String> getHeaders() {
-                        Map<String, String> headers = new HashMap<>();
+                        Map<String, String> headers = new TreeMap<>();
                         headers.put("Content-Type", "application/json; charset=utf-8");
                         return headers;
                     }
@@ -1924,8 +2199,11 @@ public class fragment_viaje_iniciado extends Fragment {
 
             switch (estado) {
                 case "1":
-                    actualizar_turno(context);
-
+                    if(tipo_rendicion.equals("2")){
+                        actualizar_saldo(context);
+                    }else {
+                        actualizar_turno(context);
+                    }
                     break;
                 case "2":
                     // Mostrar mensaje
@@ -1941,10 +2219,203 @@ public class fragment_viaje_iniciado extends Fragment {
         }
     }
 
+    private void actualizar_saldo(final Context context){
+
+
+        TreeMap<String, String> map = new TreeMap<>();// Mapeo previo
+
+        map.put("id", id_vehiculo);
+        map.put("saldo", descuento);
+
+        JSONObject jobject = new JSONObject(map);
+
+        // Depurando objeto Json...
+        Log.d(TAG, jobject.toString());
+
+        StringBuilder encodedParams = new StringBuilder();
+        try {
+            for (Map.Entry<String, String> entry : map.entrySet()) {
+                encodedParams.append(URLEncoder.encode(entry.getKey(), "utf-8"));
+                encodedParams.append('=');
+                encodedParams.append(URLEncoder.encode(entry.getValue(), "utf-8")).toString();
+                encodedParams.append('&');
+            }
+        } catch (UnsupportedEncodingException uee) {
+            throw new RuntimeException("Encoding not supported: " + "utf-8", uee);
+        }
+
+        encodedParams.setLength(Math.max(encodedParams.length() - 1, 0));
+
+
+        String newURL = Constantes.UPDATE_SALDO_VEHICULO + "?" + encodedParams;
+        Log.d(TAG,newURL);
+        // Actualizar datos en el servidor
+        VolleySingleton.getInstance(context).addToRequestQueue(
+                new JsonObjectRequest(
+                        Request.Method.GET,
+                        newURL,
+                        null,
+                        new Response.Listener<JSONObject>() {
+                            @Override
+                            public void onResponse(JSONObject response) {
+                                procesarRespuestaActualizarSaldo(response, context);
+                            }
+                        },
+                        new Response.ErrorListener() {
+                            @Override
+                            public void onErrorResponse(VolleyError error) {
+                                Log.d(TAG, "Error Turno: " + error.getMessage());
+
+                            }
+                        }
+
+                ) {
+                    @Override
+                    public Map<String, String> getHeaders() {
+                        Map<String, String> headers = new TreeMap<>();
+                        headers.put("Content-Type", "application/json; charset=utf-8");
+                        return headers;
+                    }
+
+                    @Override
+                    public String getBodyContentType() {
+                        return "application/json; charset=utf-8" + getParamsEncoding();
+                    }
+                }
+        );
+    }
+    private void procesarRespuestaActualizarSaldo(JSONObject response, Context context) {
+
+        try {
+            // Obtener estado
+            String estado = response.getString("estado");
+            // Obtener mensaje
+            String mensaje = response.getString("mensaje");
+
+            switch (estado) {
+                case "1":
+                    agregar_cta_cte(context);
+                    break;
+                case "2":
+                    // Mostrar mensaje
+                    Toast.makeText(
+                            context,
+                            mensaje,
+                            Toast.LENGTH_LONG).show();
+                    // Enviar código de falla
+                    break;
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void agregar_cta_cte(final Context context){
+
+        String l_descripcion;
+
+        l_descripcion = "Ticket N°:" +l_nro_recibo;
+        if(tipo_empresa.equals("3")) {
+            l_descripcion = l_descripcion + " - N° Chapa: " + chapa;
+        }else {
+            l_descripcion = l_descripcion + " - Móvil: " + nro_movil;
+        }
+
+        TreeMap<String, String> map = new TreeMap<>();// Mapeo previo
+
+        map.put("movil", id_vehiculo);
+        map.put("importe", descuento);
+        map.put("nro_recibo", l_nro_recibo);
+        map.put("descripcion", l_descripcion);
+
+        JSONObject jobject = new JSONObject(map);
+
+        // Depurando objeto Json...
+        Log.d(TAG, jobject.toString());
+
+        StringBuilder encodedParams = new StringBuilder();
+        try {
+            for (Map.Entry<String, String> entry : map.entrySet()) {
+                encodedParams.append(URLEncoder.encode(entry.getKey(), "utf-8"));
+                encodedParams.append('=');
+                encodedParams.append(URLEncoder.encode(entry.getValue(), "utf-8")).toString();
+                encodedParams.append('&');
+            }
+        } catch (UnsupportedEncodingException uee) {
+            throw new RuntimeException("Encoding not supported: " + "utf-8", uee);
+        }
+
+        encodedParams.setLength(Math.max(encodedParams.length() - 1, 0));
+
+
+        String newURL = Constantes.AGREGAR_CTA_CTE_MOVIL + "?" + encodedParams;
+        Log.d(TAG,newURL);
+        // Actualizar datos en el servidor
+        VolleySingleton.getInstance(context).addToRequestQueue(
+                new JsonObjectRequest(
+                        Request.Method.POST,
+                        newURL,
+                        null,
+                        new Response.Listener<JSONObject>() {
+                            @Override
+                            public void onResponse(JSONObject response) {
+                                procesarRespuestacta_cte(response, context);
+                            }
+                        },
+                        new Response.ErrorListener() {
+                            @Override
+                            public void onErrorResponse(VolleyError error) {
+                                Log.d(TAG, "Error cta cte: " + error.getMessage());
+
+                            }
+                        }
+
+                ) {
+                    @Override
+                    public Map<String, String> getHeaders() {
+                        Map<String, String> headers = new TreeMap<>();
+                        headers.put("Content-Type", "application/json; charset=utf-8");
+                        return headers;
+                    }
+
+                    @Override
+                    public String getBodyContentType() {
+                        return "application/json; charset=utf-8" + getParamsEncoding();
+                    }
+                }
+        );
+    }
+    private void procesarRespuestacta_cte(JSONObject response, Context context) {
+
+        try {
+            // Obtener estado
+            String estado = response.getString("estado");
+            // Obtener mensaje
+            String mensaje = response.getString("mensaje");
+
+            switch (estado) {
+                case "1":
+                    actualizar_turno(context);
+                    break;
+                case "2":
+                    // Mostrar mensaje
+                    Toast.makeText(
+                            context,
+                            mensaje,
+                            Toast.LENGTH_LONG).show();
+                    // Enviar código de falla
+                    break;
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+
+
     private void actualizar_turno(final Context context){
 
 
-        HashMap<String, String> map = new HashMap<>();// Mapeo previo
+        TreeMap<String, String> map = new TreeMap<>();// Mapeo previo
 
         map.put("id", id_turno);
         map.put("distancia", distancia);
@@ -1995,7 +2466,7 @@ public class fragment_viaje_iniciado extends Fragment {
                 ) {
                     @Override
                     public Map<String, String> getHeaders() {
-                        Map<String, String> headers = new HashMap<>();
+                        Map<String, String> headers = new TreeMap<>();
                         headers.put("Content-Type", "application/json; charset=utf-8");
                         return headers;
                     }
@@ -2063,7 +2534,7 @@ public class fragment_viaje_iniciado extends Fragment {
                 ) {
                     @Override
                     public Map<String, String> getHeaders() {
-                        Map<String, String> headers = new HashMap<>();
+                        Map<String, String> headers = new TreeMap<>();
                         headers.put("Content-Type", "application/json; charset=utf-8");
                         return headers;
                     }
@@ -2265,8 +2736,8 @@ public class fragment_viaje_iniciado extends Fragment {
                     longitud_salida = "0";
                     latitud_salida = "0";
                 }
-            } }
-        catch (IOException e)
+            }
+        } catch (IOException e)
         {
             e.printStackTrace();
         }
@@ -2328,7 +2799,7 @@ public class fragment_viaje_iniciado extends Fragment {
             e.printStackTrace();
         }
 
-        HashMap<String, String> map = new HashMap<>();// Mapeo previo
+        TreeMap<String, String> map = new TreeMap<>();// Mapeo previo
 
         map.put("id", l_id_viaje);
         map.put("distancia", distancia);
@@ -2384,7 +2855,7 @@ public class fragment_viaje_iniciado extends Fragment {
                 ) {
                     @Override
                     public Map<String, String> getHeaders() {
-                        Map<String, String> headers = new HashMap<>();
+                        Map<String, String> headers = new TreeMap<>();
                         headers.put("Content-Type", "application/json; charset=utf-8");
                         return headers;
                     }
@@ -2423,102 +2894,6 @@ public class fragment_viaje_iniciado extends Fragment {
             e.printStackTrace();
         }
     }
-
-    public void cargarParametroTolerancia(final Context context) {
-
-        HashMap<String, String> map = new HashMap<>();// Mapeo previo
-
-        map.put("remiseria", ls_remiseria);
-
-        JSONObject jobject = new JSONObject(map);
-
-
-        // Depurando objeto Json...
-        Log.d(TAG, jobject.toString());
-
-        StringBuilder encodedParams = new StringBuilder();
-        try {
-            for (Map.Entry<String, String> entry : map.entrySet()) {
-                encodedParams.append(URLEncoder.encode(entry.getKey(), "utf-8"));
-                encodedParams.append('=');
-                encodedParams.append(URLEncoder.encode(entry.getValue(), "utf-8"));
-                encodedParams.append('&');
-            }
-        } catch (UnsupportedEncodingException uee) {
-            throw new RuntimeException("Encoding not supported: " + "utf-8", uee);
-        }
-
-        encodedParams.setLength(Math.max(encodedParams.length() - 1, 0));
-
-        // Añadir parámetro a la URL del web service
-        String newURL = Constantes.GET_TOLERANCIA + "?" + encodedParams;
-        Log.d(TAG,newURL);
-
-        // Realizar petición GET_BY_ID
-        VolleySingleton.getInstance(context).addToRequestQueue(
-                myRequest = new JsonObjectRequest(
-                        Request.Method.POST,
-                        newURL,
-                        null,
-                        new Response.Listener<JSONObject>() {
-
-                            @Override
-                            public void onResponse(JSONObject response) {
-                                // Procesar respuesta Json
-                                procesarRespuestaParametroTolerancia(response, context);
-                            }
-                        },
-                        new Response.ErrorListener() {
-                            @Override
-                            public void onErrorResponse(VolleyError error) {
-                                Log.d(TAG, "Error Volley viaje: " + error.getMessage());
-
-                            }
-                        }
-                )
-        );
-        myRequest.setRetryPolicy(new DefaultRetryPolicy(
-                50000,
-                5,//DefaultRetryPolicy.DEFAULT_MAX_RETRIES
-                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
-
-    }
-
-    private void procesarRespuestaParametroTolerancia(JSONObject response, Context context) {
-
-        try {
-            // Obtener atributo "mensaje"
-            String mensaje = response.getString("estado");
-
-            switch (mensaje) {
-                case "1":
-                    JSONArray datos_parametro = response.getJSONArray("remiseria");
-                    Long l_tolerancia_tope = 0L;
-                    for(int i = 0; i < datos_parametro.length(); i++)
-                    {JSONObject object = datos_parametro.getJSONObject(i);
-
-                        l_tolerancia_tope = Long.parseLong(object.getString("tiempo_tolerancia")) * 60000;
-
-                    }
-
-                    SharedPreferences settings1 = PreferenceManager.getDefaultSharedPreferences(context);
-
-                    SharedPreferences.Editor editor = settings1.edit();
-
-                    editor.putLong("tolerancia_tope",l_tolerancia_tope);
-
-                    editor.apply();
-
-                    break;
-
-            }
-
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-
-    }
-
 
 
     private Boolean verificar_internet(){
@@ -2562,7 +2937,7 @@ public class fragment_viaje_iniciado extends Fragment {
                 ) {
                     @Override
                     public Map<String, String> getHeaders() {
-                        Map<String, String> headers = new HashMap<>();
+                        Map<String, String> headers = new TreeMap<>();
                         headers.put("Content-Type", "application/json; charset=utf-8");
                         return headers;
                     }
@@ -2672,7 +3047,7 @@ public class fragment_viaje_iniciado extends Fragment {
 
     private void borrar_parada(final Context context){
 
-        HashMap<String, String> map = new HashMap<>();// Mapeo previo
+        TreeMap<String, String> map = new TreeMap<>();// Mapeo previo
         String l_parada = "0";
 
         map.put("parada", l_parada);
@@ -2726,7 +3101,7 @@ public class fragment_viaje_iniciado extends Fragment {
                 ) {
                     @Override
                     public Map<String, String> getHeaders() {
-                        Map<String, String> headers = new HashMap<>();
+                        Map<String, String> headers = new TreeMap<>();
                         headers.put("Content-Type", "application/json; charset=utf-8");
                         return headers;
                     }
@@ -3136,7 +3511,7 @@ public class fragment_viaje_iniciado extends Fragment {
             cell.setHorizontalAlignment(PdfPCell.ALIGN_LEFT);
             tabla_enc.addCell(cell);
 
-            cell = new PdfPCell(new Phrase("Tel. Remisería: " + telefono_remiseria,font));
+            cell = new PdfPCell(new Phrase("Tel. Empresa: " + telefono_remiseria,font));
             cell.setBorder(Rectangle.NO_BORDER);
             cell.setHorizontalAlignment(PdfPCell.ALIGN_LEFT);
             tabla_enc.addCell(cell);

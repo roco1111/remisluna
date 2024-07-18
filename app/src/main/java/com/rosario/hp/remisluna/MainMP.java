@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.content.res.ColorStateList;
 import android.graphics.Bitmap;
 import android.media.MediaPlayer;
 import android.os.Build;
@@ -22,6 +23,7 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
+import androidx.core.content.res.ResourcesCompat;
 import androidx.fragment.app.Fragment;
 
 import com.android.volley.Request;
@@ -66,6 +68,7 @@ public class MainMP extends AppCompatActivity {
     private Button btn_menu;
     private Button btn_efectivo;
     private Activity act;
+    private String tipo_empresa;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -85,6 +88,40 @@ public class MainMP extends AppCompatActivity {
         SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
         ls_remiseria = settings.getString("remiseria", "");
         l_id_viaje = settings.getString("id_viaje","");
+        tipo_empresa = settings.getString("tipo_empresa", "");
+
+        switch (tipo_empresa) {
+            case "1":
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                    btn_menu.setBackgroundTintList(ColorStateList.valueOf(ResourcesCompat.getColor(act.getResources(),
+                            R.color.colorPrimary, act.getTheme())));
+                }
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                    btn_efectivo.setBackgroundTintList(ColorStateList.valueOf(ResourcesCompat.getColor(act.getResources(),
+                            R.color.colorPrimary, act.getTheme())));
+                }
+                break;
+            case "2":
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                    btn_menu.setBackgroundTintList(ColorStateList.valueOf(ResourcesCompat.getColor(act.getResources(),
+                            R.color.colorMoto, act.getTheme())));
+                }
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                    btn_efectivo.setBackgroundTintList(ColorStateList.valueOf(ResourcesCompat.getColor(act.getResources(),
+                            R.color.colorMoto, act.getTheme())));
+                }
+                break;
+            case "3":
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                    btn_menu.setBackgroundTintList(ColorStateList.valueOf(ResourcesCompat.getColor(act.getResources(),
+                            R.color.colorTaxi, act.getTheme())));
+                }
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                    btn_efectivo.setBackgroundTintList(ColorStateList.valueOf(ResourcesCompat.getColor(act.getResources(),
+                            R.color.colorTaxi, act.getTheme())));
+                }
+                break;
+        }
 
         mAuth = FirebaseAuth.getInstance();
         mAuthListener = new FirebaseAuth.AuthStateListener() {
