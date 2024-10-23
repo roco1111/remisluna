@@ -1,5 +1,6 @@
 package com.rosario.hp.remisluna.Fragment;
 
+import static androidx.core.app.ActivityCompat.finishAffinity;
 import static com.facebook.FacebookSdk.getApplicationContext;
 
 import android.Manifest;
@@ -48,24 +49,12 @@ import com.google.android.gms.vision.barcode.BarcodeDetector;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
-import java.util.Objects;
-
-import com.google.android.material.snackbar.Snackbar;
-import com.rosario.hp.remisluna.Entidades.conductor_titular;
-import com.rosario.hp.remisluna.Entidades.solicitante;
 import com.rosario.hp.remisluna.MainActivity;
-import com.rosario.hp.remisluna.MainMP;
-import com.rosario.hp.remisluna.MainQR;
-import com.rosario.hp.remisluna.MainViaje;
 import com.rosario.hp.remisluna.R;
-import com.rosario.hp.remisluna.empresas_activity;
+
 import com.rosario.hp.remisluna.include.Constantes;
 import com.rosario.hp.remisluna.include.VolleySingleton;
 
@@ -112,6 +101,8 @@ public class fragment_qr extends Fragment implements SurfaceHolder.Callback{
 
     private String l_id_viaje;
 
+    private String link;
+
 
     @Override
     public void onPause(){
@@ -152,6 +143,7 @@ public class fragment_qr extends Fragment implements SurfaceHolder.Callback{
         l_id_viaje = settings.getString("id_viaje","");
         l_nocturno = settings.getString("nocturno","");
         ls_remiseria = settings.getString("remiseria","");
+        link = settings.getString("link","");
 
         if (camera == null) {
 
@@ -737,9 +729,15 @@ public class fragment_qr extends Fragment implements SurfaceHolder.Callback{
                             .setCancelable(false)
                             .setPositiveButton("Aceptar",new DialogInterface.OnClickListener() {
                                 public void onClick(DialogInterface dialog,int id) {
-                                    Intent intent2 = new Intent(context, MainActivity.class);
-                                    intent2.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                                    context.startActivity(intent2);
+
+                                    if (link.equals("0"))
+                                    {
+                                        Intent intent2 = new Intent(context, MainActivity.class);
+                                        intent2.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                                        context.startActivity(intent2);
+                                    }else{
+                                        salir();
+                                    }
                                 }
                             }).create().show();
 
@@ -759,6 +757,12 @@ public class fragment_qr extends Fragment implements SurfaceHolder.Callback{
         } catch (JSONException e) {
             e.printStackTrace();
         }
+    }
+
+    public void salir(){
+        act.finish();
+        finishAffinity(act);
+        System.exit(0);
     }
 
     public void cargarTarifa_remiseria(final Context context, final String ls_id_solicitante) {
@@ -1180,9 +1184,16 @@ public class fragment_qr extends Fragment implements SurfaceHolder.Callback{
                             "Viaje Actualizado Correctamente",
                             Toast.LENGTH_LONG).show();
                     act.finish();
-                    Intent intent2 = new Intent(context, MainActivity.class);
-                    intent2.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                    context.startActivity(intent2);
+                    if (link.equals("0"))
+                    {
+                        Intent intent2 = new Intent(context, MainActivity.class);
+                        intent2.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                        context.startActivity(intent2);
+                    }else{
+
+                        finishAffinity(act);
+                        System.exit(0);
+                    }
 
 
                     break;

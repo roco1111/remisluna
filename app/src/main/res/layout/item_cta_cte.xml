@@ -54,7 +54,7 @@
             android:layout_height="wrap_content"
 
             android:layout_marginTop="@dimen/margin_top_texto"
-            android:layout_marginStart="2dp"
+            android:layout_marginStart="5dp"
             android:layout_toEndOf="@id/tipo_cta_cte"
             android:orientation="horizontal">
 

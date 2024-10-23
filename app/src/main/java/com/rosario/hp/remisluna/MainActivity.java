@@ -18,6 +18,7 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.location.LocationProvider;
+import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.provider.Settings;
@@ -126,8 +127,13 @@ public class MainActivity extends AppCompatActivity {
                  .commit();
 
 
+
+
+
          CargarServicioHabilitado(context);
-    }
+     }
+
+
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -286,6 +292,7 @@ public class MainActivity extends AppCompatActivity {
         try {
             // Obtener atributo "mensaje"
             String mensaje = response.getString("estado");
+            Bundle extras = getIntent().getExtras();
             switch (mensaje) {
                 case "1":
                     JSONArray mensaje1 = response.getJSONArray("conductor");
@@ -313,11 +320,17 @@ public class MainActivity extends AppCompatActivity {
                     editor.putString("telefono_base",object.getString("telefono_base"));
                     editor.apply();
 
+
+
+
                     cargarViajes(context);
 
                     break;
                 case"2":
+
+
                     cargarDaIdVehiculo(context);
+
                     break;
 
 
@@ -337,7 +350,6 @@ public class MainActivity extends AppCompatActivity {
         }
 
     }
-
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -616,6 +628,7 @@ public class MainActivity extends AppCompatActivity {
 
                     editor.putString("telefono_remiseria",ls_telefono);
                     editor.putString("automatico", "0");
+                    editor.putString("link", "0");
 
                     String ls_tipo_empresa = object.getString("tipo");
 
@@ -933,11 +946,18 @@ public class MainActivity extends AppCompatActivity {
 
                     SharedPreferences.Editor editor = settings1.edit();
 
-                    String ls_viaje;
+                    String ls_viaje, id_solicitante;
 
 
 
                     ls_viaje = object.getString("id");
+                    id_solicitante = object.getString("id_solicitante");
+
+                    if(id_solicitante.equals("1")){
+                        editor.putString("automatico", "1");
+                        editor.putString("link", "0");
+                        editor.putString("estado_viaje","asignado");
+                    }
 
                     editor.putString("id_viaje",ls_viaje);
                     editor.putString("estado_conductor",object.getString("estado_conductor"));

@@ -78,6 +78,7 @@
     <string name="terminar_viaje">Terminar Viaje</string>
     <string name="motivo">Motivo</string>
     <string name="observaciones">Observaciones</string>
+    <string name="salir">Ya fue escaneado</string>
 
     <string name="efectivo">Efectivo</string>
     <string name="sin_qr">Sin QR</string>
@@ -122,7 +123,7 @@
     <string name="reporte_impresora">I: Habilitar Ticket</string>
     <string name="reporte_ticket">Ticket</string>
     <string name="reporte_fin_turno">7: Paradas</string>
-    <string name="reporte_cta_cte">Cta Cte Móvil</string>
+    <string name="reporte_cta_cte">Cta Cte</string>
     <string name="reporte_viajes">Historial Viajes</string>
     <string name="reporte_viaje">9:Refresco Pantalla</string>
     <string name="refresco">Refresco Pantalla</string>
@@ -140,6 +141,7 @@
     <string name="texto_ubicacion">La app Callisto recopila datos de ubicación para poder brindar con exactitud los recorridos de los viajes con el fin de poder tarifar adecuadamente los mismos
  y para que los conductores puedan aceptar los pedidos de viajes mas cercanos.
  Dicho seguimiento lo hacemos incluso cuando la aplicación está cerrada o no está en uso (segundo plano).</string>
+    <string name="asset_statements" translatable="false">[{ \"include\": \"https://callisto.com.ar/.well-known/assetlinks.json\" }]</string>
 
 
 </resources>

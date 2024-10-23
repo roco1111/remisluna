@@ -33,6 +33,7 @@ public class Constantes {
     public static final String ALARMA_VIAJE = "https://" + IP + PUERTO_HOST + "/alarma_viaje.php";
     public static final String INSERTAR_TRAYECTORIA = "https://" + IP + PUERTO_HOST + "/agregar_trayectoria.php";
     public static final String VIAJE_AUTOMATICO = "https://" + IP + PUERTO_HOST + "/agregar_viaje_aut.php";
+    public static final String VIAJE_AUTOMATICO_CURSO = "https://" + IP + PUERTO_HOST + "/agregar_viaje_aut_curso.php";
     public static final String VIAJE_QR= "https://" + IP + PUERTO_HOST + "/actualizar_viaje_qr.php";
     public static final String VIAJE_SIN_QR= "https://" + IP + PUERTO_HOST + "/actualizar_viaje_sin_qr.php";
     public static final String VIAJE_MP= "https://" + IP + PUERTO_HOST + "/actualizar_viaje_mp.php";
@@ -41,8 +42,10 @@ public class Constantes {
     public static final String GET_VEHICULO = "https://" + IP + PUERTO_HOST + "/obtener_vehiculo.php";
     public static final String GET_ID_VEHICULO = "https://" + IP + PUERTO_HOST + "/obtener_id_vehiculo.php";
     public static final String UPDATE_SALDO_VEHICULO = "https://" + IP + PUERTO_HOST + "/actualizar_saldo_vehiculo.php";
+    public static final String UPDATE_SALDO_CONDUCTOR = "https://" + IP + PUERTO_HOST + "/actualizar_saldo_conductor.php";
 
     public static final String AGREGAR_CTA_CTE_MOVIL = "https://" + IP + PUERTO_HOST + "/agregar_cta_cte_movil.php";
+    public static final String AGREGAR_CTA_CTE_CHOFER = "https://" + IP + PUERTO_HOST + "/agregar_cta_cte_chofer.php";
 
     public static final String ALTA_TURNO = "https://" + IP + PUERTO_HOST + "/agregar_turno.php";
     public static final String FIN_TURNO = "https://" + IP + PUERTO_HOST + "/terminar_turno.php";
@@ -83,6 +86,8 @@ public class Constantes {
     public static final String GET_SOLICITANTE = "https://" + IP + PUERTO_HOST + "/obtener_solicitante.php";
 
     public static final String GET_CTA_CTE = "https://" + IP + PUERTO_HOST + "/obtener_cta_cte.php";
+
+    public static final String GET_CTA_CTE_CHOFER = "https://" + IP + PUERTO_HOST + "/obtener_cta_cte_chofer.php";
 
     public static final String VERIFICAR_IMPRESORA = "https://" + IP + PUERTO_HOST + "/verificar_impresora.php";
 

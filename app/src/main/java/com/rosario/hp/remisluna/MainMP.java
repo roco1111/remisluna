@@ -1,5 +1,7 @@
 package com.rosario.hp.remisluna;
 
+import static androidx.core.app.ActivityCompat.finishAffinity;
+
 import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
@@ -69,6 +71,7 @@ public class MainMP extends AppCompatActivity {
     private Button btn_efectivo;
     private Activity act;
     private String tipo_empresa;
+    private String link;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -89,6 +92,7 @@ public class MainMP extends AppCompatActivity {
         ls_remiseria = settings.getString("remiseria", "");
         l_id_viaje = settings.getString("id_viaje","");
         tipo_empresa = settings.getString("tipo_empresa", "");
+        link = settings.getString("link", "");
 
         switch (tipo_empresa) {
             case "1":
@@ -159,10 +163,16 @@ public class MainMP extends AppCompatActivity {
             public void onClick(View v) {
 
                 mediaPlayer.start();
-                Intent intent2 = new Intent(context, MainActivity.class);
-                intent2.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                context.startActivity(intent2);
-                act.finish();
+                if(link.equals("0")) {
+                    Intent intent2 = new Intent(context, MainActivity.class);
+                    intent2.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    context.startActivity(intent2);
+                    act.finish();
+                }else{
+                    act.finish();
+                    finishAffinity();
+                    System.exit(0);
+                }
 
             }
         });
@@ -325,10 +335,16 @@ public class MainMP extends AppCompatActivity {
 
             switch (estado) {
                 case "1":
-                    Intent intent2 = new Intent(context, MainActivity.class);
-                    intent2.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                    context.startActivity(intent2);
-                    act.finish();
+                    if(link.equals("0")) {
+                        Intent intent2 = new Intent(context, MainActivity.class);
+                        intent2.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                        context.startActivity(intent2);
+                        act.finish();
+                    }else{
+                        act.finish();
+                        finishAffinity();
+                        System.exit(0);
+                    }
 
                     break;
                 case "2":

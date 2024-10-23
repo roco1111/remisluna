@@ -11,6 +11,15 @@ public class cta_cte {
     String saldo;
     String descripcion;
     String tipo_saldo;
+    String forma_pago;
+
+    public String getForma_pago() {
+        return forma_pago;
+    }
+
+    public void setForma_pago(String forma_pago) {
+        this.forma_pago = forma_pago;
+    }
 
     public String getId() {
         return id;

@@ -24,7 +24,7 @@
         android:layout_marginBottom="@dimen/margin_top"
         android:background="@drawable/boton"
         android:backgroundTint="@color/colorPrimary"
-        android:text="@string/volver_menu"
+        android:text="@string/salir"
         android:textColor="@color/colorPrimaryText"
         android:textSize="@dimen/tamanio_texto"
         tools:ignore="RtlHardcoded" />

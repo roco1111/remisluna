@@ -46,11 +46,14 @@ public class fragment_cta_cte extends Fragment {
     private ImageView imagen;
     private RecyclerView.LayoutManager lManager;
     private String ls_movil;
+    private String ls_id_conductor;
+    private String tipo_rendicion;
     SwipeRefreshLayout swipeRefreshLayout;
     private ArrayList<cta_cte> datos;
     private Activity act;
     private cta_cteAdapter Cta_CteAdapter;
     private RelativeLayout fragment_main;
+
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -84,7 +87,9 @@ public class fragment_cta_cte extends Fragment {
         lista.setBackgroundColor(getResources().getColor(R.color.black));
 
         SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getContext());
-        ls_movil = settings.getString("id_movil","");;
+        ls_movil = settings.getString("id_movil","");
+        ls_id_conductor = settings.getString("id", "");
+        tipo_rendicion = settings.getString("tipo_rendicion", "0");
 
         swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
@@ -104,7 +109,14 @@ public class fragment_cta_cte extends Fragment {
     public void cargarDatos() {
 
         // Añadir parámetro a la URL del web service
-        String newURL = Constantes.GET_CTA_CTE + "?movil=" + ls_movil;
+
+        String newURL = "";
+
+        if(tipo_rendicion.equals("2")) {
+            newURL = Constantes.GET_CTA_CTE + "?movil=" + ls_movil;
+        }else if(tipo_rendicion.equals("3")) {
+            newURL = Constantes.GET_CTA_CTE_CHOFER + "?chofer=" + ls_id_conductor;
+        }
         Log.d(TAG,newURL);
 
         // Realizar petición GET_BY_ID
@@ -147,8 +159,12 @@ public class fragment_cta_cte extends Fragment {
             switch (estado) {
                 case "1": // EXITO
 
-                    JSONArray mensaje = response.getJSONArray("movil");
-
+                    JSONArray mensaje = null;
+                    if(tipo_rendicion.equals("2")) {
+                        mensaje = response.getJSONArray("movil");
+                    }else if(tipo_rendicion.equals("3")) {
+                        mensaje = response.getJSONArray("chofer");
+                    }
                     datos.clear();
 
                     for(int i = 0; i < mensaje.length(); i++)
@@ -166,7 +182,9 @@ public class fragment_cta_cte extends Fragment {
 
                         cc.setId(id);
 
-                        String descripcion = object.getString("descripcion");
+                        String descripcion = "00000000" + object.getString("nro_recibo");
+
+                        descripcion = descripcion.substring(descripcion.length() - 8, descripcion.length());
 
                         cc.setDescripcion(descripcion);
 
@@ -187,6 +205,10 @@ public class fragment_cta_cte extends Fragment {
                         String saldo = object.getString("saldo");
 
                         cc.setSaldo(saldo);
+
+                        String forma_pago = object.getString("forma_pago");
+
+                        cc.setForma_pago(forma_pago);
 
 
                         datos.add(cc);

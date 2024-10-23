@@ -424,6 +424,7 @@ public class MainViaje extends AppCompatActivity {
                     editor.putLong("tiempo_acumulado",Long.parseLong(object.getString("tiempo_acumulado")));
                     editor.putString("viajes_automaticos_chofer",object.getString("viajes_automaticos"));
                     editor.putString("estado_viaje","en curso");
+                    editor.putString("chofer",object.getString("chofer"));
 
 
                     editor.apply();
@@ -535,6 +536,7 @@ public class MainViaje extends AppCompatActivity {
                     editor.putString("saldo_vehiculo",object.getString("saldo_vehiculo"));
                     editor.putString("chapa",object.getString("chapa"));
                     editor.putString("nro_movil",object.getString("movil"));
+                    editor.putString("chofer",object.getString("chofer"));
 
                     editor.apply();
 

@@ -63,7 +63,6 @@ public class ServicioGeolocalizacion extends Service implements Runnable {
     private double longitud_anterior = 0;
     private double distancia_acumulada = 0;
     private double ficha_acumulada = 0;
-    private double l_tiempo_limpieza = 0;
     private Location currentLocation = null;
     private Thread thread;
     private String ls_id_conductor;
@@ -289,10 +288,10 @@ public class ServicioGeolocalizacion extends Service implements Runnable {
             longitud_inicial = longitud;
 
             //distancia que me distingue si mido tiempo o ficha
-            if(distance > 1 && distance < 28) {//probar con 2.5
-                l_tipo = 1;
+            if(distance > 0.9 && distance < 28) {//probar con 2.5
+                l_tipo = 1;//fichas
             }else{
-                l_tipo = 2;
+                l_tipo = 2;//tiempo
             }
             l_contador++;
             Log.d("DISTANCIA recorrida",String.valueOf(distance));
@@ -316,7 +315,7 @@ public class ServicioGeolocalizacion extends Service implements Runnable {
                 }
 
 
-                l_tiempo_limpieza = 0.00;
+
                 distancia_acumulada = getValor(getTwoDecimals(distancia_acumulada));
                 if (distancia_acumulada >= l_metros_ficha) {
                     tiempo_acumulado = 0L;
@@ -360,7 +359,7 @@ public class ServicioGeolocalizacion extends Service implements Runnable {
                 if(l_diferencia < 0) {
                     l_diferencia = 0L;
                 }
-                l_tiempo_limpieza += l_diferencia;
+
 
                 if(l_contador > 30) {
                     if (l_espera) {

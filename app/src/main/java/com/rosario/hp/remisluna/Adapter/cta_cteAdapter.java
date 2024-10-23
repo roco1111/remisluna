@@ -52,7 +52,7 @@ public class cta_cteAdapter extends RecyclerView.Adapter<cta_cteAdapter.HolderCt
 
         holder.haber.setText("$" + cta_ctes.get(position).getHaber());
 
-        holder.descripcion.setText(cta_ctes.get(position).getDescripcion());
+
 
         holder.fecha.setText(cta_ctes.get(position).getFecha());
 
@@ -63,11 +63,18 @@ public class cta_cteAdapter extends RecyclerView.Adapter<cta_cteAdapter.HolderCt
             holder.haber.setVisibility(View.INVISIBLE);
             holder.debe.setVisibility(View.VISIBLE);
             holder.tipo_cta_cte.setImageDrawable(context.getResources().getDrawable(R.drawable.viaje_cta_cte));
+            holder.descripcion.setText("Ticket Viaje N°: " + cta_ctes.get(position).getDescripcion());
 
         }else{
             holder.haber.setVisibility(View.VISIBLE);
             holder.debe.setVisibility(View.INVISIBLE);
-            holder.tipo_cta_cte.setImageDrawable(context.getResources().getDrawable(R.drawable.prepago));
+            if(cta_ctes.get(position).getForma_pago().equals("4")){
+                holder.tipo_cta_cte.setImageDrawable(context.getResources().getDrawable(R.drawable.reintegro));
+                holder.descripcion.setText("Reintegro N°: " + cta_ctes.get(position).getDescripcion());
+            }else {
+                holder.tipo_cta_cte.setImageDrawable(context.getResources().getDrawable(R.drawable.prepago));
+                holder.descripcion.setText("Prepago N°: " + cta_ctes.get(position).getDescripcion());
+            }
         }
 
         if(cta_ctes.get(position).getTipo_saldo().equals("1")){

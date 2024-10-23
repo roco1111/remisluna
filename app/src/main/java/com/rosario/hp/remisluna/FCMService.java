@@ -48,6 +48,7 @@ public class FCMService extends FirebaseMessagingService {
         SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
         SharedPreferences.Editor editor = settings.edit();
         editor.putString("automatico", "0");
+        editor.putString("link", "0");
         editor.apply();
 
 

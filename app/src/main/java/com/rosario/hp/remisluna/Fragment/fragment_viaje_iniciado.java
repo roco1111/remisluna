@@ -1,5 +1,6 @@
 package com.rosario.hp.remisluna.Fragment;
 
+import static androidx.core.app.ActivityCompat.finishAffinity;
 import static com.rosario.hp.remisluna.include.Utils.stringABytes;
 
 import android.Manifest;
@@ -250,6 +251,7 @@ public class fragment_viaje_iniciado extends Fragment {
     private String saldo_vehiculo;
     private String l_tipo_tarifa = "0";//1 diurno normal, 2 nocturno normal, 3 diurno feriado, 4 nocturno feriado
     private String descuento;
+    private String link;
 
     @Override
     public void onPause() {
@@ -367,12 +369,31 @@ public class fragment_viaje_iniciado extends Fragment {
             public void onClick(View v) {
                 mediaPlayer.start();
 
+
                 l_estado_viaje = "terminado";
                 SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(context);
                 SharedPreferences.Editor editor = settings.edit();
                 editor.putString("estado_viaje","terminado");
                 editor.apply();
-                reiniciar();
+
+
+                mediaPlayer.start();
+
+                if(link.equals("0")){
+                    reiniciar();
+                }else {
+
+                    if (isMyServiceRunning(ServicioGeolocalizacion.class)) {
+                        act.unregisterReceiver(onBroadcast);
+
+                        act.stopService(new Intent(act, ServicioGeolocalizacion.class));
+                        //act.stopService(new Intent(act, ServicioGeolocalizacion_metros.class));
+                        Log.d("Servicio", "Servicio detenido");
+                    }
+                    act.finish();
+                    finishAffinity(act);
+                    System.exit(0);
+                }
 
             }
         });
@@ -574,6 +595,8 @@ public class fragment_viaje_iniciado extends Fragment {
         saldo_vehiculo = settings.getString("saldo_vehiculo","");
         chapa = settings.getString("chapa","");
         nro_movil = settings.getString("nro_movil","");
+        chofer = settings.getString("chofer","");
+        link = settings.getString("link","");
 
         sdf = new SimpleDateFormat("MM/dd/yyyy HH:mm");
         lb_viaje_terminado = false;
@@ -1513,7 +1536,7 @@ public class fragment_viaje_iniciado extends Fragment {
         movil = settings.getString("movil","");
         ls_bajada = importe_bajada;
         precio_bajada = Double.parseDouble(importe_bajada);
-        if(settings.getString("bajada","").equals("null") || settings.getString("bajada","").equals("0.000")) {
+        if(settings.getString("bajada","").equals("null") || settings.getString("bajada","").equals("0.000") || settings.getString("bajada","").equals("0")) {
             precio_total = Double.parseDouble(importe_bajada);
             id_trayecto = 0;
 
@@ -2081,7 +2104,7 @@ public class fragment_viaje_iniciado extends Fragment {
                 total = precio_total - descuento_titular;
                 l_estado_liq_titular = "1";
                 break;
-            case "2":
+            case "2": case "3":
                 String valor_rendicion = "0.00";
                 l_estado_liq_titular = "1";
 
@@ -2199,7 +2222,7 @@ public class fragment_viaje_iniciado extends Fragment {
 
             switch (estado) {
                 case "1":
-                    if(tipo_rendicion.equals("2")){
+                    if(tipo_rendicion.equals("2") || tipo_rendicion.equals("3") ){
                         actualizar_saldo(context);
                     }else {
                         actualizar_turno(context);
@@ -2223,8 +2246,11 @@ public class fragment_viaje_iniciado extends Fragment {
 
 
         TreeMap<String, String> map = new TreeMap<>();// Mapeo previo
-
-        map.put("id", id_vehiculo);
+        if(tipo_rendicion.equals("2")) {
+            map.put("id", id_vehiculo);
+        }else if(tipo_rendicion.equals("3")){
+            map.put("id", ls_id_conductor);
+        }
         map.put("saldo", descuento);
 
         JSONObject jobject = new JSONObject(map);
@@ -2246,8 +2272,13 @@ public class fragment_viaje_iniciado extends Fragment {
 
         encodedParams.setLength(Math.max(encodedParams.length() - 1, 0));
 
+        String newURL = "";
 
-        String newURL = Constantes.UPDATE_SALDO_VEHICULO + "?" + encodedParams;
+        if(tipo_rendicion.equals("2")) {
+            newURL = Constantes.UPDATE_SALDO_VEHICULO + "?" + encodedParams;
+        }else if(tipo_rendicion.equals("3")){
+            newURL = Constantes.UPDATE_SALDO_CONDUCTOR + "?" + encodedParams;
+        }
         Log.d(TAG,newURL);
         // Actualizar datos en el servidor
         VolleySingleton.getInstance(context).addToRequestQueue(
@@ -2315,15 +2346,14 @@ public class fragment_viaje_iniciado extends Fragment {
         String l_descripcion;
 
         l_descripcion = "Ticket N°:" +l_nro_recibo;
-        if(tipo_empresa.equals("3")) {
-            l_descripcion = l_descripcion + " - N° Chapa: " + chapa;
-        }else {
-            l_descripcion = l_descripcion + " - Móvil: " + nro_movil;
-        }
 
         TreeMap<String, String> map = new TreeMap<>();// Mapeo previo
 
-        map.put("movil", id_vehiculo);
+        if(tipo_rendicion.equals("2")) {
+            map.put("movil", id_vehiculo);
+        }else if(tipo_rendicion.equals("3")){
+            map.put("chofer", ls_id_conductor);
+            }
         map.put("importe", descuento);
         map.put("nro_recibo", l_nro_recibo);
         map.put("descripcion", l_descripcion);
@@ -2347,8 +2377,12 @@ public class fragment_viaje_iniciado extends Fragment {
 
         encodedParams.setLength(Math.max(encodedParams.length() - 1, 0));
 
-
-        String newURL = Constantes.AGREGAR_CTA_CTE_MOVIL + "?" + encodedParams;
+        String newURL;
+        if(tipo_rendicion.equals("2")) {
+            newURL = Constantes.AGREGAR_CTA_CTE_MOVIL + "?" + encodedParams;
+        }else{
+            newURL = Constantes.AGREGAR_CTA_CTE_CHOFER + "?" + encodedParams;
+        }
         Log.d(TAG,newURL);
         // Actualizar datos en el servidor
         VolleySingleton.getInstance(context).addToRequestQueue(
@@ -2574,6 +2608,9 @@ public class fragment_viaje_iniciado extends Fragment {
                     ficha_espera.setText(getResources().getString(R.string.cero_pesos));
                     monto_ficha.setText(getResources().getString(R.string.cero_pesos));
                     kms.setText("0");
+                    ficha = 0L;
+                    espera = 0L;
+                    cuadras = 0L;
 
                     editor.apply();
 
@@ -3133,6 +3170,7 @@ public class fragment_viaje_iniciado extends Fragment {
 
                     editor.putString("estado_viaje","asignado");
                     editor.putString("automatico", "1");
+                    editor.putString("link", "0");
                     editor.putLong("tiempo_acumulado",0L);
                     editor.putLong("tiempo_tolerancia",0L);
                     editor.putBoolean("boolean_tolerancia",true);
@@ -3142,6 +3180,9 @@ public class fragment_viaje_iniciado extends Fragment {
                     ficha_espera.setText(getResources().getString(R.string.cero_pesos));
                     monto_ficha.setText(getResources().getString(R.string.cero_pesos));
                     kms.setText("0");
+                    cuadras = 0L;
+                    ficha = 0L;
+                    espera = 0L;
 
                     editor.apply();
 

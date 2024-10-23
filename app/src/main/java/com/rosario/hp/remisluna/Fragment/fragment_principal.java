@@ -412,7 +412,7 @@ public class fragment_principal extends Fragment {
             gps.setTextColor(act.getResources().getColor(R.color.alarma));
         }
 
-        if(tipo_rendicion.equals("2")){
+        if(tipo_rendicion.equals("2") || tipo_rendicion.equals("3")){
             boton_cta_cte.setVisibility(View.VISIBLE);
             text_cta_cte.setVisibility(View.VISIBLE);
         }else{
@@ -645,6 +645,7 @@ public class fragment_principal extends Fragment {
                     }
                     if(l_mensaje_rendicion.equals("")) {
                         viaje_automatico(context);
+                        boton_viaje.setEnabled(false);
                     }else{
                         AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(context);
 
@@ -1099,9 +1100,6 @@ private void procesarParametroTurno( ) {
     );
 
 }
-
-
-
 
 
     public void datos_turno(final Context context) {
@@ -4752,6 +4750,7 @@ private void procesarParametroTurno( ) {
         SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(context);
         SharedPreferences.Editor editor = settings.edit();
         editor.putString("automatico", "1");
+        editor.putString("link", "0");
         editor.putString("estado_viaje","asignado");
         editor.apply();
         Intent intent2 = new Intent(context, MainViaje.class);
