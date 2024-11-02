@@ -138,9 +138,16 @@
     <string name="nocturno">Tar. Nocturna</string>
     <string name="turno_finalizado">SIN TURNO ACTIVO</string>
     <string name="viaje_anulado">Viaje Anulado</string>
+    <string name="bateria">Para optimizar el funcionamiento del GPS debe deshabilitarel modo de ahorro de energía</string>
+    <string name="background">Ahora se solicitará permisos para poder acceder a la localización en segundo plano.
+    Elegir PERMITIR TODO EL TIEMPO</string>
     <string name="texto_ubicacion">La app Callisto recopila datos de ubicación para poder brindar con exactitud los recorridos de los viajes con el fin de poder tarifar adecuadamente los mismos
- y para que los conductores puedan aceptar los pedidos de viajes mas cercanos.
- Dicho seguimiento lo hacemos incluso cuando la aplicación está cerrada o no está en uso (segundo plano).</string>
+ y para que los conductores puedan aceptar los pedidos de viajes más cercanos.
+ Dicho seguimiento lo hacemos incluso cuando la aplicación está cerrada o no está en uso (segundo plano).
+        Para Android 10 y superior los permisos de localización se solicitarán en dos etapas.
+        Primero se solicitará un permiso de localización precisa. Se debe elegir la opción MIENTRAS USA ESTA APP.
+     Luego la app solicitará un permiso especial para poder acceder a la localización en segundo plano.
+    Cuando se accede a PERMISOS DE LOCALIZACIÓN elegir PERMITIR TODO EL TIEMPO.</string>
     <string name="asset_statements" translatable="false">[{ \"include\": \"https://callisto.com.ar/.well-known/assetlinks.json\" }]</string>
 
 

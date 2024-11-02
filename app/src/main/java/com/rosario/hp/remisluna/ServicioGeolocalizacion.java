@@ -95,8 +95,12 @@ public class ServicioGeolocalizacion extends Service implements Runnable {
     @Override
     public void onCreate() {
 
-        notificacion();
         super.onCreate();
+        Log.d("Taxímetro","notificacion");
+
+        notificacion();
+
+
 
         Toast.makeText(this, "Taxímetro iniciado", Toast.LENGTH_SHORT).show();
         Log.d("Taxímetro","Taxímetro iniciado");
@@ -162,7 +166,7 @@ public class ServicioGeolocalizacion extends Service implements Runnable {
         // Toast.makeText(this,"Servicio arrancado "+ idArranque,Toast.LENGTH_SHORT).show();
         //notificacion();
         obtenerSenalGPS();
-        Log.d("geolicalizacion","gps");
+        Log.d("geolocalizacion","gps");
         return START_STICKY;
     }
 
@@ -179,7 +183,7 @@ public class ServicioGeolocalizacion extends Service implements Runnable {
 
            Notification.Builder builder = new Notification.Builder(this, NOTIFICATION_CHANNEL_ID)
                    .setContentTitle("Callisto")
-                   .setContentText("Taxímetro iniciado")
+                   .setContentText("Servicio iniciado")
                    .setColor(getResources().getColor(R.color.black))
                    .setSmallIcon(R.drawable.icono_toolbar);
 
@@ -194,7 +198,7 @@ public class ServicioGeolocalizacion extends Service implements Runnable {
 
            NotificationCompat.Builder builder = new NotificationCompat.Builder(this)
                    .setContentTitle(getString(R.string.app_name))
-                   .setContentText("Taxímetro iniciado")
+                   .setContentText("Servicio iniciado")
                    .setPriority(NotificationCompat.PRIORITY_DEFAULT)
                    .setAutoCancel(true);
 
@@ -212,7 +216,7 @@ public class ServicioGeolocalizacion extends Service implements Runnable {
      * Metodo para Obtener la se–al del GPS
      */
     private void obtenerSenalGPS() {
-
+        Log.d("gps","tread");
         thread = new Thread(this);
         thread.start();
     }
@@ -276,6 +280,7 @@ public class ServicioGeolocalizacion extends Service implements Runnable {
         if(currentLocation == null){
             Log.d("update location","nulo");
         }
+
         if (currentLocation != null && latitud_inicial != 0) {
             double latitud = Double.parseDouble(currentLocation.getLatitude() + "");
             double longitud = Double.parseDouble(currentLocation.getLongitude() + "");
@@ -288,13 +293,15 @@ public class ServicioGeolocalizacion extends Service implements Runnable {
             longitud_inicial = longitud;
 
             //distancia que me distingue si mido tiempo o ficha
-            if(distance > 0.9 && distance < 28) {//probar con 2.5
+            if(distance > 2.2 && distance < 28) {//probar con 2.5
+
                 l_tipo = 1;//fichas
             }else{
                 l_tipo = 2;//tiempo
             }
             l_contador++;
             Log.d("DISTANCIA recorrida",String.valueOf(distance));
+            Log.d("contador",String.valueOf(l_contador));
 
             if(l_tipo == 1) {//fichas
                 Log.d("Tipo","FICHA");
@@ -480,12 +487,13 @@ public class ServicioGeolocalizacion extends Service implements Runnable {
                 return;
             }
             Looper.prepare();
-
+            /*
             if(Build.VERSION.SDK_INT > Build.VERSION_CODES.O) {
                 mLocationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 1000, MIN_CAMBIO_DISTANCIA_PARA_UPDATES, mLocationListener);
             }
-
+            */
             mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000, MIN_CAMBIO_DISTANCIA_PARA_UPDATES, mLocationListener);
+
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
                 mLocationManager.requestFlush(LocationManager.GPS_PROVIDER, mLocationListener, 1);
             }
@@ -518,7 +526,7 @@ public class ServicioGeolocalizacion extends Service implements Runnable {
     private class MyLocationListener implements LocationListener {
 
         public void onLocationChanged(Location loc) {
-            loc.setAccuracy(150);
+            loc.setAccuracy(1);
             Log.d("accuracy",loc.getAccuracy()+"");
             if (loc != null) {
                 setCurrentLocation(loc);

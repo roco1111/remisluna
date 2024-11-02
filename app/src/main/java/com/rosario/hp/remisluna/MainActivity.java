@@ -8,7 +8,10 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 
 import android.Manifest;
+import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -19,7 +22,11 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.location.LocationProvider;
 import android.net.Uri;
+import android.os.BatteryManager;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
+import android.os.PowerManager;
 import android.preference.PreferenceManager;
 import android.provider.Settings;
 import android.util.Log;
@@ -34,10 +41,12 @@ import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.error.VolleyError;
+import com.android.volley.misc.AsyncTask;
 import com.android.volley.request.JsonObjectRequest;
 import com.rosario.hp.remisluna.Entidades.ayuda;
 import com.rosario.hp.remisluna.Fragment.fragment_principal;
 import com.rosario.hp.remisluna.Fragment.fragment_vacia;
+import com.rosario.hp.remisluna.Fragment.fragment_viaje_iniciado;
 import com.rosario.hp.remisluna.include.Constantes;
 import com.rosario.hp.remisluna.include.VolleySingleton;
 
@@ -71,6 +80,9 @@ public class MainActivity extends AppCompatActivity {
     private static FragmentManager fragmentManager;
     private String ls_remiseria;
     private Context context;
+    private Activity act;
+    private Iniciar_servicio_tiempo Iniciar_servicio_tiempo;
+
 
     @Override
     public void onStart() {
@@ -108,6 +120,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         context = getApplicationContext();
+         act = MainActivity.this;
         setContentView(R.layout.activity_main_basica);
         getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         ayudas = new ArrayList<>();
@@ -126,13 +139,60 @@ public class MainActivity extends AppCompatActivity {
                  .replace(R.id.main_content, fragment)
                  .commit();
 
+         checkBatterySaverMode(context);
 
-
-
-
-         CargarServicioHabilitado(context);
      }
 
+    public void checkBatterySaverMode(Context context) {
+        PowerManager powerManager = (PowerManager) act.getSystemService(Context.POWER_SERVICE);
+        if (powerManager != null) {
+            boolean isPowerSaveMode = powerManager.isPowerSaveMode();
+            if (isPowerSaveMode) {
+                String l_mensaje = getString(R.string.bateria);
+                new AlertDialog.Builder(this)
+                        .setTitle("IMPORTANTE!!")
+                        .setMessage(l_mensaje)
+                        .setPositiveButton("Aceptar", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                getBatteryInfo();
+
+                            }
+                        })
+
+                        .create().show();
+            } else {
+                CargarServicioHabilitado(context);
+            }
+        }
+    }
+
+    private void getBatteryInfo() {
+        BatteryManager batteryManager = (BatteryManager) getSystemService(Context.BATTERY_SERVICE);
+        if (batteryManager != null) {
+            Intent intent = new Intent();
+            intent.setAction(Settings.ACTION_BATTERY_SAVER_SETTINGS);
+            startActivity(intent);
+            Iniciar_servicio_tiempo = new Iniciar_servicio_tiempo();
+            Iniciar_servicio_tiempo.execute();
+        }
+    }
+
+    private class Iniciar_servicio_tiempo extends AsyncTask<Void, Integer, Integer> {
+        protected Integer doInBackground(Void... params ) {
+            CargarServicioHabilitado(context);
+            return 0;
+        }
+
+        protected void onProgressUpdate(Integer... progress) {
+
+        }
+
+        protected void onPostExecute(Long result) {
+
+
+        }
+        }
 
 
     @Override
@@ -196,8 +256,8 @@ public class MainActivity extends AppCompatActivity {
                 )
         );
         myRequest.setRetryPolicy(new DefaultRetryPolicy(
-                50000,
-                5,//DefaultRetryPolicy.DEFAULT_MAX_RETRIES
+                2500,
+                3,//DefaultRetryPolicy.DEFAULT_MAX_RETRIES
                 DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
 
     }
@@ -281,8 +341,8 @@ public class MainActivity extends AppCompatActivity {
                 )
         );
         myRequest.setRetryPolicy(new DefaultRetryPolicy(
-                50000,
-                5,//DefaultRetryPolicy.DEFAULT_MAX_RETRIES
+                2500,
+                3,//DefaultRetryPolicy.DEFAULT_MAX_RETRIES
                 DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
 
     }
@@ -399,8 +459,8 @@ public class MainActivity extends AppCompatActivity {
                 )
         );
         myRequest.setRetryPolicy(new DefaultRetryPolicy(
-                50000,
-                5,//DefaultRetryPolicy.DEFAULT_MAX_RETRIES
+                2500,
+                3,//DefaultRetryPolicy.DEFAULT_MAX_RETRIES
                 DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
 
     }
@@ -498,8 +558,8 @@ public class MainActivity extends AppCompatActivity {
                 )
         );
         myRequest.setRetryPolicy(new DefaultRetryPolicy(
-                50000,
-                5,//DefaultRetryPolicy.DEFAULT_MAX_RETRIES
+                2500,
+                3,//DefaultRetryPolicy.DEFAULT_MAX_RETRIES
                 DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
 
     }
@@ -591,8 +651,8 @@ public class MainActivity extends AppCompatActivity {
                 )
         );
         myRequest.setRetryPolicy(new DefaultRetryPolicy(
-                50000,
-                5,//DefaultRetryPolicy.DEFAULT_MAX_RETRIES
+                2500,
+                3,//DefaultRetryPolicy.DEFAULT_MAX_RETRIES
                 DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
 
     }
@@ -637,6 +697,7 @@ public class MainActivity extends AppCompatActivity {
 
                     habilitar_gps();
 
+
                     break;
             }
 
@@ -647,7 +708,10 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+
+
     private void habilitar_gps(){
+
         LocationManager mlocManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
 
         final boolean gpsEnabled = mlocManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
@@ -655,49 +719,127 @@ public class MainActivity extends AppCompatActivity {
             Intent settingsIntent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
             startActivity(settingsIntent);
         }
-        if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.N) {
-            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION,}, 1000);
-                return;
+
+        Handler handler = new Handler(Looper.getMainLooper());
+        handler.post(
+                new Runnable() {
+                    @Override
+                    public void run() {
+                        checkPermission();
+
+                    }
+                }
+        );
+
+    }
+
+
+    private void checkPermission() {
+        if (ActivityCompat.checkSelfPermission(MainActivity.this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            // Fine Location permission is granted
+            // Check if current android version >= 11, if >= 11 check for Background Location permission
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
+                if (ActivityCompat.checkSelfPermission(MainActivity.this, Manifest.permission.ACCESS_BACKGROUND_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+                    // Background Location Permission is granted so do your work here
+                } else {
+                    // Ask for Background Location Permission
+                    askPermissionForBackgroundUsage();
+                }
             }
-            locationStart();
-        }else{
-            locationPermissionRequest.launch(new String[] {
-                    Manifest.permission.ACCESS_FINE_LOCATION,
-                    Manifest.permission.ACCESS_COARSE_LOCATION
-            });
+        } else {
+            // Fine Location Permission is not granted so ask for permission
+            askForLocationPermission();
         }
+    }
+
+    private void askForLocationPermission() {
+
+        String l_mensaje = getString(R.string.texto_ubicacion);
+
+        new AlertDialog.Builder(this)
+                .setTitle("IMPORTANTE!!")
+                .setMessage(l_mensaje)
+                .setPositiveButton("Aceptar", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        ActivityCompat.requestPermissions(MainActivity.this,
+                                new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1000);
+                        askPermissionForBackgroundUsage();
+                    }
+                })
+                .create().show();
 
 
     }
 
+    private void askPermissionForBackgroundUsage() {
+        String l_mensaje = getString(R.string.background);
+
+        new AlertDialog.Builder(this)
+                .setTitle("IMPORTANTE!!")
+                .setMessage(l_mensaje)
+                .setPositiveButton("Aceptar", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        ActivityCompat.requestPermissions(MainActivity.this,
+                                new String[]{Manifest.permission.ACCESS_BACKGROUND_LOCATION}, 1000);
+
+                    }
+                })
+
+                .create().show();
+    }
+
+
     ActivityResultLauncher<String[]> locationPermissionRequest =
             registerForActivityResult(new ActivityResultContracts
                             .RequestMultiplePermissions(), result -> {
-                Boolean fineLocationGranted = null;
-                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
-                    fineLocationGranted = result.getOrDefault(
-                            Manifest.permission.ACCESS_FINE_LOCATION, false);
-                }
-                Boolean coarseLocationGranted = null;
-                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
-                    coarseLocationGranted = result.getOrDefault(
-                                    Manifest.permission.ACCESS_COARSE_LOCATION,false);
-                }
-                String l_mensaje;
-                if (fineLocationGranted != null && fineLocationGranted) {
+
+                        Boolean fineLocationGranted = null;
+                        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
+                            fineLocationGranted = result.getOrDefault(
+                                    Manifest.permission.ACCESS_FINE_LOCATION, false);
+                        }
+                        Boolean coarseLocationGranted = null;
+                        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
+                            coarseLocationGranted = result.getOrDefault(
+                                    Manifest.permission.ACCESS_COARSE_LOCATION, false);
+                        }
+                        Boolean backLocationGranted = null;
+                        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
+                            backLocationGranted = result.getOrDefault(
+                                    Manifest.permission.ACCESS_BACKGROUND_LOCATION, false);
+                        }
+                        String l_mensaje;
+                        if (fineLocationGranted != null && fineLocationGranted) {
                             locationStart();
-                            l_mensaje = "Permiso Localización precisa activado";
+                            l_mensaje = "Permiso Localización Precisa Activado";
                         } else if (coarseLocationGranted != null && coarseLocationGranted) {
                             locationStart();
-                    l_mensaje = "Permiso Localización no precisa activado";
+                            l_mensaje = "Permiso Localización no precisa activado";
                         } else {
-                    l_mensaje = "Sin Permiso Localización";
+                            l_mensaje = "Sin Permiso Localización";
                         }
-                Toast.makeText(
-                        getApplicationContext(),
-                        l_mensaje,
-                        Toast.LENGTH_LONG).show();
+                        Toast.makeText(
+                                getApplicationContext(),
+                                l_mensaje,
+                                Toast.LENGTH_LONG).show();
+                        if (backLocationGranted != null && backLocationGranted){
+                            Toast.makeText(
+                                    getApplicationContext(),
+                                    "Permiso Localización en segundo plano activado",
+                                    Toast.LENGTH_LONG).show();
+                            int li_mode;
+                            try {
+                                li_mode = Settings.Secure.getInt(act.getContentResolver(), Settings.Secure.LOCATION_MODE);
+                            } catch (Settings.SettingNotFoundException e) {
+                                throw new RuntimeException(e);
+                            }
+                            if(li_mode == 3) {
+                                startActivity(new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS));
+                            }
+                        }
+
                     }
             );
 
@@ -922,8 +1064,8 @@ public class MainActivity extends AppCompatActivity {
                 )
         );
         myRequest.setRetryPolicy(new DefaultRetryPolicy(
-                50000,
-                5,//DefaultRetryPolicy.DEFAULT_MAX_RETRIES
+                2500,
+                3,//DefaultRetryPolicy.DEFAULT_MAX_RETRIES
                 DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
 
     }

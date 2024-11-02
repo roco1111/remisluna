@@ -26,6 +26,8 @@ import android.view.MenuItem;
 import android.view.WindowManager;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.Fragment;
@@ -151,18 +153,41 @@ public class MainViaje extends AppCompatActivity {
             Intent settingsIntent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
             startActivity(settingsIntent);
         }
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION,}, 1000);
-            return;
-        }
+
+        permiso_back();
     }
+
+
 
     private void permiso_back(){
-        if (ActivityCompat.checkSelfPermission(act, Manifest.permission.ACCESS_BACKGROUND_LOCATION) != PackageManager.PERMISSION_GRANTED ) {
-            ActivityCompat.requestPermissions(act, new String[]{Manifest.permission.ACCESS_BACKGROUND_LOCATION,}, 1000);
+
+        if (android.os.Build.VERSION.SDK_INT > android.os.Build.VERSION_CODES.N) {
+
+
+            if (ActivityCompat.checkSelfPermission(act, Manifest.permission.ACCESS_BACKGROUND_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(act, new String[]{Manifest.permission.ACCESS_BACKGROUND_LOCATION,}, 1000);
+            }
         }
     }
 
+    ActivityResultLauncher<String[]> locationPermissionRequest =
+            registerForActivityResult(new ActivityResultContracts
+                    .RequestMultiplePermissions(), result -> {
+                        Boolean backLocationGranted = null;
+                        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
+                            backLocationGranted = result.getOrDefault(
+                                    Manifest.permission.ACCESS_BACKGROUND_LOCATION, false);
+                        }
+
+                        if (backLocationGranted != null) {
+                            Toast.makeText(
+                                    getApplicationContext(),
+                                    "Permiso background otorgado",
+                                    Toast.LENGTH_LONG).show();
+                        }
+
+                    }
+            );
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -231,7 +256,7 @@ public class MainViaje extends AppCompatActivity {
                 )
         );
         myRequest.setRetryPolicy(new DefaultRetryPolicy(
-                50000,
+                15000,
                 5,//DefaultRetryPolicy.DEFAULT_MAX_RETRIES
                 DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
 
@@ -279,8 +304,8 @@ public class MainViaje extends AppCompatActivity {
                 )
         );
         myRequest.setRetryPolicy(new DefaultRetryPolicy(
-                50000,
-                5,//DefaultRetryPolicy.DEFAULT_MAX_RETRIES
+                2500,
+                3,//DefaultRetryPolicy.DEFAULT_MAX_RETRIES
                 DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
 
     }
@@ -369,8 +394,8 @@ public class MainViaje extends AppCompatActivity {
                 )
         );
         myRequest.setRetryPolicy(new DefaultRetryPolicy(
-                50000,
-                5,//DefaultRetryPolicy.DEFAULT_MAX_RETRIES
+                2500,
+                3,//DefaultRetryPolicy.DEFAULT_MAX_RETRIES
                 DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
 
     }
@@ -482,8 +507,8 @@ public class MainViaje extends AppCompatActivity {
                 )
         );
         myRequest.setRetryPolicy(new DefaultRetryPolicy(
-                50000,
-                5,//DefaultRetryPolicy.DEFAULT_MAX_RETRIES
+                2500,
+                3,//DefaultRetryPolicy.DEFAULT_MAX_RETRIES
                 DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
 
     }
@@ -548,7 +573,7 @@ public class MainViaje extends AppCompatActivity {
                             .replace(R.id.main_content, fragment)
                             .commit();
 
-                    habilitar_gps();
+                    //habilitar_gps();
                     break;
 
                 case "2":

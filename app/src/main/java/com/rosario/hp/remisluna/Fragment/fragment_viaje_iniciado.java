@@ -62,6 +62,8 @@ import com.android.volley.Response;
 import com.android.volley.error.VolleyError;
 import com.android.volley.misc.AsyncTask;
 import com.android.volley.request.JsonObjectRequest;
+import com.google.auth.oauth2.GoogleCredentials;
+import com.google.common.collect.Lists;
 import com.itextpdf.text.BaseColor;
 import com.itextpdf.text.Chunk;
 import com.itextpdf.text.Document;
@@ -94,8 +96,10 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
@@ -103,6 +107,7 @@ import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Locale;
 import java.util.Map;
@@ -252,6 +257,7 @@ public class fragment_viaje_iniciado extends Fragment {
     private String l_tipo_tarifa = "0";//1 diurno normal, 2 nocturno normal, 3 diurno feriado, 4 nocturno feriado
     private String descuento;
     private String link;
+    private String documento;
 
     @Override
     public void onPause() {
@@ -854,8 +860,8 @@ public class fragment_viaje_iniciado extends Fragment {
                 )
         );
         myRequest.setRetryPolicy(new DefaultRetryPolicy(
-                50000,
-                5,//DefaultRetryPolicy.DEFAULT_MAX_RETRIES
+                2500,
+                3,//DefaultRetryPolicy.DEFAULT_MAX_RETRIES
                 DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
 
     }
@@ -1065,8 +1071,8 @@ public class fragment_viaje_iniciado extends Fragment {
                 )
         );
         myRequest.setRetryPolicy(new DefaultRetryPolicy(
-                50000,
-                5,//DefaultRetryPolicy.DEFAULT_MAX_RETRIES
+                2500,
+                3,//DefaultRetryPolicy.DEFAULT_MAX_RETRIES
                 DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
 
     }
@@ -1607,6 +1613,8 @@ public class fragment_viaje_iniciado extends Fragment {
 
     }
 
+
+
     private class Iniciar_servicio_tiempo extends AsyncTask<Void, Integer, Integer> {
         protected Integer doInBackground(Void... params ) {
 
@@ -1664,8 +1672,8 @@ public class fragment_viaje_iniciado extends Fragment {
                 )
         );
         myRequest.setRetryPolicy(new DefaultRetryPolicy(
-                50000,
-                5,//DefaultRetryPolicy.DEFAULT_MAX_RETRIES
+                2500,
+                3,//DefaultRetryPolicy.DEFAULT_MAX_RETRIES
                 DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
 
     }
@@ -1689,6 +1697,7 @@ public class fragment_viaje_iniciado extends Fragment {
                     fecha_tarifa = object.getString("fecha_tarifa");
                     fecha = object.getString("fecha");
                     chofer = object.getString("chofer");
+                    documento = object.getString("nro_documento");
 
                     SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(context);
                     SharedPreferences.Editor editor = settings.edit();
@@ -1705,6 +1714,13 @@ public class fragment_viaje_iniciado extends Fragment {
 
                     cargarViaje_solicitado(context);
 
+                    /*
+                     if(tipo_rendicion.equals("3")){
+                        SaldoChofer(context);
+                    }else {
+
+                         cargarViaje_solicitado(context);
+                     }*/
                     break;
 
                 case "2":
@@ -1755,8 +1771,8 @@ public class fragment_viaje_iniciado extends Fragment {
                 )
         );
         myRequest.setRetryPolicy(new DefaultRetryPolicy(
-                50000,
-                5,//DefaultRetryPolicy.DEFAULT_MAX_RETRIES
+                2500,
+                3,//DefaultRetryPolicy.DEFAULT_MAX_RETRIES
                 DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
 
     }
@@ -1833,8 +1849,8 @@ public class fragment_viaje_iniciado extends Fragment {
                 )
         );
         myRequest.setRetryPolicy(new DefaultRetryPolicy(
-                50000,
-                5,//DefaultRetryPolicy.DEFAULT_MAX_RETRIES
+                2500,
+                3,//DefaultRetryPolicy.DEFAULT_MAX_RETRIES
                 DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
 
     }
@@ -1933,8 +1949,8 @@ public class fragment_viaje_iniciado extends Fragment {
                 )
         );
         myRequest.setRetryPolicy(new DefaultRetryPolicy(
-                50000,
-                5,//DefaultRetryPolicy.DEFAULT_MAX_RETRIES
+                2500,
+                3,//DefaultRetryPolicy.DEFAULT_MAX_RETRIES
                 DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
 
     }
@@ -2377,10 +2393,10 @@ public class fragment_viaje_iniciado extends Fragment {
 
         encodedParams.setLength(Math.max(encodedParams.length() - 1, 0));
 
-        String newURL;
+        String newURL = "";
         if(tipo_rendicion.equals("2")) {
             newURL = Constantes.AGREGAR_CTA_CTE_MOVIL + "?" + encodedParams;
-        }else{
+        }else if(tipo_rendicion.equals("3")){
             newURL = Constantes.AGREGAR_CTA_CTE_CHOFER + "?" + encodedParams;
         }
         Log.d(TAG,newURL);
@@ -2399,7 +2415,7 @@ public class fragment_viaje_iniciado extends Fragment {
                         new Response.ErrorListener() {
                             @Override
                             public void onErrorResponse(VolleyError error) {
-                                Log.d(TAG, "Error cta cte: " + error.getMessage());
+                                Log.d(TAG, "Error agregar cta cte: " + error.getMessage());
 
                             }
                         }
@@ -2429,7 +2445,13 @@ public class fragment_viaje_iniciado extends Fragment {
 
             switch (estado) {
                 case "1":
+
+                    String l_token;
+
+                    //l_token = getAccessToken();
+
                     actualizar_turno(context);
+
                     break;
                 case "2":
                     // Mostrar mensaje
@@ -2442,7 +2464,171 @@ public class fragment_viaje_iniciado extends Fragment {
             }
         } catch (JSONException e) {
             e.printStackTrace();
+        } /*catch (IOException e) {
+            throw new RuntimeException(e);
+        }*/
+    }
+
+    public void SaldoChofer(final Context context) {
+
+        // Añadir parámetro a la URL del web service
+        String newURL = Constantes.GET_SALDO_CONDUCTOR + "?id=" + ls_id_conductor;
+        Log.d(TAG,newURL);
+
+        // Realizar petición GET_BY_ID
+        VolleySingleton.getInstance(context).addToRequestQueue(
+                myRequest = new JsonObjectRequest(
+                        Request.Method.POST,
+                        newURL,
+                        null,
+                        new Response.Listener<JSONObject>() {
+                            @Override
+                            public void onResponse(JSONObject response) {
+                                // Procesar respuesta Json
+                                procesarRespuestaSaldoChofer(response, context);
+                            }
+                        },
+                        new Response.ErrorListener() {
+                            @Override
+                            public void onErrorResponse(VolleyError error) {
+                                Log.d(TAG, "Error Volley saldo: " + error.getMessage());
+
+                            }
+                        }
+
+                )
+        );
+        myRequest.setRetryPolicy(new DefaultRetryPolicy(
+                2500,
+                3,//DefaultRetryPolicy.DEFAULT_MAX_RETRIES
+                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+
+    }
+
+    private void procesarRespuestaSaldoChofer(JSONObject response, Context context) {
+
+        try {
+            // Obtener atributo "mensaje"
+            String mensaje = response.getString("estado");
+
+            switch (mensaje) {
+                case "1":
+                    JSONArray mensaje1 = response.getJSONArray("saldo");
+
+                    JSONObject object = mensaje1.getJSONObject(0);
+                    //Parsear objeto
+
+                    String habilitado = object.getString("habilitado");
+
+                    notificacion();
+                    /*
+                    if(habilitado.equals("0")){
+                        notificacion();
+                    }else{
+                        actualizar_turno( context);
+                    }*/
+
+                    break;
+
+            }
+
+
+        } catch (JSONException e) {
+            e.printStackTrace();
         }
+
+    }
+
+    public String getAccessToken() throws IOException {
+
+        InputStream stream = act.getResources().openRawResource(R.raw.credencial_google);
+
+        GoogleCredentials googleCredentials = GoogleCredentials
+                .fromStream(new FileInputStream(String.valueOf(stream)))
+                .createScoped(Lists.newArrayList("https://www.googleapis.com/auth/cloudplatform"));
+        googleCredentials.refreshAccessToken();
+        String accessToken = googleCredentials.getAccessToken().getTokenValue();
+        return accessToken;
+    }
+
+    public void notificacion(){
+        TreeMap<String, String> map1 = new TreeMap<>();
+
+
+
+        map1.put("titulo", "Saldo Insuficiente");
+        map1.put("texto", "DNI: " + documento);
+
+        // Crear nuevo objeto Json basado en el mapa
+        JSONObject jobject = new JSONObject(map1);
+
+        StringBuilder encodedParams1 = new StringBuilder();
+        try {
+            for (Map.Entry<String, String> entry : map1.entrySet()) {
+                encodedParams1.append(URLEncoder.encode(entry.getKey(), "utf-8"));
+                encodedParams1.append('=');
+                encodedParams1.append(URLEncoder.encode(entry.getValue(), "utf-8"));
+                encodedParams1.append('&');
+            }
+        } catch (UnsupportedEncodingException uee) {
+            throw new RuntimeException("Encoding not supported: " + "utf-8", uee);
+        }
+
+        encodedParams1.setLength(Math.max(encodedParams1.length() - 1, 0));
+
+        Log.d(TAG, jobject.toString());
+
+        String newURL = Constantes.NOTIFICACION + "?" + encodedParams1;
+        Log.d(TAG, newURL);
+
+        VolleySingleton.getInstance(context).addToRequestQueue(
+                new JsonObjectRequest(
+                        Request.Method.GET,
+                        newURL,
+                        null,
+                        new Response.Listener<JSONObject>() {
+                            @Override
+                            public void onResponse(JSONObject response) {
+                                procesarRespuestaNotificacion(response, context);
+
+                            }
+                        },
+                        new Response.ErrorListener() {
+                            @Override
+                            public void onErrorResponse(VolleyError error) {
+                                Log.d(TAG, "error notificacion");
+
+                            }
+                        }
+
+                )
+        );
+    }
+    private void procesarRespuestaNotificacion(JSONObject response, Context context) {
+
+        try {
+            // Obtener estado
+            String estado = response.getString("estado");
+            // Obtener mensaje
+
+
+            switch (estado) {
+                case "1":
+                    cargarViaje_solicitado(context);
+                    break;
+
+                case "2":
+                    Toast.makeText(
+                            context,
+                            "Error en Notificación",
+                            Toast.LENGTH_LONG).show();
+
+                    break;
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
     }
 
 
@@ -3045,8 +3231,8 @@ public class fragment_viaje_iniciado extends Fragment {
                 )
         );
         myRequest.setRetryPolicy(new DefaultRetryPolicy(
-                50000,
-                5,//DefaultRetryPolicy.DEFAULT_MAX_RETRIES
+                2500,
+                3,//DefaultRetryPolicy.DEFAULT_MAX_RETRIES
                 DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
 
     }
@@ -3234,8 +3420,8 @@ public class fragment_viaje_iniciado extends Fragment {
                 )
         );
         myRequest.setRetryPolicy(new DefaultRetryPolicy(
-                50000,
-                5,//DefaultRetryPolicy.DEFAULT_MAX_RETRIES
+                2500,
+                3,//DefaultRetryPolicy.DEFAULT_MAX_RETRIES
                 DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
 
     }
@@ -3318,8 +3504,8 @@ public class fragment_viaje_iniciado extends Fragment {
                 )
         );
         myRequest.setRetryPolicy(new DefaultRetryPolicy(
-                50000,
-                5,//DefaultRetryPolicy.DEFAULT_MAX_RETRIES
+                2500,
+                3,//DefaultRetryPolicy.DEFAULT_MAX_RETRIES
                 DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
 
     }
@@ -3881,8 +4067,8 @@ public class fragment_viaje_iniciado extends Fragment {
                 )
         );
         myRequest.setRetryPolicy(new DefaultRetryPolicy(
-                50000,
-                5,//DefaultRetryPolicy.DEFAULT_MAX_RETRIES
+                2500,
+                3,//DefaultRetryPolicy.DEFAULT_MAX_RETRIES
                 DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
 
     }

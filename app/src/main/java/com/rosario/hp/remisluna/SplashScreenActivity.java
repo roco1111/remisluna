@@ -280,7 +280,7 @@ public class SplashScreenActivity extends Activity {
             String mensaje = response.getString("mensaje");
 
             Intent mainIntent = new Intent().setClass(
-                    SplashScreenActivity.this, gps.class);
+                    SplashScreenActivity.this, MainActivity.class);
             //Intent mainIntent = new Intent().setClass(
              //     SplashScreenActivity.this, MainActivity.class);
             startActivity(mainIntent);
